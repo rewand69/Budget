@@ -6,4 +6,4 @@
 
    It is safe to keep here: without the key a phone gets when you connect it,
    the link does nothing. */
-window.BUDGET_API = 'https://script.google.com/macros/s/AKfycbzc1_kqFGjaU8Yf-4-1AJxOQvC12yYKIPfFKTJVmu3ViehaFBjIcHPacRGXv7tM2Xp1fw/exec';
+window.BUDGET_API = 'https://script.google.com/macros/s/AKfycbyBU44mDKQgS5inclhlZByUdpba3GnQCWuCjeEOSpAbVjkLBlWNvn4XuEgRNCFgIa3WOA/exec';
