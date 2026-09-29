@@ -855,6 +855,48 @@ select.expname{padding:9px 10px;font-size:14px;border-radius:13px}
   transform-origin:left;animation:undoRun linear forwards}
 @keyframes undoRun{from{transform:scaleX(1)}to{transform:scaleX(0)}}
 body.undoing #toast .toast{bottom:calc(150px + env(safe-area-inset-bottom,0px))}
+#undo .toast.undo span{overflow:hidden;text-overflow:ellipsis;min-width:0}
+/* centred by its own width rather than from the middle of the screen, which
+   left it only half the screen to fit into */
+#undo .toast.undo,#act .toast.undo{left:14px;right:14px;margin:0 auto;width:max-content;max-width:calc(100% - 28px);transform:none}
+/* the month on Activity: tap it to browse month by month */
+.stampbtn{border:0;background:none;cursor:pointer;padding:0 0 6px}
+.stampbtn.on{color:rgb(51,123,208);font-weight:700}
+.monthbar{display:flex;align-items:center;gap:4px;margin-top:10px;padding:6px}
+.monthbar .mbarr{flex:none;width:40px;height:40px;border-radius:14px;font:500 24px/1 -apple-system,sans-serif;color:rgba(25,23,19,.62);background:none}
+.monthbar .mbarr:disabled{opacity:.2}
+.monthbar .mbmid{flex:1;min-width:0;text-align:center;background:none;padding:4px 0}
+.monthbar .mbmid b{display:block;font:650 16px/1.15 -apple-system,sans-serif;letter-spacing:-.3px;color:#191713}
+.monthbar .mbmid span{display:block;margin-top:4px;font:400 12px/1.2 -apple-system,sans-serif;color:rgba(25,23,19,.5);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.monthbar .mbx{flex:none;width:34px;height:34px;border-radius:12px;font:500 14px/1 -apple-system,sans-serif;color:rgba(25,23,19,.45);background:rgba(25,23,19,.05)}
+.setrow.on b{color:rgb(51,123,208)}
+/* days in a row with something written down */
+.streak{display:inline-flex;align-items:center;gap:3px;margin-left:10px;padding:5px 9px 5px 7px;border:0;border-radius:14px;
+  vertical-align:5px;background:rgba(25,23,19,.05);font:650 14px/1 -apple-system,sans-serif;letter-spacing:0;color:rgba(25,23,19,.42)}
+.streak .fl{font-size:14px;line-height:1;filter:grayscale(1);opacity:.5}
+.streak.lit{background:rgba(255,149,0,.14);color:#b35c00}
+.streak.lit .fl{filter:none;opacity:1}
+.sgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px 4px;padding:14px 10px;margin-top:14px;justify-items:center}
+.sgh{font:600 11px/1 -apple-system,sans-serif;color:rgba(25,23,19,.4);padding-bottom:4px}
+.sgd{width:34px;height:34px;border:0;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font:500 13px/1 -apple-system,sans-serif;color:rgba(25,23,19,.5);background:none;padding:0}
+.sgd.on{background:linear-gradient(160deg,#ffb54d,#ff7d1f);color:#fff;font-weight:700}
+.sgd.nil{box-shadow:inset 0 0 0 1.5px rgba(255,125,31,.75);color:#b35c00;font-weight:600}
+.sgd.now{outline:2px solid rgba(25,23,19,.22);outline-offset:2px}
+.sgd.fut{opacity:.2}
+.nlist p{margin:10px 0 0;font:400 14px/1.4 -apple-system,sans-serif;color:rgba(25,23,19,.78)}
+#undo .toast.undo button+button{margin-left:-8px}
+/* a question the app can answer for you in one tap, e.g. a new price */
+#act .toast.undo{display:flex;align-items:center;gap:10px;padding:8px 6px 8px 18px;pointer-events:auto;text-align:left;z-index:71}
+#act .toast.undo span{flex:1;min-width:0}
+#act .toast.undo button{flex:none;padding:8px 12px;border-radius:14px;font:600 13px/1 -apple-system,sans-serif;color:#fff;background:rgba(255,255,255,.16)}
+#act .toast.undo button.actx{background:none;padding:8px 8px;color:rgba(255,255,255,.6)}
+body.undoing #act .toast{bottom:calc(150px + env(safe-area-inset-bottom,0px))}
+.cardshow{flex:none;font:600 14px/1 -apple-system,sans-serif;color:rgb(51,123,208)}
+.ghostbtn{display:block;width:100%;margin-top:10px;padding:14px;border-radius:18px;font:600 15px/1 -apple-system,sans-serif;
+  color:#191713;background:rgba(255,255,255,.72);box-shadow:inset 0 0 0 .5px rgba(25,23,19,.14)}
+.ghostbtn:disabled,.paybtn:disabled{opacity:.55}
 
 /* scheduled payments: what is paid, what is late */
 .pstat{display:inline-block;margin-right:6px;padding:2px 6px;border-radius:7px;vertical-align:1px;
@@ -946,6 +988,7 @@ body.connecting .tabbar,body.connecting #fabwrap{display:none}
   <div id="modal2"></div>
   <div id="toast"></div>
   <div id="undo"></div>
+  <div id="act"></div>
 </div>
 
 <script>
@@ -1100,7 +1143,8 @@ var D=null;
 var S={tab:'Activity',filter:'All',fCat:[],fSub:[],fSrc:[],fAcc:[],fBad:false,fOpen:false,lid:0,qid:0,flushing:false,qcb:{},shopsAll:false,shop:null,shopSort:'new',selDay:null,open:{},sheet:null,busy:false,
        pending:{},cid:0,seq:0,applied:0,
        qsel:null,qdel:null,qedit:null,qonce:null,
-       q:'',qOpen:false,older:null,olderAsked:false,pendingDel:{}};
+       q:'',qOpen:false,older:null,olderAsked:false,pendingDel:{},
+       actMonth:'',monthsOpen:false,cardShown:{},accOpen:null,wantTab:null};
 var TABS=['Activity','Accounts','Calendar','Expectations','Budget','Analytics','Summary'];
 var TAB_ICON={"Activity":"<svg viewBox=\"0 0 24 24\" width=\"21\" height=\"21\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M6 2.8h12v18.4l-3-1.8-3 1.8-3-1.8-3 1.8z\"/><path d=\"M9.5 8.6h5M9.5 12.6h5\"/></svg>","Accounts":"<svg viewBox=\"0 0 24 24\" width=\"21\" height=\"21\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 9.6 12 4.2l9 5.4\"/><path d=\"M5.8 11v6.6M9.9 11v6.6M14.1 11v6.6M18.2 11v6.6\"/><path d=\"M3.6 20.4h16.8\"/></svg>","Calendar":"<svg viewBox=\"0 0 24 24\" width=\"21\" height=\"21\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3.2\" y=\"5\" width=\"17.6\" height=\"16\" rx=\"3.2\"/><path d=\"M8 3v4M16 3v4M3.2 10.2h17.6\"/></svg>","Expectations":"<svg viewBox=\"0 0 24 24\" width=\"21\" height=\"21\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"8.4\"/><circle cx=\"12\" cy=\"12\" r=\"4.2\"/><circle cx=\"12\" cy=\"12\" r=\"1.1\" fill=\"currentColor\" stroke=\"none\"/></svg>","Budget":"<svg viewBox=\"0 0 24 24\" width=\"21\" height=\"21\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"6\" width=\"18\" height=\"13\" rx=\"3.4\"/><path d=\"M3 10.2h18\"/><circle cx=\"16.6\" cy=\"14.4\" r=\"1.15\" fill=\"currentColor\" stroke=\"none\"/></svg>","Analytics":"<svg viewBox=\"0 0 24 24\" width=\"21\" height=\"21\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5.2 20v-6.4M12 20V4.6M18.8 20v-9.2\"/></svg>","Summary":"<svg viewBox=\"0 0 24 24\" width=\"21\" height=\"21\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"8.4\"/><path d=\"M12 3.6V12l7.3 4.2\"/></svg>"};
 var TAB_LABEL={Expectations:'Expected'};
@@ -1165,6 +1209,7 @@ function apiFetch(body,cb){
    be sent once the phone is connected again. */
 function lostConnection(){
   try{ localStorage.removeItem(CONN_KEY); localStorage.removeItem(SNAP_KEY); }catch(e){}
+  pushForget();
   D=null; S.fromSnap=false;
   closeModal&&closeModal();
   drawConnect('This phone was disconnected. Connect it again with a new code.');
@@ -1215,6 +1260,7 @@ function doConnect(){
   apiFetch({pair:code},function(err,res){
     if(err||!res||!res.k){ drawConnect(err||'That did not work — try a new code.'); return; }
     try{ localStorage.setItem(CONN_KEY,res.k); }catch(e){}
+    mirrorConn();
     toast('Connected');
     load();
   });
@@ -1228,6 +1274,8 @@ function disconnectPhone(){
     return;
   }
   S.discArmed=false;
+  /* while the key is still here: the sheet stops ringing this phone */
+  pushForget();
   try{ localStorage.removeItem(CONN_KEY); localStorage.removeItem(SNAP_KEY); localStorage.removeItem(QKEY); }catch(e){}
   QUEUE=[]; qBadge();
   D=null; closeModal(); drawConnect();
@@ -1247,7 +1295,7 @@ function load(){
     S.fromSnap=true;
     document.body.classList.add('stale');
     rebuildTx();
-    if(!S.landed){ S.landed=true; S.tab=tabOrder()[0]||S.tab; renderTabs(); }
+    if(!S.landed){ S.landed=true; S.tab=landTab(); renderTabs(); }
     prep(); render();
   }
   var seq=++S.seq;
@@ -1272,10 +1320,11 @@ function load(){
       D=res;
       rebuildTx();
       /* the first load lands on whichever tab is first in the bar */
-      if(!S.landed){ S.landed=true; S.tab=tabOrder()[0]||S.tab; renderTabs(); }
+      if(!S.landed){ S.landed=true; S.tab=landTab(); renderTabs(); }
       prep(); render();
       saveSnap();
     }
+    setTimeout(pushCheck,2000);
     qFlush();
   });
 }
@@ -1338,6 +1387,7 @@ function render(keepScroll){
   v.className=keepScroll?'':'fade';
   renderTabs(); renderFab();
   window.scrollTo(0,keepScroll?y:0);
+  if(S.tab==='Activity'){ clearTimeout(render._st); render._st=setTimeout(streakCheck,900); }
 }
 
 /* ---------------- optimistic writes -----------------------------------
@@ -1352,7 +1402,7 @@ function applyData(res,seq){
   S.fromSnap=false;
   /* the first load lands on whichever tab is first in the bar; after that it
      is wherever you were */
-  if(!S.landed){ S.landed=true; S.tab=tabOrder()[0]||S.tab; renderTabs(); }
+  if(!S.landed){ S.landed=true; S.tab=landTab(); renderTabs(); }
   /* the settings may have been changed on the other device */
   else if(tabHidden(S.tab)){ S.tab=tabOrder()[0]||S.tab; renderTabs(); }
   rebuildTx();
@@ -1425,6 +1475,14 @@ function writeSnap(){
     if(!snapOn()){ localStorage.removeItem(SNAP_KEY); return; }
     var o={};
     for(var k in D) if(D.hasOwnProperty(k)&&k!=='rawTx'&&k!=='tx'&&k!=='subMap'&&k!=='accMap') o[k]=D[k];
+    /* card numbers are never kept on the phone - a sheet script from before
+       they were fetched on demand still sends them, so they are dropped here */
+    if(o.accounts instanceof Array) o.accounts=o.accounts.map(function(a){
+      if(!a||!(a.card||a.expiry)) return a;
+      var c={}; for(var j in a) if(a.hasOwnProperty(j)&&j!=='card'&&j!=='expiry') c[j]=a[j];
+      c.hasCard=!!(a.card||a.hasCard); c.hasExpiry=!!(a.expiry||a.hasExpiry);
+      return c;
+    });
     /* what the sheet holds - rows still on their way up are not in it yet */
     o.tx=(D.rawTx||[]).map(function(t){
       if(!t.pending) return t;
@@ -1492,6 +1550,7 @@ function holdDelete(items,fn,payload,label){
 function commitUndo(leaving){
   var u=UNDO; if(!u) return;
   UNDO=null; clearTimeout(u.t); hideUndo();
+  if(u.custom){ u.commit(leaving); return; }
   /* The page may be on its way out: a copy waits in the outbox as well, so
      the delete still happens next time if this request dies with the page.
      Both carry one request id, so the sheet acts on whichever arrives first
@@ -1511,13 +1570,15 @@ function commitUndo(leaving){
 function undoNow(){
   var u=UNDO; if(!u) return;
   UNDO=null; clearTimeout(u.t); hideUndo();
+  if(u.custom){ u.revert(); toast('Undone'); return; }
   u.keys.forEach(function(k){ delete S.pendingDel[k]; });
   rebuildTx(); prep(); render(true);
   toast('Restored');
 }
-function toastUndo(label){
+function toastUndo(label,withEdit){
   var el=document.getElementById('undo'); if(!el) return;
   el.innerHTML='<div class="toast undo"><span>'+esc(label)+'</span>'+
+    (withEdit?'<button onclick="undoEdit()">Edit</button>':'')+
     '<button onclick="undoNow()">Undo</button><i style="animation-duration:'+UNDO_MS+'ms"></i></div>';
   document.body.classList.add('undoing');
 }
@@ -1525,6 +1586,33 @@ function hideUndo(){
   var el=document.getElementById('undo'); if(el) el.innerHTML='';
   document.body.classList.remove('undoing');
 }
+/* The same three seconds for something just added: it is on screen at once,
+   goes to the sheet when the time is up (or the page is put away), and
+   Undo takes it back before anything was written. Edit takes it back too
+   and opens it, filled in, to be changed and saved the usual way. */
+function holdAction(label,h){
+  commitUndo();
+  UNDO={custom:true,commit:h.commit,revert:h.revert,edit:h.edit||null,
+        t:setTimeout(function(){ commitUndo(); },UNDO_MS)};
+  toastUndo(label,!!h.edit);
+}
+function undoEdit(){
+  var u=UNDO; if(!u||!u.custom) return;
+  UNDO=null; clearTimeout(u.t); hideUndo();
+  u.revert();
+  if(u.edit) u.edit();
+}
+/* a question with a one-tap answer, e.g. whether the Calendar should take
+   a new price - it waits a few seconds and goes away by itself */
+function toastAction(msg,label,fn,ms){
+  var el=document.getElementById('act'); if(!el) return;
+  var t=document.getElementById('toast'); if(t) t.innerHTML='';
+  el.innerHTML='<div class="toast undo"><span>'+esc(msg)+'</span>'+
+    '<button onclick="'+fn+'">'+esc(label)+'</button>'+
+    '<button class="actx" onclick="hideAction()" aria-label="Dismiss">✕</button></div>';
+  clearTimeout(toastAction._t); toastAction._t=setTimeout(hideAction,ms||7000);
+}
+function hideAction(){ clearTimeout(toastAction._t); var el=document.getElementById('act'); if(el) el.innerHTML=''; }
 try{
   document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='hidden') commitUndo(true); });
   window.addEventListener('pagehide',function(){ commitUndo(true); });
@@ -1557,6 +1645,8 @@ function ensureOlder(){
     S.older=((res&&res.older)||[]).map(function(t,i){ t.srow=t.row; t.row=-(i+1); return t; })
       .filter(function(t){ return !pd[delKey(t)]; });
     if(S.older.length){ if(S.tab==='Activity'&&S.qOpen) drawActList(); else render(true); }
+    else if(S.tab==='Activity'&&S.actMonth) render(true);
+    if(S.monthsOpen) openMonths();
   });
 }
 /* ---- the queue for when there is no line ------------------------------
@@ -2165,7 +2255,9 @@ function barFill(w,name,over){
 /* ================================================================ 1 · ACTIVITY */
 function pageActivity(){
   var nBad=D.tx.filter(unbalanced).length;
-  var h=head('Activity','<span class="stamp">'+MONS[Number(D.thisMonth.slice(5,7))-1].toUpperCase()+' '+D.thisYear+'</span>');
+  var mo=S.actMonth||D.thisMonth;
+  var h=head('Activity'+streakBadge(),'<button class="stamp stampbtn'+(S.actMonth?' on':'')+'" onclick="openMonths()" aria-label="Browse by month">'+
+    MONS[Number(mo.slice(5,7))-1].toUpperCase()+' '+mo.slice(0,4)+'</button>');
   h+='<div class="chiprow">'+['All','Income','Expenses'].map(function(f){
       var on=S.filter===f;
       return '<button class="chip'+(on?' on':'')+'" style="'+(on?'background:'+ACCENT+';box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 2px 8px -4px rgba(30,26,22,.3)':'')+'" onclick="setFilter(\''+f+'\')">'+f+'</button>';
@@ -2222,8 +2314,13 @@ function pageActivity(){
 function activityList(){
   var searching=!!(S.qOpen&&S.q.trim());
   var cutoff=iso(new Date(Date.now()-30*86400000));
+  /* one month at a time, once a month is picked - a search and the "!" list
+     still look through everything */
+  var mo=(!searching&&!S.fBad&&S.actMonth)||'';
+  if(mo&&mo<=olderFrom()) ensureOlder();
   /* a search looks through everything that is loaded, not the last 30 days */
-  var list=searching?txAll().slice():(S.fBad?D.tx.slice():D.tx.filter(function(t){ return t.date>=cutoff; }));
+  var list=searching?txAll().slice():(S.fBad?D.tx.slice():
+    (mo?txAll().filter(function(t){ return ym(t.date)===mo; }):D.tx.filter(function(t){ return t.date>=cutoff; })));
   if(searching){ var toks=searchTokens(S.q); list=list.filter(function(t){ return !t.pending&&matchTx(t,toks); }); }
   /* transfers are money you still have, so neither tab claims them */
   if(S.filter==='Income') list=list.filter(function(t){return t.k==='i'&&!isCorr(t)&&!isXferSrc(t.source);});
@@ -2262,10 +2359,10 @@ function activityList(){
     list.sort(function(a,b){ if(a.date!==b.date) return a.date<b.date?1:-1; return orderKey(b)-orderKey(a); });
   }
 
-  var h='';
+  var h=mo?monthBar(mo,list):'';
   /* the running total means something once a tab or a filter has narrowed
      things down. On All the two kinds cancel, so it is a net, not a sum. */
-  if(searching||S.filter!=='All'||anyFilter()){
+  if(!mo&&(searching||S.filter!=='All'||anyFilter())){
     var mixed=S.filter==='All';
     var tot=mixed
       ? sum(list,function(t){ return (isXfer(t)||isCorr(t))?0:(t.k==='i'?1:-1)*rowUah(t); })
@@ -2281,7 +2378,7 @@ function activityList(){
   if(!list.length){
     return h+'<div class="glass" style="margin-top:12px"><div class="empty">'+
       (searching?'Nothing matches “'+esc(S.q.trim())+'”.':
-       S.fBad?'Nothing needs attention — everything adds up.':anyFilter()?'Nothing matches these filters in the last 30 days.':'Nothing in the last 30 days.<br>Tap + or − to add something.')+
+       S.fBad?'Nothing needs attention — everything adds up.':mo?((S.filter!=='All'||anyFilter()?'Nothing matches in ':'Nothing in ')+monthName(mo)+(S.olderAsked&&!S.older?' yet — loading older records…':'.')):anyFilter()?'Nothing matches these filters in the last 30 days.':'Nothing in the last 30 days.<br>Tap + or − to add something.')+
       '</div></div>';
   }
 
@@ -2332,6 +2429,167 @@ function activityList(){
 function drawActList(){
   var el=document.getElementById('actlist');
   if(el) el.innerHTML=activityList(); else render(true);
+}
+/* ---- month by month -----------------------------------------------------
+   The list normally shows the last 30 days. Tapping the month next to the
+   title picks any month instead; the arrows step through them. The app has
+   the last two years at hand - an older month fetches the rest first. */
+function monthName(m){ return MON[Number(String(m).slice(5,7))-1]+' '+String(m).slice(0,4); }
+function shiftMonth(m,d){
+  var y=Number(m.slice(0,4)), n=Number(m.slice(5,7))-1+d;
+  y+=Math.floor(n/12); n=((n%12)+12)%12;
+  return y+'-'+('0'+(n+1)).slice(-2);
+}
+/* the month the sheet's two years start in - anything before needs the rest */
+function olderFrom(){ var d=parseD(D.today); d.setMonth(d.getMonth()-24); return ym(iso(d)); }
+function monthTotals(list){
+  var out=0, inc=0;
+  list.forEach(function(t){
+    if(isXfer(t)||isCorr(t)) return;
+    if(t.k==='e'&&realExp(t)) out+=rowUah(t);
+    else if(t.k==='i'&&realInc(t)&&!isXferSrc(t.source)) inc+=rowUah(t);
+  });
+  return {out:out,inc:inc};
+}
+function monthBar(mo,list){
+  var tot=monthTotals(list), sub=[list.length+' record'+(list.length===1?'':'s')];
+  if(S.filter!=='Income'&&tot.out) sub.push(money(-tot.out,0));
+  if(S.filter!=='Expenses'&&tot.inc) sub.push('+'+bmoney(tot.inc,0));
+  return '<div class="monthbar glass">'+
+    '<button class="mbarr" onclick="stepMonth(-1)" aria-label="Previous month">‹</button>'+
+    '<button class="mbmid" onclick="openMonths()"><b>'+esc(monthName(mo))+'</b><span>'+esc(sub.join(' · '))+'</span></button>'+
+    '<button class="mbarr" onclick="stepMonth(1)"'+(mo<D.thisMonth?'':' disabled')+' aria-label="Next month">›</button>'+
+    '<button class="mbx" onclick="setMonth(\'\')" aria-label="Back to the last 30 days">✕</button></div>';
+}
+function setMonth(m){
+  S.actMonth=m||''; S.sel=null; S.selDel=0;
+  closeModal();
+  render();
+}
+function stepMonth(d){
+  var m=shiftMonth(S.actMonth||D.thisMonth,d);
+  if(m>D.thisMonth) return;
+  S.actMonth=m; S.sel=null; S.selDel=0;
+  render();
+}
+function openMonths(){
+  S.monthsOpen=true;
+  var by={}, first=D.thisMonth;
+  txAll().forEach(function(t){
+    var m=ym(t.date||'');
+    if(!/^\d{4}-\d{2}$/.test(m)||m>D.thisMonth) return;
+    if(m<first) first=m;
+    if(isLine(t)||(t.k==='i'&&isXferSrc(t.source))) return;
+    var b=by[m]||(by[m]={n:0,out:0});
+    b.n++;
+    if(t.k==='e'&&!isXfer(t)&&!isCorr(t)&&realExp(t)) b.out+=rowUah(t);
+  });
+  var h=sheetTop('Browse by month','');
+  h+='<div class="glass" style="padding:4px 0">'+monthRow('','Last 30 days','The usual view',!S.actMonth);
+  for(var m=D.thisMonth;m>=first;m=shiftMonth(m,-1)){
+    var b=by[m];
+    h+=monthRow(m,monthName(m),b?(b.n+' record'+(b.n===1?'':'s')+(b.out?' · '+money(-b.out,0):'')):'Nothing written down',S.actMonth===m);
+  }
+  h+='</div>';
+  if(!S.older){
+    h+=S.olderAsked?'<p class="tiny" style="margin:12px 4px 0">Loading older records…</p>'
+                   :'<button class="ghostbtn" onclick="ensureOlder();openMonths()">Show older months</button>';
+  }
+  h+=sheetEnd();
+  document.getElementById('modal').innerHTML=h;
+}
+function monthRow(m,title,sub,on){
+  return '<button class="setrow'+(on?' on':'')+'" onclick="setMonth('+q(m)+')"><span class="setmain"><b>'+esc(title)+'</b>'+
+    '<i>'+esc(sub)+'</i></span><span class="chevr">'+(on?'✓':'›')+'</span></button>';
+}
+
+/* ---- streak -------------------------------------------------------------
+   Days in a row with something written down. A day counts when it has any
+   record at all, or when you marked it as a day with nothing to write down.
+   Today does not break the run until the day is over. */
+var MILESTONES=[7,14,21,30,50,75,100,150,200,250,300,365,500,730,1000];
+function nothingDays(){ var l=pref('nothing',[]); return (l instanceof Array)?l:[]; }
+function streakInfo(){
+  if(!D) return {cur:0,best:0,today:false,cov:{}};
+  var nd=nothingDays(), key=TXV+'|'+D.tx.length+'|'+D.today+'|'+nd.join(',')+'|'+(S.older?S.older.length:0);
+  if(streakInfo._k===key) return streakInfo._v;
+  var cov={}, today=D.today;
+  txAll().forEach(function(t){ var d=String(t.date||'').slice(0,10); if(d&&d<=today) cov[d]=1; });
+  nd.forEach(function(d){ if(d<=today&&!cov[d]) cov[d]=2; });
+  var cur=0, d=cov[today]?today:addDaysIso(today,-1);
+  while(cov[d]&&cur<5000){ cur++; d=addDaysIso(d,-1); }
+  var best=0, run=0, prev='';
+  Object.keys(cov).sort().forEach(function(k){
+    run=(prev&&addDaysIso(prev,1)===k)?run+1:1;
+    if(run>best) best=run;
+    prev=k;
+  });
+  var v={cur:cur,best:Math.max(best,cur),today:!!cov[today],cov:cov};
+  streakInfo._k=key; streakInfo._v=v;
+  return v;
+}
+function streakBadge(){
+  var st=streakInfo(), lit=st.today&&st.cur>0;
+  return '<button class="streak'+(lit?' lit':'')+'" onclick="openStreak()" aria-label="Streak: '+st.cur+' day'+(st.cur===1?'':'s')+'">'+
+    '<span class="fl">🔥</span>'+(st.cur?'<b>'+st.cur+'</b>':'')+'</button>';
+}
+function openStreak(){
+  var st=streakInfo(), today=D.today;
+  var h=sheetTop('Streak','');
+  h+='<div class="hero" style="text-align:center;padding:22px 18px">'+
+    '<div style="font-size:44px;line-height:1;'+(st.today&&st.cur?'':'filter:grayscale(1);opacity:.45')+'">🔥</div>'+
+    '<div style="margin-top:10px;font:700 30px/1.1 -apple-system,sans-serif;letter-spacing:-.6px">'+st.cur+' day'+(st.cur===1?'':'s')+'</div>'+
+    '<div class="tiny" style="margin-top:6px">'+(st.cur?'in a row with everything written down':'Write something down today to start one')+'</div>'+
+    (st.best>st.cur?'<div class="tiny" style="margin-top:4px">Best: '+st.best+' days</div>':(st.cur>1?'<div class="tiny" style="margin-top:4px">Your best so far</div>':''))+
+    '</div>';
+  h+=streakGrid(st);
+  if(!st.today){
+    h+='<p class="tiny" style="margin:14px 4px 0">Nothing is written down for today yet'+(st.cur?' — the run holds until midnight.':'.')+'</p>'+
+       '<button class="paybtn" onclick="closeModal();openSheet(\'e\')">Add an expense</button>'+
+       '<button class="ghostbtn" onclick="markNothing('+q(today)+')">Nothing to write down today</button>';
+  }else if(st.cov[today]===2){
+    h+='<p class="tiny" style="margin:14px 4px 0">Today is marked as a day with nothing to write down.</p>'+
+       '<button class="ghostbtn" onclick="markNothing('+q(today)+')">Unmark today</button>';
+  }
+  h+='<p class="tiny" style="margin:14px 4px 0">A day counts when anything is written down for it. For a day with nothing to write down, tap it above to mark it (tap again to unmark).</p>';
+  h+=sheetEnd();
+  document.getElementById('modal').innerHTML=h;
+}
+/* the last five weeks, Monday first */
+function streakGrid(st){
+  var t=parseD(D.today), dow=(t.getDay()+6)%7;
+  var start=new Date(t.getFullYear(),t.getMonth(),t.getDate()-dow-28);
+  var h='<div class="glass sgrid">';
+  ['M','T','W','T','F','S','S'].forEach(function(x){ h+='<span class="sgh">'+x+'</span>'; });
+  for(var i=0;i<35;i++){
+    var d=new Date(start.getFullYear(),start.getMonth(),start.getDate()+i), k=iso(d), c=st.cov[k];
+    var cls='sgd'+(c===1?' on':c===2?' nil':'')+(k===D.today?' now':'');
+    if(k>D.today){ h+='<span class="'+cls+' fut">'+d.getDate()+'</span>'; continue; }
+    h+='<button class="'+cls+'"'+(c===1?' disabled':' onclick="markNothing('+q(k)+')"')+
+       ' aria-label="'+esc(fmtShort(k))+'">'+d.getDate()+'</button>';
+  }
+  return h+'</div>';
+}
+function markNothing(k){
+  var st=streakInfo();
+  if(st.cov[k]===1||k>D.today) return;
+  var l=nothingDays().slice(), i=l.indexOf(k);
+  if(i>=0) l.splice(i,1); else l.push(k);
+  l.sort();
+  setPref('nothing',l.slice(-150));
+  render(true); openStreak();
+  toast(i>=0?'Unmarked':'Marked as a day with nothing to write down');
+}
+/* a round number of days gets a word, once */
+function streakCheck(){
+  if(!D||S.tab!=='Activity') return;
+  var st=streakInfo();
+  if(!st.today||MILESTONES.indexOf(st.cur)<0) return;
+  var mark=st.cur+'@'+D.today, seen='';
+  try{ seen=localStorage.getItem('budget.streakMs')||''; }catch(e){}
+  if(seen===mark) return;
+  try{ localStorage.setItem('budget.streakMs',mark); }catch(e){}
+  toast('🔥 '+st.cur+' days in a row!',3500);
 }
 /* ---- search ------------------------------------------------------------
    Every word has to be found somewhere in the record: its shop, note,
@@ -3000,6 +3258,8 @@ function calItem(row){
    itself is left alone: its next date is worked out by the spreadsheet from
    the first payment, so it rolls forward on its own. */
 function calPay(row,occ){
+  /* a payment still inside its three seconds goes to the sheet first */
+  commitUndo();
   var it=calItem(row);
   if(!it){ toast('That payment is no longer in the list'); return; }
   /* no Schedule column yet: log it the way it always was */
@@ -3014,9 +3274,9 @@ function calPay(row,occ){
   /* the tick on a payment that is done shows what settled it */
   if(!paidRec&&!occ&&st.paidPrev&&target>D.today){ openPayChoice(it,target,null,[],st); return; }
   var cands=paidRec?[]:payCandidates(it,target);
-  /* the usual case - due now, nothing like it logged yet - goes straight to
-     the add sheet with everything filled in, exactly as before */
-  if(!paidRec&&!cands.length&&target<=D.today){ logOcc(it,target,schedKey(it,target)); return; }
+  /* the usual case - due now, nothing like it logged yet - is written down
+     in one tap (or, the very first time, through the filled-in add sheet) */
+  if(!paidRec&&!cands.length&&target<=D.today){ payOcc(it,target,schedKey(it,target)); return; }
   openPayChoice(it,target,paidRec,cands,st);
 }
 /* A scheduled payment becomes a real expense the same way any expense does -
@@ -3045,6 +3305,68 @@ function logOcc(it,o,key){
   if(remembered&&D.subMap&&D.subMap[remembered]){ s.sub=remembered; s.main=D.subMap[remembered].main||''; }
   s.calSvc=it.service||'';
   drawSheet();
+}
+/* the Calendar price in the currency of the account that pays it */
+function calAmount(it,cur){
+  cur=String(cur||'UAH').toUpperCase();
+  var own=String(it.currency||'UAH').toUpperCase(), amt=Math.abs(Number(it.cost)||0);
+  /* the card may keep another currency than the payment is priced in */
+  if(cur!==own) amt=amt*rateOf(own)/(rateOf(cur)||1);
+  var p=Math.pow(10,decOf(cur));
+  return Math.round(amt*p)/p;
+}
+function schedSvc(key){ key=String(key||''); var i=key.lastIndexOf('|'); return i>0?key.slice(0,i):''; }
+/* What a scheduled payment was written down as before: the category it was
+   given when it was logged from here, otherwise whatever the latest record
+   settling it says - and the account that pays it. */
+function calMemory(it){
+  var last=null, svc=String(it.service||'');
+  txAll().forEach(function(t){
+    if(t.k==='e'&&t.sched&&schedSvc(t.sched)===svc&&(!last||t.date>last.date)) last=t;
+  });
+  var seen=pref('calCat',{})||{}, sub=seen[svc]||(last&&last.sub)||'';
+  if(!(sub&&D.subMap&&D.subMap[sub])||isXferSub(sub)) sub='';
+  var acc=(it.account&&D.accMap&&D.accMap[it.account])?it.account:
+          ((last&&D.accMap&&D.accMap[last.account])?last.account:'');
+  return {sub:sub,account:acc};
+}
+/* the tick: in one go when the app knows how this payment is written down,
+   otherwise the add sheet, filled in - which is also how it learns */
+function payOcc(it,o,key){ if(!quickPay(it,o,key)) logOcc(it,o,key); }
+/* One tap: the payment is written down straight away, at the Calendar
+   price, with its category and account - and three seconds to take it back
+   or to open it and change something (a new price, a different card). */
+function quickPay(it,o,key){
+  var mem=calMemory(it);
+  if(!mem.sub||!mem.account) return false;
+  var cur=String(currencyOf(mem.account)||'UAH').toUpperCase(), amt=calAmount(it,cur);
+  if(!amt) return false;
+  commitUndo();
+  var sub=D.subMap[mem.sub];
+  /* logged late it still belongs on the day it was due; paid early, it
+     happened today. A bill paid from home is never part of a trip. */
+  var s={kind:'e',id:newId(),date:(o&&o<=D.today)?o:D.today,amount:amt,account:mem.account,
+         main:(sub&&sub.main)||'',sub:mem.sub,shop:it.service||'',note:it.notes||'',flags:[],sched:key||'',trip:''};
+  var payload={kind:'e',id:s.id,row:0,was:{date:'',amount:0,account:''},date:s.date,amount:amt,currency:cur,
+               account:s.account,main:s.main,sub:s.sub,source:'',shop:s.shop,note:s.note,flags:[],
+               sched:s.sched,trip:'',rid:newRid()};
+  var cid='p'+(++S.cid), row=localTx(s,cur,cid);
+  S.pending[cid]=row; D.tx.push(row);
+  prep(); render(true);
+  function drop(){ delete S.pending[cid]; D.tx=D.tx.filter(function(x){ return x.cid!==cid; }); }
+  holdAction('Paid · '+strip(it.service||'payment'),{
+    commit:function(leaving){
+      /* on its way out the page may not live to hear back: a copy waits in
+         the outbox too, and the request id makes the second one a no-op */
+      var qid='';
+      if(leaving===true){ qid='u'+payload.rid; qPush(qid,'addTx',payload); }
+      bg('addTx',payload,function(){ if(qid) qRemove(qid); delete S.pending[cid]; },
+                         function(){ if(qid) qRemove(qid); drop(); });
+    },
+    revert:function(){ drop(); rebuildTx(); prep(); render(true); },
+    edit:function(){ logOcc(it,o,key); }
+  });
+  return true;
 }
 /* Something like it may already be in the list - typed in by hand before
    the tick was pressed. Those are offered first, so one payment is never
@@ -3105,7 +3427,7 @@ function openPayChoice(it,target,paidRec,cands,st){
 function payNow(o){
   var c=S.payc, it=c&&calItem(c.row); if(!it) return;
   closeModal();
-  logOcc(it,o,schedKey(it,o));
+  payOcc(it,o,schedKey(it,o));
 }
 function linkOcc(k,row){
   var c=S.payc, it=c&&calItem(c.row), t=findTx(k,row);
@@ -3437,12 +3759,12 @@ function openAccount(name){
      tile('Spent',bmoney(spent,0),anyHidden()?'#191713':RED)+
      tile('Received',bmoney(got,0),anyHidden()?'#191713':GREEN)+'</div>';
 
-  if(a.card||a.expiry){
-    h+='<div class="sect"><span>Card</span><span class="r">tap to copy</span></div>'+
-       '<div class="glass kvcard">'+
-       (a.card?copyRow('Number',groupCard(a.card),a.card,'Card number'):'')+
-       (a.expiry?copyRow('Expires',a.expiry,a.expiry,'Expiry date'):'')+
-       '</div>';
+  /* the card number is not kept on the phone: it is fetched when you tap
+     Show, stays for a minute and is forgotten when this sheet closes */
+  S.accOpen=a.name;
+  if(a.card||a.expiry||a.hasCard||a.hasExpiry){
+    h+='<div class="sect"><span>Card</span></div>'+
+       '<div class="glass kvcard" id="cardbox">'+cardBox(a)+'</div>';
   }
 
   var rows=kv('Type',esc(strip(bankType(a.type))));
@@ -3475,6 +3797,51 @@ function openAccount(name){
 var COPY_ICON='<svg class="copyic" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2.5"></rect><path d="M5 15h-.5A1.5 1.5 0 0 1 3 13.5v-9A1.5 1.5 0 0 1 4.5 3h9A1.5 1.5 0 0 1 15 4.5V5"></path></svg>';
 
 function groupCard(s){ return String(s||'').replace(/\D/g,'').replace(/(.{4})/g,'$1 ').trim(); }
+function cardShown(name){ return (S.cardShown&&S.cardShown[name])||null; }
+function cardBox(a){
+  if(PRIV.all) return kv('Number',DOTS)+((a.expiry||a.hasExpiry)?kv('Expires',DOTS):'');
+  var c=cardShown(a.name);
+  if(c){
+    return (c.card?copyRow('Number',groupCard(c.card),c.card,'Card number'):'')+
+           (c.expiry?copyRow('Expires',c.expiry,c.expiry,'Expiry date'):'')+
+           '<button class="kvmore" onclick="hideCards()">Hide</button>';
+  }
+  return '<button class="copyrow" id="cardshow" onclick="showCard('+q(a.name)+')">'+
+    '<span class="copylab">'+((a.card||a.hasCard)?'Number':'Expires')+'</span>'+
+    '<span class="copyval">'+((a.card||a.hasCard)?(a.last4?'•••• '+esc(a.last4):'••••'):'••/••')+'</span>'+
+    '<span class="cardshow">Show</span></button>';
+}
+function showCard(name){
+  var a=D&&D.accMap&&D.accMap[name]; if(!a) return;
+  /* a sheet script from before this version still sends it along */
+  if(a.card||a.expiry){ cardReady(name,{card:a.card,expiry:a.expiry}); return; }
+  if(offline()){ toast('Showing the card number needs a connection'); return; }
+  var b=document.getElementById('cardshow');
+  if(b){ b.disabled=true; var l=b.querySelector('.cardshow'); if(l) l.textContent='Loading…'; }
+  API.call('cardDetails',{name:name},function(err,res){
+    if(err||!res){
+      toast(netErr(err)?'Showing the card number needs a connection':String(err||'Could not get it'),4000);
+      cardRedraw(); return;
+    }
+    cardReady(name,res);
+  });
+}
+function cardReady(name,res){
+  S.cardShown={}; S.cardShown[name]={card:String(res.card||'').replace(/\s+/g,''),expiry:String(res.expiry||'')};
+  clearTimeout(S.cardT); S.cardT=setTimeout(hideCards,60000);
+  cardRedraw();
+}
+function hideCards(){ clearTimeout(S.cardT); S.cardShown={}; cardRedraw(); }
+function cardRedraw(){
+  var el=document.getElementById('cardbox'), a=S.accOpen&&D&&D.accMap&&D.accMap[S.accOpen];
+  if(el&&a) el.innerHTML=cardBox(a);
+}
+/* put away, the phone forgets them at once */
+try{
+  document.addEventListener('visibilitychange',function(){
+    if(document.visibilityState==='hidden'&&S.cardShown&&Object.keys(S.cardShown).length) hideCards();
+  });
+}catch(e){}
 
 function copyRow(label,shown,value,what){
   if(PRIV.all) return kv(label,DOTS);
@@ -4845,6 +5212,9 @@ function saveSheet(){
       if(t&&backup) for(var k2 in backup) if(backup.hasOwnProperty(k2)) t[k2]=backup[k2];
       if(mate&&mateBackup) for(var k3 in mateBackup) if(mateBackup.hasOwnProperty(k3)) mate[k3]=mateBackup[k3];
     });
+    /* a payment from the Calendar whose amount was just changed */
+    if(s.kind==='e'&&!xfer&&!wasReceipt&&s.sched&&backup&&Math.abs(Math.abs(Number(backup.amount)||0)-amt)>1e-9)
+      priceCheck(schedSvc(s.sched),amt,cur);
     return;
   }
 
@@ -4911,7 +5281,47 @@ function saveSheet(){
   bg('addTx',payload,function(){ delete S.pending[cid]; },function(){
     D.tx=D.tx.filter(function(x){ return x.cid!==cid; });
   });
+  if(s.kind==='e'&&(s.calSvc||s.sched)) priceCheck(s.calSvc||schedSvc(s.sched),amt,cur);
 }
+/* ---- a subscription that changed its price ------------------------------
+   A Calendar payment written down for a different amount than the Calendar
+   says: the app offers to take the new price, so next month's tick is right.
+   In the payment's own currency that is the new price, exactly. Paid in
+   another currency, exchange rates and bank fees move the amount a little
+   every month, so only a clear jump is mentioned - and the Calendar entry
+   opens for the real new price to be typed in. */
+function calBySvc(svc){
+  var list=(D.calendar&&D.calendar.items)||[];
+  for(var i=0;i<list.length;i++) if(list[i].service===svc) return list[i];
+  return null;
+}
+function priceCheck(svc,amt,cur){
+  var it=svc&&calBySvc(svc); if(!it) return;
+  var own=String(it.currency||'UAH').toUpperCase(), cost=Math.abs(Number(it.cost)||0);
+  cur=String(cur||'UAH').toUpperCase(); amt=Math.abs(Number(amt)||0);
+  if(!cost||!amt) return;
+  var name=strip(it.service);
+  if(own===cur){
+    var p=Math.pow(10,decOf(own)), paid=Math.round(amt*p)/p;
+    if(Math.abs(paid-cost)<0.5/p) return;
+    S.priceOffer={row:it.row,cost:paid};
+    toastAction(PRIV.all?(name+' was paid at a new price'):(name+' now costs '+(own==='UAH'?money(paid,2):numStr(paid)+' '+own)),'Update Calendar','applyPrice()',8000);
+  }else{
+    var conv=amt*rateOf(cur)/(rateOf(own)||1);
+    if(Math.abs(conv-cost)/cost<=0.06) return;
+    S.priceOffer={row:it.row,cost:null};
+    toastAction('Did '+name+' change its price?','Edit price','editPrice()',8000);
+  }
+}
+function applyPrice(){
+  var o=S.priceOffer; S.priceOffer=null; hideAction();
+  var it=o&&calItem(o.row); if(!it||o.cost===null) return;
+  var was={cost:it.cost,uah:it.uah};
+  it.cost=o.cost; it.uah=o.cost*rateOf(it.currency||'UAH');
+  render(true); toast('Calendar updated');
+  bg('saveCalendar',{edits:[{row:it.row,cost:o.cost}]},null,function(){ it.cost=was.cost; it.uah=was.uah; });
+}
+function editPrice(){ var o=S.priceOffer; S.priceOffer=null; hideAction(); if(o) openCalEdit(o.row); }
 /* ------------------------------------------------- reorder inside a day */
 
 var TRASH_ICON='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5h16M9.5 6.5V4.6h5V6.5M6.4 6.5l.9 13a1.6 1.6 0 0 0 1.6 1.5h6.2a1.6 1.6 0 0 0 1.6-1.5l.9-13"/><path d="M10.4 10.5v6.6M13.6 10.5v6.6"/></svg>';
@@ -5407,6 +5817,7 @@ function drawSettings(){
       pref('rcpOpen',true)!==false?'Their lines show straight away':'They start folded up',
       pref('rcpOpen',true)!==false,'toggleRcpOpen()')+
     navRow('Trip mode',tripNow()?('✈️ '+tripNow().name+' · day '+tripDay(tripNow())):'Off','drawTrip()')+
+    (inGas()?'':navRow('Notifications',pushIsOn()?'On':'Off','openNotify()'))+
     '</div>';
   var orph=orphanCount();
   if(orph) h+='<p class="tiny" style="margin:10px 4px 0;color:#c73e2d">'+orph+' record'+(orph>1?'s':'')+' still name a category that is no longer in these lists. They are counted as usual — renaming the surviving one is how you fold them back in.</p>';
@@ -6500,6 +6911,8 @@ function closeModal(){
   /* the panels that own an amount let go of it here, so the pad can never
      be handed a target that is no longer on screen */
   S.line=null; S.qonce=null; S.shop=null;
+  S.accOpen=null; S.monthsOpen=false; S.notifyOpen=false;
+  if(S.cardShown){ S.cardShown={}; clearTimeout(S.cardT); }
   document.getElementById('modal').innerHTML='';
 }
 function saveLimits(){
@@ -6619,13 +7032,14 @@ window.__S=S;
    As a website, a small service worker keeps these files on the phone, so
    the app opens instantly and with no signal. A new version is fetched in
    the background; when it arrives, a note offers to switch to it. */
-var APP_VERSION='2026.09.29.4';
+var APP_VERSION='2026.09.29.5';
 (function(){
   try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persist(); }catch(e){}
   if(inGas()||!('serviceWorker' in navigator)) return;
   if(!/^https:$/.test(location.protocol)&&!/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) return;
   navigator.serviceWorker.addEventListener('message',function(ev){
     if(ev.data&&ev.data.type==='updated') showUpdate();
+    if(ev.data&&ev.data.type==='go') openFromNotification(ev.data.tab);
   });
   window.addEventListener('load',function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });
 })();
@@ -6636,9 +7050,306 @@ function showUpdate(){
   d.innerHTML='<span>A new version is ready</span><button onclick="location.reload()">Update</button>';
   document.body.appendChild(d);
 }
+/* ---- notifications -------------------------------------------------------
+   The app on the Home Screen can get notifications (iPhone: iOS 16.4 or
+   later). This phone makes its own signing key, signs a pass for each of the
+   next four weeks and hands them to the spreadsheet, which spends one a day
+   to ring the phone; opening the app tops them up. The ring carries no text:
+   the service worker asks the spreadsheet what it is about and shows that,
+   so nothing about your money passes through Apple's servers. No amounts. */
+var DEV_KEY='budget.dev', PUSH_KEY='budget.push', VAPID_KEY='budget.vapid', CONN_CACHE='budget-conn';
+function devId(){
+  try{
+    var d=localStorage.getItem(DEV_KEY)||'';
+    if(!/^[A-Za-z0-9_-]{8,40}$/.test(d)){ d='d'+Date.now().toString(36)+Math.random().toString(36).slice(2,10); localStorage.setItem(DEV_KEY,d); }
+    return d;
+  }catch(e){ return 'dnostorage'; }
+}
+function pushState(){ try{ return JSON.parse(localStorage.getItem(PUSH_KEY)||'null'); }catch(e){ return null; } }
+function setPushState(o){ try{ if(o) localStorage.setItem(PUSH_KEY,JSON.stringify(o)); else localStorage.removeItem(PUSH_KEY); }catch(e){} }
+function isIOS(){ return /iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1); }
+function isStandalone(){ try{ return !!((window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true); }catch(e){ return false; } }
+function pushSupported(){
+  return !inGas()&&!!window.isSecureContext&&('serviceWorker' in navigator)&&('PushManager' in window)&&
+         ('Notification' in window)&&!!(window.crypto&&crypto.subtle);
+}
+function pushBlocker(){
+  if(inGas()) return 'Notifications work in the app on your Home Screen (the website version), not in this one.';
+  if(isIOS()&&!isStandalone()) return 'On iPhone, notifications only work in the app on your Home Screen. Open Budget from its Home Screen icon and come back here.';
+  if(!pushSupported()) return isIOS()?'This iPhone needs iOS 16.4 or later for app notifications.':'This browser cannot show notifications from web apps.';
+  if(Notification.permission==='denied') return isIOS()?'Notifications are blocked for Budget. Allow them in the iPhone Settings → Notifications → Budget, then come back here.':'Notifications are blocked for this site in the browser settings.';
+  return '';
+}
+function pushIsOn(){ return !!pushState()&&pushSupported()&&Notification.permission==='granted'; }
+function b64u(buf){
+  var b=new Uint8Array(buf), s='';
+  for(var i=0;i<b.length;i++) s+=String.fromCharCode(b[i]);
+  return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+function b64uText(t){ return b64u(new TextEncoder().encode(t)); }
+function unb64u(s){
+  s=String(s).replace(/-/g,'+').replace(/_/g,'/');
+  while(s.length%4) s+='=';
+  var b=atob(s), a=new Uint8Array(b.length);
+  for(var i=0;i<b.length;i++) a[i]=b.charCodeAt(i);
+  return a;
+}
+/* this phone's own signing key: made once and kept here. Only its public
+   half ever leaves - to the push service and the spreadsheet. */
+function vapidKeys(){
+  if(S.vapid) return Promise.resolve(S.vapid);
+  var sc=crypto.subtle, alg={name:'ECDSA',namedCurve:'P-256'}, saved=null;
+  try{ saved=JSON.parse(localStorage.getItem(VAPID_KEY)||'null'); }catch(e){}
+  function make(){
+    return sc.generateKey(alg,true,['sign','verify']).then(function(kp){
+      return Promise.all([sc.exportKey('jwk',kp.privateKey),sc.exportKey('raw',kp.publicKey)]).then(function(x){
+        var pub=b64u(x[1]);
+        try{ localStorage.setItem(VAPID_KEY,JSON.stringify({jwk:x[0],pub:pub})); }catch(e){}
+        return {priv:kp.privateKey,pub:pub};
+      });
+    });
+  }
+  var p=(saved&&saved.jwk&&saved.pub)
+    ? sc.importKey('jwk',saved.jwk,alg,false,['sign']).then(function(k){ return {priv:k,pub:saved.pub}; },make)
+    : make();
+  return p.then(function(v){ v.raw=unb64u(v.pub); S.vapid=v; return v; });
+}
+/* a pass: who may ring (this app), which push service it is for, and until when */
+function signJwt(v,aud,exp){
+  var head=b64uText(JSON.stringify({typ:'JWT',alg:'ES256'}));
+  var body=b64uText(JSON.stringify({aud:aud,exp:exp,sub:/^https:/.test(location.origin)?location.origin:'mailto:budget@example.com'}));
+  return crypto.subtle.sign({name:'ECDSA',hash:{name:'SHA-256'}},v.priv,new TextEncoder().encode(head+'.'+body))
+    .then(function(sig){ return head+'.'+body+'.'+b64u(sig); });
+}
+/* one for right now and one for each of the next four weeks' days - each
+   ends at 04:30, well away from the 10:00 and 21:00 checks */
+function jwtBatch(v,aud){
+  var now=Math.floor(Date.now()/1000), d=new Date();
+  d.setHours(4,30,0,0);
+  var first=Math.floor(d.getTime()/1000);
+  while(first<=now+600) first+=86400;
+  var list=[now+23*3600];
+  for(var i=0;i<28;i++) list.push(first+i*86400);
+  return Promise.all(list.map(function(e){ return signJwt(v,aud,e).then(function(t){ return {e:e,t:t}; }); }))
+    .then(function(a){ a.sort(function(x,y){ return x.e-y.e; }); return a; });
+}
+function sameKey(sub,raw){
+  try{
+    var k=sub&&sub.options&&sub.options.applicationServerKey;
+    if(!k) return true;
+    var a=new Uint8Array(k);
+    if(a.length!==raw.length) return false;
+    for(var i=0;i<a.length;i++) if(a[i]!==raw[i]) return false;
+    return true;
+  }catch(e){ return true; }
+}
+function swReady(ms){
+  return Promise.race([navigator.serviceWorker.ready,new Promise(function(res,rej){
+    setTimeout(function(){ rej(new Error('The app is still setting itself up — close it, open it again and try once more.')); },ms||8000);
+  })]);
+}
+/* The service worker cannot read this page's storage. When notifications
+   are on it finds the link, the key and this phone's id here; otherwise
+   nothing is kept here. */
+function mirrorConn(){
+  try{
+    if(inGas()||!window.caches) return;
+    var u=apiUrl(), k=connKey(), on=!!pushState();
+    caches.open(CONN_CACHE).then(function(c){
+      if(!u||!k||!on) return c.delete('conn');
+      return c.put('conn',new Response(JSON.stringify({u:u,k:k,dev:devId()}),{headers:{'Content-Type':'application/json'}}));
+    }).catch(function(){});
+  }catch(e){}
+}
+/* what the Turn on button needs is made ready beforehand: on iPhone the
+   permission question has to come straight from the tap */
+function pushPrep(){
+  if(pushBlocker()) return;
+  Promise.all([swReady(8000),vapidKeys()]).then(function(x){
+    var reg=x[0], v=x[1];
+    return reg.pushManager.getSubscription().then(function(sub){
+      /* one made with another key cannot be used - it goes */
+      if(sub&&!sameKey(sub,v.raw)) return sub.unsubscribe().then(function(){ return null; },function(){ return null; });
+      return sub;
+    }).then(function(sub){ S.pushPrep={reg:reg,v:v,sub:sub}; });
+  }).catch(function(e){ S.pushPrep={err:String((e&&e.message)||e)}; })
+    .then(function(){ if(S.notifyOpen) drawNotify(); });
+}
+function openNotify(){ S.notifyOpen=true; S.pushPrep=null; drawNotify(); pushPrep(); }
+function notifyBack(){ S.notifyOpen=false; backToSettings(); }
+function drawNotify(){
+  var h=sheetTop('Notifications','','notifyBack()'), why=pushBlocker(), P=S.pushPrep;
+  if(why){
+    h+='<div class="glass" style="padding:16px 18px"><p class="tiny" style="margin:0;line-height:1.45">'+esc(why)+'</p></div>';
+  }else if(!pushIsOn()){
+    var ready=!!(P&&P.reg);
+    h+='<div class="hero" style="padding:18px 20px"><div class="eyebrow">What you get</div><div class="nlist">'+
+         '<p><b>Payments due today</b> — around 10:00, from the Calendar.</p>'+
+         '<p><b>An evening reminder</b> — around 21:00, only when nothing is written down for the day.</p>'+
+         '<p><b>Over a monthly limit</b> — once per category a month.</p>'+
+       '</div></div>'+
+       '<p class="tiny" style="margin:12px 4px 0">They never show amounts, and nothing about your money passes through Apple’s servers: a notification only wakes the app, which asks your spreadsheet what to say.</p>'+
+       '<button class="paybtn" id="pushgo" onclick="pushTurnOn()"'+(ready?'':' disabled')+'>'+
+         (ready?'Turn on notifications':(P&&P.err?'Not available right now':'Getting ready…'))+'</button>'+
+       (P&&P.err?'<p class="tiny" style="margin:10px 4px 0;color:#c73e2d">'+esc(P.err)+'</p>':'');
+  }else{
+    var n=pref('notify',{})||{};
+    h+='<div class="glass" style="padding:4px 0">'+
+         swRow('Payments due today','Around 10:00 · from the Calendar',n.due!==false,"toggleNotify('due')")+
+         swRow('Evening reminder','Around 21:00 · only if nothing is written down',n.evening!==false,"toggleNotify('evening')")+
+         swRow('Over a monthly limit','Once per category a month',n.limits!==false,"toggleNotify('limits')")+
+       '</div>'+
+       '<p class="tiny" style="margin:10px 4px 0">These three are shared by every phone connected to the spreadsheet. The times follow the spreadsheet’s time zone.</p>'+
+       '<button class="ghostbtn" id="pushtest" onclick="sendTestPush()">Send a test notification</button>'+
+       '<button class="delbtn" onclick="pushTurnOff()">Turn off on this phone</button>';
+  }
+  h+=sheetEnd();
+  document.getElementById('modal').innerHTML=h;
+}
+function askPermission(){
+  return new Promise(function(res){
+    if(Notification.permission!=='default'){ res(Notification.permission); return; }
+    var r=Notification.requestPermission(function(x){ res(x); });
+    if(r&&r.then) r.then(res,function(){ res('default'); });
+  });
+}
+function pushTurnOn(){
+  var P=S.pushPrep;
+  if(!P||!P.reg){ toast('Getting ready — try again in a moment'); return; }
+  var b=document.getElementById('pushgo'); if(b){ b.disabled=true; b.textContent='Turning on…'; }
+  /* subscribing asks the permission question itself, and it is called
+     straight from the tap, with nothing awaited first - iPhone insists */
+  var opts={userVisibleOnly:true,applicationServerKey:P.v.raw};
+  function notAllowed(){
+    return new Error(Notification.permission==='denied'
+      ?'Notifications were not allowed. You can allow them in the iPhone Settings → Notifications → Budget.'
+      :'Notifications were not turned on.');
+  }
+  (P.sub?Promise.resolve(P.sub):P.reg.pushManager.subscribe(opts).catch(function(e){
+    /* a browser that wants the question asked on its own first */
+    if(Notification.permission!=='default') throw (Notification.permission==='denied'?notAllowed():e);
+    return askPermission().then(function(perm){
+      if(perm!=='granted') throw notAllowed();
+      return P.reg.pushManager.subscribe(opts);
+    });
+  })).then(function(sub){
+    P.sub=sub;
+    return pushRegister(sub,P.v);
+  }).then(function(r){
+    if(r&&r.triggers===false) toast('Almost there: in the spreadsheet choose Budget → Set up notifications once.',7000);
+    else toast('Notifications are on');
+    if(S.notifyOpen) drawNotify();
+  }).catch(function(e){
+    toast(String((e&&e.message)||e||'Could not turn them on'),7000);
+    if(S.notifyOpen) drawNotify();
+  });
+}
+function pushRegister(sub,v){
+  var ep=sub.endpoint, aud=new URL(ep).origin;
+  return jwtBatch(v,aud).then(function(jwts){
+    return new Promise(function(res,rej){
+      API.call('savePushSub',{id:devId(),endpoint:ep,pub:v.pub,jwts:jwts},function(err,r){
+        if(err){
+          rej(new Error(/Unknown action/.test(String(err))
+            ?'The spreadsheet still runs the old script: paste the new Code.gs and update the deployment first.'
+            :String(err)));
+          return;
+        }
+        setPushState({ep:ep,until:jwts[jwts.length-1].e});
+        mirrorConn();
+        res(r||{});
+      });
+    });
+  });
+}
+function pushTurnOff(){
+  pushForget(function(){
+    toast('Notifications are off on this phone');
+    if(S.notifyOpen){ S.pushPrep=null; drawNotify(); pushPrep(); }
+  });
+}
+/* the sheet stops ringing this phone, and the phone stops listening */
+function pushForget(done){
+  var had=!!pushState();
+  if(had&&connKey()) API.call('deletePushSub',{id:devId()},function(){});
+  setPushState(null);
+  mirrorConn();
+  function fin(){ if(done) done(); }
+  if(!had||!pushSupported()){ fin(); return; }
+  swReady(3000).then(function(reg){ return reg.pushManager.getSubscription(); })
+    .then(function(sub){ return sub&&sub.unsubscribe(); }).then(fin,fin);
+}
+function sendTestPush(){
+  var b=document.getElementById('pushtest'); if(b){ b.disabled=true; b.textContent='Sending…'; }
+  API.call('pushTest',{id:devId()},function(err){
+    var x=document.getElementById('pushtest'); if(x){ x.disabled=false; x.textContent='Send a test notification'; }
+    if(err){
+      toast(/not set up/.test(String(err))?'The spreadsheet does not know this phone any more — turn notifications off and on again.':String(err),7000);
+      return;
+    }
+    toast('Sent — it arrives in a few seconds');
+  });
+}
+function toggleNotify(k){
+  var n={}, cur=pref('notify',{})||{};
+  for(var x in cur) if(cur.hasOwnProperty(x)) n[x]=cur[x];
+  n[k]=(n[k]===false);
+  setPref('notify',n);
+  drawNotify();
+}
+/* On every start: the phone still has the subscription the spreadsheet
+   knows, and the passes reach at least two weeks ahead. */
+function pushCheck(){
+  var st=pushState();
+  if(!st||!pushSupported()||Notification.permission!=='granted'||!connKey()) return;
+  mirrorConn();
+  swReady(8000).then(function(reg){
+    return Promise.all([reg.pushManager.getSubscription(),vapidKeys()]).then(function(x){
+      var sub=x[0], v=x[1];
+      if(sub&&sameKey(sub,v.raw)&&sub.endpoint===st.ep){
+        if(Number(st.until||0)-Date.now()/1000>14*86400) return;
+        return jwtBatch(v,new URL(st.ep).origin).then(function(jwts){
+          API.call('savePushJwts',{id:devId(),jwts:jwts},function(err){
+            if(!err){ st.until=jwts[jwts.length-1].e; setPushState(st); return; }
+            /* the spreadsheet no longer knows this phone: sign it up again */
+            if(/NO_PUSH/.test(String(err))) pushRegister(sub,v).catch(function(){});
+          });
+        });
+      }
+      /* the phone replaced its subscription: the new one is handed over */
+      var go=(sub&&sameKey(sub,v.raw))?Promise.resolve(sub):
+        (sub?sub.unsubscribe():Promise.resolve()).then(function(){
+          return reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:v.raw});
+        });
+      return go.then(function(s2){ return pushRegister(s2,v); });
+    });
+  }).catch(function(){});
+}
+function clearBadge(){ try{ if(navigator.clearAppBadge) navigator.clearAppBadge().catch(function(){}); }catch(e){} }
+/* a tapped notification opens the tab it is about */
+function openFromNotification(tab){
+  clearBadge();
+  if(TABS.indexOf(tab)<0) return;
+  if(!D||!S.landed){ S.wantTab=tab; return; }
+  closeModal();
+  if(S.tab!==tab){ S.tab=tab; S.sel=null; S.selDel=0; render(); }
+}
+function goTabFromUrl(){
+  try{
+    var m=location.search.match(/[?&]tab=([A-Za-z]+)/);
+    if(!m) return;
+    if(TABS.indexOf(m[1])>=0) S.wantTab=m[1];
+    history.replaceState(null,'',location.pathname);
+  }catch(e){}
+}
+function landTab(){ var t=S.wantTab; S.wantTab=null; return (t&&TABS.indexOf(t)>=0)?t:(tabOrder()[0]||S.tab); }
+try{ document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='visible') clearBadge(); }); }catch(e){}
+
 /* ================================================================ boot */
 loadPriv();
 loadUI();
+goTabFromUrl();
+clearBadge();
 load();
 </script>
 </body>
