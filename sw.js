@@ -4,10 +4,15 @@
 
    Every open is served from what is kept here, and the newest version is
    fetched in the background at the same time. When the app itself has
-   changed, the page is told, and it offers to switch. */
-var CACHE = 'budget-v1';
+   changed, the page is told, and it offers to switch.
+
+   Notifications: a push from the spreadsheet carries no text at all. When
+   one arrives, this asks the spreadsheet what it is about - with the link
+   and key the app leaves in the 'budget-conn' store while notifications
+   are on - and shows that. */
+var CACHE = 'budget-v3', CONN = 'budget-conn';
 var SHELL = ['./', 'index.html', 'config.js', 'manifest.webmanifest',
-             'icon-180.png', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png'];
+             'coin-180.png', 'coin-192.png', 'coin-512.png'];
 
 self.addEventListener('install', function (e) {
   e.waitUntil(caches.open(CACHE)
@@ -17,7 +22,10 @@ self.addEventListener('install', function (e) {
 
 self.addEventListener('activate', function (e) {
   e.waitUntil(caches.keys()
-    .then(function (keys) { return Promise.all(keys.filter(function (k) { return k !== CACHE; }).map(function (k) { return caches.delete(k); })); })
+    .then(function (keys) {
+      return Promise.all(keys.filter(function (k) { return k !== CACHE && k !== CONN; })
+        .map(function (k) { return caches.delete(k); }));
+    })
     .then(function () { return self.clients.claim(); }));
 });
 
@@ -61,5 +69,51 @@ self.addEventListener('fetch', function (e) {
       return fresh.then(function () { return c.match(key, { ignoreSearch: true }); })
         .then(function (h2) { return h2 || fetch(req); });
     });
+  }));
+});
+
+/* ---- notifications ---------------------------------------------------- */
+/* what the spreadsheet has to say - null when it cannot be asked in time */
+function inbox() {
+  return caches.open(CONN).then(function (c) { return c.match('conn'); })
+    .then(function (r) { return r ? r.json() : null; })
+    .then(function (conn) {
+      if (!conn || !conn.u || !conn.k) return null;
+      var ask = fetch(conn.u, { method: 'POST', body: JSON.stringify({ k: conn.k, f: 'pushInbox', a: { id: conn.dev } }) })
+        .then(function (r) { return r.json(); })
+        .then(function (o) { return (o && o.ok && o.r) ? o.r : null; });
+      var late = new Promise(function (res) { setTimeout(function () { res(null); }, 8000); });
+      return Promise.race([ask, late]);
+    })
+    .catch(function () { return null; });
+}
+
+/* every push has to show something - the phone stops delivering them to an
+   app that stays quiet - so when the spreadsheet cannot be reached, a plain
+   note says there is something to look at */
+self.addEventListener('push', function (e) {
+  e.waitUntil(inbox().then(function (box) {
+    var list = (box && box.list && box.list.length) ? box.list : ((box && box.last) ? [box.last] : null);
+    if (!list) list = [{ title: 'Budget', body: 'Something new — open the app to see it.', tag: 'budget' }];
+    return Promise.all(list.map(function (m) {
+      return self.registration.showNotification(m.title || 'Budget', {
+        body: m.body || '', tag: m.tag || 'budget', icon: 'coin-192.png', badge: 'coin-192.png',
+        data: { tab: m.tab || '' }
+      });
+    })).then(function () {
+      if (self.navigator && self.navigator.setAppBadge) return self.navigator.setAppBadge(list.length).catch(function () {});
+    });
+  }));
+});
+
+/* tapped: the app comes forward on the tab the notification is about */
+self.addEventListener('notificationclick', function (e) {
+  var tab = (e.notification.data && e.notification.data.tab) || '';
+  e.notification.close();
+  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (cs) {
+    for (var i = 0; i < cs.length; i++) {
+      if ('focus' in cs[i]) { cs[i].postMessage({ type: 'go', tab: tab }); return cs[i].focus(); }
+    }
+    return self.clients.openWindow('./' + (tab ? '?tab=' + encodeURIComponent(tab) : ''));
   }));
 });
