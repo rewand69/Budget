@@ -11,8 +11,8 @@
 <meta name="theme-color" content="#fdfcfb">
 <meta name="referrer" content="no-referrer">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="icon-180.png">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="coin-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="coin-192.png">
 <!-- the address of your script's private link; see config.js -->
 <script src="config.js"></script>
 <style>
@@ -1142,8 +1142,7 @@ function needsConnect(){ return !inGas()&&!window.MOCK&&!(apiUrl()&&connKey()); 
 function apiFetch(body,cb){
   var url=apiUrl();
   if(!url){ cb('No script link yet'); return; }
-  fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body),
-             redirect:'follow',cache:'no-store',credentials:'omit'})
+  fetch(url,{method:'POST',body:JSON.stringify(body)})
     .then(function(r){ return r.text().then(function(t){ return {status:r.status,text:t}; }); })
     .then(function(x){
       var o=null; try{ o=JSON.parse(x.text); }catch(e){}
@@ -1184,8 +1183,28 @@ function drawConnect(msg){
     '<input id="c_code" class="tinput codein" inputmode="numeric" autocomplete="one-time-code" maxlength="7" placeholder="000000" onkeydown="if(event.key===\'Enter\')doConnect()">'+
     '<button class="paybtn" id="c_go" onclick="doConnect()">Connect</button>'+
     (msg?'<p class="err">'+esc(msg)+'</p>':'')+
+    (msg&&/^Network error/.test(msg)&&apiUrl()?connectHelp():'')+
   '</div>';
 }
+/* A request that never came back is almost always the script link itself:
+   the wrong deployment, or one that still wants a Google sign-in. Opening
+   it shows which. */
+function connectHelp(){
+  var u=apiUrl(), fromConfig=okUrl(window.BUDGET_API);
+  return '<div class="glass" style="margin-top:14px;padding:14px 16px">'+
+    '<p class="tiny" style="margin:0">The app could not reach your script. Open the link it uses \u2014 it should say <b>\u201cThis link is for the Budget phone app.\u201d</b></p>'+
+    '<a class="paybtn" style="display:block;text-align:center;text-decoration:none;margin-top:12px" href="'+esc(u)+'" target="_blank" rel="noopener">Open the link</a>'+
+    '<p class="tiny" style="margin:12px 0 0;word-break:break-all;opacity:.7">'+esc(u)+'</p>'+
+    '<ul class="steps" style="font-size:13px">'+
+      '<li>A Google sign-in page: the deployment\u2019s <b>Who has access</b> must be <b>Anyone</b>.</li>'+
+      '<li>Your budget app: that is the old link \u2014 use the one from the new deployment.</li>'+
+      '<li>\u201cScript function not found\u201d: the deployment has older code \u2014 Manage deployments \u2192 pencil \u2192 New version.</li>'+
+    '</ul>'+
+    (fromConfig?'<p class="tiny" style="margin:8px 0 0">The link comes from config.js on GitHub \u2014 fix it there if it is wrong.</p>'
+               :'<button class="kvmore" onclick="forgetUrl()">Paste a different link</button>')+
+  '</div>';
+}
+function forgetUrl(){ try{ localStorage.removeItem(CONN_URL); }catch(e){} drawConnect(); }
 function doConnect(){
   var ue=document.getElementById('c_url'), ce=document.getElementById('c_code'), b=document.getElementById('c_go');
   var u=ue?ue.value.trim():'', code=((ce&&ce.value)||'').replace(/\D/g,'');
@@ -3856,9 +3875,13 @@ function fpill(label,arr,onclick){
    still on its way. */
 function unbalanced(t){
   if(!t||t.pending) return false;
-  if(isReceipt(t)) return Math.abs(receiptLeft(t))>0.005;
+  /* "nothing" means less than the smallest step the record's own currency
+     has: a kopeck for hryvnias, but a hundred-millionth for a coin - or a
+     perfectly real 0.001 BTC would count as no amount at all */
+  var tiny=0.5/Math.pow(10,decOf(t.currency||'UAH'));
+  if(isReceipt(t)) return Math.abs(receiptLeft(t))>tiny;
   if(isCorr(t)) return false;
-  if(Math.abs(Number(t.amount)||0)<0.005) return true;
+  if(Math.abs(Number(t.amount)||0)<tiny) return true;
   if(t.k==='i') return !s2_(t.source);
   if(isXfer(t)) return false;
   return !s2_(t.sub)&&!s2_(t.main)&&!flagList(t).length;
@@ -5665,9 +5688,9 @@ function linesOf(id){
   return out;
 }
 function receiptLeft(t){
-  var spent=0;
+  var spent=0, p=Math.pow(10,decOf(t.currency||'UAH'));
   linesOf(t.receipt).forEach(function(x){ spent+=Math.abs(Number(x.amount)||0); });
-  return Math.round(((Number(t.rtotal)||0)-spent)*100)/100;
+  return Math.round(((Number(t.rtotal)||0)-spent)*p)/p;
 }
 /* every line is drawn inside its receipt, so it must not also sit loose in the
    day list - the same rule transfers follow */
@@ -6596,7 +6619,7 @@ window.__S=S;
    As a website, a small service worker keeps these files on the phone, so
    the app opens instantly and with no signal. A new version is fetched in
    the background; when it arrives, a note offers to switch to it. */
-var APP_VERSION='2026.09.29';
+var APP_VERSION='2026.09.29.4';
 (function(){
   try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persist(); }catch(e){}
   if(inGas()||!('serviceWorker' in navigator)) return;
