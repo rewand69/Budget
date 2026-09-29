@@ -706,13 +706,43 @@ select.expname{padding:9px 10px;font-size:14px;border-radius:13px}
 .kvmore:active{background:rgba(25,23,19,.04)}
 /* saying a scheduled payment happened, from the row itself */
 .planrow{display:flex;align-items:center;gap:8px}
-.payb{flex:none;width:38px;height:38px;padding:0;border-radius:50%;
-  border:1px solid rgba(25,23,19,.10);background:rgba(25,23,19,.04);
-  color:rgba(25,23,19,.42);display:flex;align-items:center;justify-content:center}
-.payb.due{color:#fff;border-color:transparent;background:linear-gradient(160deg,#4E9A5B,#3C7F49);
-  box-shadow:0 3px 10px rgba(60,127,73,.30)}
-.payb:active{transform:scale(.92)}
-.payb svg{display:block}
+/* The tick reads like a to-do list: an empty ring is a payment still to
+   make - green when it is due today, coral when it is late - and a filled
+   green circle is one that is paid. The button is a comfortable 44px to hit;
+   the ring inside it stays small and light. */
+.payb{flex:none;width:44px;height:44px;margin-right:-4px;padding:0;border:0;background:none;
+  display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
+.payb .pring{position:relative;width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;color:transparent;
+  background:rgba(255,255,255,.7);box-shadow:inset 0 0 0 2px rgba(25,23,19,.17);
+  transition:transform .22s cubic-bezier(.3,1.6,.5,1),background .2s,box-shadow .2s,color .2s}
+.payb .pring svg{display:block;width:16px;height:16px;overflow:visible}
+.payb:active .pring{transform:scale(.84)}
+.payb.due .pring{color:rgba(35,145,79,.42);background:rgba(47,164,98,.09);
+  box-shadow:inset 0 0 0 2px #2FA462,0 0 0 4px rgba(47,164,98,.13)}
+.payb.late .pring{color:rgba(196,84,60,.45);background:rgba(208,87,62,.08);
+  box-shadow:inset 0 0 0 2px #D0573E,0 0 0 4px rgba(208,87,62,.12)}
+.payb.done .pring{color:#fff;background:linear-gradient(155deg,#4CC47F,#23914F);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.38),0 3px 9px -2px rgba(35,145,79,.55)}
+/* just ticked: the ring fills with a little spring, the check draws itself
+   and a few sparks fly off */
+.payb.pop .pring{animation:tickPop .5s cubic-bezier(.3,1.45,.5,1)}
+.payb.pop .pring svg path{stroke-dasharray:1;stroke-dashoffset:1;animation:tickDraw .32s .14s cubic-bezier(.4,0,.2,1) both}
+.payb.pop .pring::after{content:'';position:absolute;inset:0;border-radius:50%;box-shadow:0 0 0 2px rgba(47,164,98,.8);
+  animation:tickHalo .6s ease-out forwards;pointer-events:none}
+.pburst{position:absolute;left:50%;top:50%;width:0;height:0;pointer-events:none}
+.pburst s{position:absolute;left:0;top:0;width:0;height:0}
+.pburst b{position:absolute;left:-2.5px;top:-2.5px;width:5px;height:5px;border-radius:50%;background:#2FA462;opacity:0;
+  animation:tickSpark .56s .1s cubic-bezier(.2,.7,.3,1) forwards}
+.pburst s:nth-child(2n) b{background:#F2B53A;width:4px;height:4px;left:-2px;top:-2px}
+@keyframes tickPop{0%{transform:scale(.55)}55%{transform:scale(1.14)}100%{transform:scale(1)}}
+@keyframes tickDraw{0%{stroke-dashoffset:1;opacity:0}10%{opacity:1}100%{stroke-dashoffset:0;opacity:1}}
+@keyframes tickHalo{from{transform:scale(1);opacity:.75}to{transform:scale(1.85);opacity:0}}
+@keyframes tickSpark{0%{opacity:1;transform:translateY(-15px) scale(1)}100%{opacity:0;transform:translateY(-27px) scale(.3)}}
+@media (prefers-reduced-motion:reduce){
+  .payb.pop .pring,.payb.pop .pring::after,.pburst b{animation:none}
+  .payb.pop .pring svg path{animation:none;stroke-dashoffset:0}
+}
 /* the copy button stands above the pencil rather than on top of it */
 .selwrapb{flex:none;display:flex;flex-direction:column;align-items:center;gap:9px}
 .dupb{width:40px;height:40px;padding:0;
@@ -904,9 +934,6 @@ body.undoing #act .toast{bottom:calc(150px + env(safe-area-inset-bottom,0px))}
 .pstat.paid{color:#1d7a46;background:rgba(40,160,90,.13)}
 .pstat.late{color:#b0412c;background:rgba(214,88,66,.13)}
 .pstat.due{color:#8a5a00;background:rgba(223,168,58,.16)}
-.payb.done{color:#23914F;border-color:rgba(35,145,79,.30);background:rgba(40,160,90,.10)}
-.payb.late{color:#fff;border-color:transparent;background:linear-gradient(160deg,#E0765F,#C4543C);
-  box-shadow:0 3px 10px rgba(196,84,60,.30)}
 .cal .dot.paid{background:#2FA462!important}
 .cal .dot.late{background:#D0573E!important}
 .cal .dot.past{background:rgba(25,23,19,.22)!important}
@@ -1387,6 +1414,7 @@ function render(keepScroll){
   v.className=keepScroll?'':'fade';
   renderTabs(); renderFab();
   window.scrollTo(0,keepScroll?y:0);
+  if(S.justPaid){ if(S.justPaid.shown) S.justPaid=null; else S.justPaid.shown=true; }
   if(S.tab==='Activity'){ clearTimeout(render._st); render._st=setTimeout(streakCheck,900); }
 }
 
@@ -3157,15 +3185,25 @@ function pageCalendar(){
 
   h+='<div class="sect"><span>All scheduled payments</span></div>';
   /* in the order they need doing: the first one not logged yet */
-  var when={};
-  items.forEach(function(it){ when[it.row]=payState(it,pm).target||it.next||'9999'; });
+  var when={}, jpk=(S.justPaid&&!S.justPaid.shown)?S.justPaid.key:'';
+  items.forEach(function(it){
+    /* the one just ticked keeps its place while its tick fills in; it moves
+       down to its next date with the next redraw */
+    if(jpk&&schedSvc(jpk)===it.service){ when[it.row]=jpk.slice(jpk.lastIndexOf('|')+1); return; }
+    when[it.row]=payState(it,pm).target||it.next||'9999';
+  });
   var sorted=items.slice().sort(function(a,b){ return when[a.row]<when[b.row]?-1:(when[a.row]>when[b.row]?1:0); });
   h+='<div class="glass list">'+(sorted.length?sorted.map(function(it){ return planRow(it,'',pm); }).join(''):'<div class="empty">Nothing in the Calendar sheet.</div>')+'</div>';
   if(!from&&items.length) h+='<p class="tiny" style="margin:12px 6px 0">To see which payments are already logged, run Budget → Upgrade data once in the spreadsheet.</p>';
   return h;
 }
-var CHECK_ICON='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"'+
-  ' stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>';
+var TICK_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.9" stroke-linecap="round"'+
+  ' stroke-linejoin="round"><path pathLength="1" d="M6.4 12.7l3.6 3.6 7.6-8.3"/></svg>';
+var TICK_BURST=(function(){
+  var h='<i class="pburst">';
+  for(var i=0;i<8;i++) h+='<s style="transform:rotate('+(i*45+22)+'deg)"><b></b></s>';
+  return h+'</i>';
+})();
 /* Every expense at one shop, inside whatever window Analytics is showing.
    The list is the point, so a row opens the record itself. */
 function moreShops(){ S.shopsAll=!S.shopsAll; render(true); }
@@ -3235,6 +3273,12 @@ function planRow(it,occ,pm){
       else if(st.paidPrev){ cls='done'; pill='<span class="pstat paid">Paid</span>'; }
     }else if(it.next&&it.next<=D.today) cls='due';
   }
+  /* the payment that was just ticked gets its little moment */
+  var jp=S.justPaid, pop=false;
+  if(jp&&!jp.shown&&cls==='done'&&Date.now()-jp.t<2500){
+    var pk=occ?schedKey(it,occ):(st&&st.paidRec?st.paidRec.sched:'');
+    pop=pk===jp.key;
+  }
   return '<div class="row planrow">'+
     '<button class="rcpmain" onclick="openCalEdit('+(it.row||0)+')">'+
       '<div class="badge" style="color:'+ok(.42,.11,hue)+';background:'+ok(.66,.13,hue,.20)+';font-size:15px">'+(credit?'💳':'🔁')+'</div>'+
@@ -3244,8 +3288,8 @@ function planRow(it,occ,pm){
       (it.currency&&it.currency!=='UAH'?'<div class="rsub">'+(PRIV.all?DOTS:esc(it.cost+' '+it.currency))+'</div>':'')+'</div>'+
     '</button>'+
     /* the one thing a scheduled payment is for: saying it happened */
-    '<button class="payb'+(cls?' '+cls:'')+'" onclick="calPay('+(it.row||0)+(occ?','+q(occ):'')+')"'+
-      ' aria-label="'+(cls==='done'?'Paid — see the record':'Log this payment')+'">'+CHECK_ICON+'</button>'+
+    '<button class="payb'+(cls?' '+cls:'')+(pop?' pop':'')+'" onclick="calPay('+(it.row||0)+(occ?','+q(occ):'')+')"'+
+      ' aria-label="'+(cls==='done'?'Paid — see the record':'Log this payment')+'"><span class="pring">'+TICK_SVG+(pop?TICK_BURST:'')+'</span></button>'+
   '</div>';
 }
 function calItem(row){
@@ -3352,6 +3396,7 @@ function quickPay(it,o,key){
                sched:s.sched,trip:'',rid:newRid()};
   var cid='p'+(++S.cid), row=localTx(s,cur,cid);
   S.pending[cid]=row; D.tx.push(row);
+  S.justPaid={key:s.sched,t:Date.now()};
   prep(); render(true);
   function drop(){ delete S.pending[cid]; D.tx=D.tx.filter(function(x){ return x.cid!==cid; }); }
   holdAction('Paid · '+strip(it.service||'payment'),{
@@ -3434,6 +3479,7 @@ function linkOcc(k,row){
   if(!it||!t) return;
   var key=schedKey(it,c.target), was=t.sched||'';
   t.sched=key;
+  S.justPaid={key:key,t:Date.now()};
   closeModal(); render(true); toast('Marked as paid');
   var ref=txRef(t); ref.sched=key;
   bg('linkSchedule',ref,null,function(){ t.sched=was; });
@@ -5277,6 +5323,7 @@ function saveSheet(){
   var row=localTx(s,cur,cid);
   S.pending[cid]=row;
   D.tx.push(row);
+  if(s.sched) S.justPaid={key:s.sched,t:Date.now()};
   closeSheet(); prep(); render(false); toast(s.sched?'Paid':'Added');
   bg('addTx',payload,function(){ delete S.pending[cid]; },function(){
     D.tx=D.tx.filter(function(x){ return x.cid!==cid; });
@@ -7032,7 +7079,7 @@ window.__S=S;
    As a website, a small service worker keeps these files on the phone, so
    the app opens instantly and with no signal. A new version is fetched in
    the background; when it arrives, a note offers to switch to it. */
-var APP_VERSION='2026.09.29.5';
+var APP_VERSION='2026.09.29.6';
 (function(){
   try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persist(); }catch(e){}
   if(inGas()||!('serviceWorker' in navigator)) return;
@@ -7284,7 +7331,12 @@ function sendTestPush(){
   API.call('pushTest',{id:devId()},function(err){
     var x=document.getElementById('pushtest'); if(x){ x.disabled=false; x.textContent='Send a test notification'; }
     if(err){
-      toast(/not set up/.test(String(err))?'The spreadsheet does not know this phone any more — turn notifications off and on again.':String(err),7000);
+      var m=String(err);
+      if(/UrlFetchApp|external_request|ScriptApp|scriptapp/i.test(m))
+        m='The spreadsheet needs one more permission: in the sheet choose Budget → Set up notifications, allow it, then try again.';
+      else if(/not set up/.test(m))
+        m='The spreadsheet does not know this phone any more — turn notifications off and on again.';
+      toast(m,8000);
       return;
     }
     toast('Sent — it arrives in a few seconds');
