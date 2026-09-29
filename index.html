@@ -11,8 +11,8 @@
 <meta name="theme-color" content="#fdfcfb">
 <meta name="referrer" content="no-referrer">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="coin-180.png">
-<link rel="icon" type="image/png" sizes="192x192" href="coin-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <!-- the address of your script's private link; see config.js -->
 <script src="config.js"></script>
 <style>
@@ -129,7 +129,6 @@ h1.page{margin:6px 4px 14px;font:700 34px/1.05 -apple-system,sans-serif;letter-s
 .fill{height:100%;border-radius:6px}
 
 /* ------------------------------------------------------------ chips */
-.chiprow{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .fbar{display:flex;flex-wrap:wrap;gap:7px;padding:8px 2px 0}
 .fpill{display:inline-flex;align-items:center;gap:5px;max-width:100%;min-width:0;
   padding:7px 12px;border-radius:18px;font:500 12.5px/1 -apple-system,sans-serif;letter-spacing:-.1px;
@@ -467,18 +466,18 @@ body.dragging .row.swipeable{touch-action:none}
    lens is a solid piece of glass: its own material, then the warped content. */
 .tablens{position:absolute;top:50%;left:0;width:112px;height:82px;margin-top:-41px;
   z-index:6;pointer-events:none;overflow:hidden;border-radius:34px;
-  opacity:0;transform:scale(.80);transform-origin:50% 50%;
+  opacity:0;transform:scale(.80);transform-origin:50% 50%;visibility:hidden;
   background:linear-gradient(180deg,#ffffff 0%,#fbf9f6 42%,#f1ece6 100%);
   box-shadow:inset 0 1.5px 0 rgba(255,255,255,1),inset 0 -1.5px 0 rgba(255,255,255,.75),
     inset 2px 0 7px -2px rgba(233,58,120,.42),inset -2px 0 7px -2px rgba(40,166,235,.42),
     inset 0 0 22px rgba(255,255,255,.55),
     0 0 0 .5px rgba(30,26,22,.16),0 12px 30px -8px rgba(30,26,22,.48);
-  transition:opacity .46s ease .06s,transform .46s cubic-bezier(.3,.9,.3,1)}
-.tablens.show{opacity:1;transform:scale(1);
-  transition:opacity .22s ease,transform .40s cubic-bezier(.2,1.35,.4,1)}
+  transition:opacity .46s ease .06s,transform .46s cubic-bezier(.3,.9,.3,1),visibility 0s linear .56s}
+.tablens.show{opacity:1;transform:scale(1);visibility:visible;
+  transition:opacity .22s ease,transform .40s cubic-bezier(.2,1.35,.4,1),visibility 0s}
 
 /* everything inside is refracted as one image, so the copies blend first */
-.lenscore{position:absolute;inset:0;isolation:isolate}
+.lenscore{position:absolute;inset:0;isolation:isolate;overflow:hidden;border-radius:inherit}
 .tablens.warp .lenscore{filter:url(#lgwarp)}
 
 .lensinner{position:absolute;display:flex;pointer-events:none}
@@ -845,17 +844,6 @@ select.expname{padding:9px 10px;font-size:14px;border-radius:13px}
 .rladd{align-self:flex-start;margin-top:1px;padding:7px 13px;border:0;border-radius:11px;
   background:rgba(25,23,19,.06);color:rgba(25,23,19,.62);font:600 13px/1 -apple-system,sans-serif}
 .fieldlabel .opt{margin-left:6px;font-weight:500;opacity:.55;text-transform:none;letter-spacing:0}
-.chipend{margin-left:auto;display:flex;gap:4px;flex:none}
-.funnel{width:32px;padding:0;display:flex;align-items:center;justify-content:center;
-  position:relative;color:rgba(25,23,19,.5)}
-.funnel svg{display:block}
-.funnel.open{color:#191713;background:rgba(25,23,19,.07)}
-.funnel.set:after{content:'';position:absolute;top:5px;right:5px;width:6px;height:6px;
-  border-radius:50%;background:rgb(51,123,208)}
-.badchip{width:32px;padding:0;display:flex;align-items:center;justify-content:center;
-  font:700 15px/1 -apple-system,sans-serif;color:#8a5a00}
-.badchip.on{color:#fff;background:linear-gradient(165deg,#DFA83A,#C68C1C);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 2px 10px -4px rgba(180,130,20,.7)}
 
 /* the amount pad, now four wide, with the operators in their own column */
 .keys.calc{grid-template-columns:repeat(4,1fr)}
@@ -868,12 +856,6 @@ select.expname{padding:9px 10px;font-size:14px;border-radius:13px}
 .amtsum{display:block;margin-top:2px;font:600 15px/1 -apple-system,sans-serif;
   letter-spacing:-.3px;color:rgba(25,23,19,.42)}
 
-/* search in Activity */
-.searchbar{display:flex;align-items:center;gap:8px;margin-top:10px}
-.searchbar .tinput{flex:1;padding:11px 14px;font-size:15px}
-.searchbar .tinput::-webkit-search-cancel-button{display:none}
-.srch.set:after{content:'';position:absolute;top:5px;right:5px;width:6px;height:6px;
-  border-radius:50%;background:rgb(51,123,208)}
 .moreres{display:block;width:100%;padding:13px;border-radius:18px;font:600 14px/1 -apple-system,sans-serif;color:rgba(25,23,19,.6)}
 
 /* the three seconds a delete waits, with the way back */
@@ -890,8 +872,6 @@ body.undoing #toast .toast{bottom:calc(150px + env(safe-area-inset-bottom,0px))}
    left it only half the screen to fit into */
 #undo .toast.undo,#act .toast.undo{left:14px;right:14px;margin:0 auto;width:max-content;max-width:calc(100% - 28px);transform:none}
 /* the month on Activity: tap it to browse month by month */
-.stampbtn{border:0;background:none;cursor:pointer;padding:0 0 6px}
-.stampbtn.on{color:rgb(51,123,208);font-weight:700}
 .monthbar{display:flex;align-items:center;gap:4px;margin-top:10px;padding:6px}
 .monthbar .mbarr{flex:none;width:40px;height:40px;border-radius:14px;font:500 24px/1 -apple-system,sans-serif;color:rgba(25,23,19,.62);background:none}
 .monthbar .mbarr:disabled{opacity:.2}
@@ -902,11 +882,11 @@ body.undoing #toast .toast{bottom:calc(150px + env(safe-area-inset-bottom,0px))}
 .monthbar .mbx{flex:none;width:34px;height:34px;border-radius:12px;font:500 14px/1 -apple-system,sans-serif;color:rgba(25,23,19,.45);background:rgba(25,23,19,.05)}
 .setrow.on b{color:rgb(51,123,208)}
 /* days in a row with something written down */
-.streak{display:inline-flex;align-items:center;gap:3px;margin-left:10px;padding:5px 9px 5px 7px;border:0;border-radius:14px;
-  vertical-align:5px;background:rgba(25,23,19,.05);font:650 14px/1 -apple-system,sans-serif;letter-spacing:0;color:rgba(25,23,19,.42)}
-.streak .fl{font-size:14px;line-height:1;filter:grayscale(1);opacity:.5}
-.streak.lit{background:rgba(255,149,0,.14);color:#b35c00}
-.streak.lit .fl{filter:none;opacity:1}
+.streak{display:inline-flex;align-items:center;gap:3px;padding:5px 9px 5px 7px;border:0;border-radius:13px;
+  background:rgba(25,23,19,.05);font:650 14px/1 -apple-system,sans-serif;letter-spacing:0;color:rgba(25,23,19,.40)}
+.streak .ic{width:16px;height:16px}
+.streak.lit{background:rgba(255,149,0,.13);color:#b35c00}
+.streak.lit .ic{color:#f58a07;fill:#ffae3d}
 .sgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px 4px;padding:14px 10px;margin-top:14px;justify-items:center}
 .sgh{font:600 11px/1 -apple-system,sans-serif;color:rgba(25,23,19,.4);padding-bottom:4px}
 .sgd{width:34px;height:34px;border:0;border-radius:50%;display:flex;align-items:center;justify-content:center;
@@ -948,8 +928,8 @@ body.undoing #act .toast{bottom:calc(150px + env(safe-area-inset-bottom,0px))}
 .linkrow .lr-main{flex:1;min-width:0}
 .linkrow .lr-sub{display:block;margin-top:3px;font:400 12px/1.2 -apple-system,sans-serif;color:rgba(25,23,19,.5)}
 
-/* instant start: the refresh arrow turns while the sheet is still answering */
-body.stale .rfb{animation:spin 1.1s linear infinite}
+/* instant start: while the sheet is still answering, an arc runs round the
+   ••• button (see .iconbtn.more) */
 /* amount first: what a number like this was before */
 .guesses{display:flex;gap:8px;overflow-x:auto;margin:10px -2px 0;padding:2px 2px 6px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .guesses::-webkit-scrollbar{display:none}
@@ -986,6 +966,110 @@ body.connecting .tabbar,body.connecting #fabwrap{display:none}
   display:flex;align-items:center;gap:12px;padding:8px 8px 8px 16px;border-radius:18px;white-space:nowrap;
   background:rgba(28,26,23,.9);color:#fff;font:500 13px/1.3 -apple-system,sans-serif;box-shadow:0 10px 30px -10px rgba(30,26,22,.6)}
 .updbar button{padding:8px 13px;border-radius:13px;background:rgba(255,255,255,.16);color:#fff;font:600 13px/1 -apple-system,sans-serif}
+
+/* ══════════════════════ icons instead of emoji ══════════════════════
+   One family of line icons, drawn in the colour of the category. The
+   circle behind them is a whisper of the same colour, so the row reads as
+   a coloured symbol rather than a sticker on a tile. */
+.ic{display:block;flex:none}
+.badge.ib,.accbtn .b.ib,.gchip .gg.ib{border-radius:50%;box-shadow:none;color:var(--ib);background:var(--ibt)}
+.badge.ib svg,.accbtn .b.ib svg{width:54%;height:54%}
+.badge.sm{width:30px;height:30px}
+/* marks and trips: a small icon at the start of a row's second line */
+.rmeta .mk{display:inline-flex;vertical-align:-2px;margin-right:5px;color:rgba(25,23,19,.46)}
+/* the big flame on the streak page */
+.bigflame{display:flex;justify-content:center;color:rgba(25,23,19,.28)}
+.bigflame.lit{color:#f58a07}
+.bigflame.lit .ic{fill:#ffae3d}
+.tripbar .tripn{display:flex;align-items:center;gap:8px;min-width:0}
+.tripbar .tripn .ic{color:rgb(51,123,208)}
+.tripttl{display:flex;align-items:center;gap:9px;margin-top:8px;font:700 24px/1.15 -apple-system,sans-serif;letter-spacing:-.5px}
+.tripttl .ic{color:rgb(51,123,208)}
+.fpill .fpi{display:flex}
+.mchip .mglyph{display:flex}
+/* an icon inside a line of text: a section header, a picker group, a pill */
+.inic{display:inline-flex;vertical-align:-3px;margin-right:6px}
+.inic .ic{width:16px;height:16px}
+.sect .inic{vertical-align:-3px}
+.gchip .gg.ib svg{width:17px;height:17px}
+
+/* ══════════════════════ page header ══════════════════════
+   Less paper above the title: the safe area plus a hair, not plus 10. */
+.page-head{align-items:flex-start;gap:10px;margin-bottom:8px;
+  padding:calc(max(env(safe-area-inset-top,0px), 8px) + 2px) 18px 8px}
+.page-head h1{font-size:28px;line-height:36px;white-space:nowrap}
+.ph-l{flex:1;min-width:0}
+.ph-t{display:flex;align-items:center;gap:9px;min-width:0}
+.page-head .right{padding:1px 0 0;gap:8px;min-height:36px}
+.page-head .stamp{padding:0}
+/* the one button every page has: refresh, privacy and settings live behind it */
+.iconbtn.more{width:36px;height:36px;color:rgba(25,23,19,.62);position:relative}
+.iconbtn.more.priv{color:rgb(51,123,208)}
+/* the sheet is still answering: a thin arc runs round the button */
+.iconbtn.more::after{content:'';position:absolute;inset:-3px;border-radius:50%;
+  border:2px solid transparent;border-top-color:rgba(25,23,19,.28);opacity:0;transition:opacity .2s}
+body.stale .iconbtn.more::after,body.refreshing .iconbtn.more::after{opacity:1;animation:spin .9s linear infinite}
+
+/* ══════════════════════ Activity header ══════════════════════ */
+/* the title is a button: what the list shows, and the way to change it */
+.ttlbtn{display:flex;align-items:center;gap:4px;min-width:0;max-width:100%;padding:0;border:0;background:none;color:#191713;text-align:left}
+.ttlbtn h1{overflow:hidden;text-overflow:ellipsis}
+.ttlbtn .ic{flex:none;margin-top:3px;color:rgba(25,23,19,.42);transition:transform .2s}
+.ttlbtn:active{opacity:.6}
+.acttools{display:flex;align-items:center;gap:8px}
+.acthead .streak{flex:none}
+/* narrow phones: the title gives way first */
+@media (max-width:380px){ .acthead h1{font-size:25px} .acthead .right{gap:6px} .acttools{gap:6px} }
+.vmenu{right:auto;width:236px}
+.prow.cur b{color:rgb(51,123,208)}
+.prow .tick{flex:none;display:flex;color:rgb(51,123,208)}
+.prow .mi.warn{color:#c68c1c}
+/* the magnifier: search and filters open together, they are the same question */
+.iconbtn.find{width:36px;height:36px;color:rgba(25,23,19,.6);position:relative}
+.iconbtn.find.on{color:#191713;background:rgba(25,23,19,.08);box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;border-color:transparent}
+.iconbtn.find.set:after{content:'';position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;
+  background:rgb(51,123,208);box-shadow:0 0 0 1.5px #fdfcfb}
+.findbar{display:flex;align-items:center;gap:10px;margin-top:10px}
+.sfield{flex:1;min-width:0;display:flex;align-items:center;gap:7px;padding:0 10px 0 11px;height:38px;border-radius:12px;
+  background:rgba(25,23,19,.06);color:rgba(25,23,19,.42)}
+.sfield input{flex:1;min-width:0;height:100%;border:0;outline:none;background:none;padding:0;
+  font:400 15.5px/1 -apple-system,sans-serif;color:#191713}
+.sfield input::placeholder{color:rgba(25,23,19,.38)}
+.sfield input::-webkit-search-cancel-button{display:none}
+.sfield .sx{flex:none;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:rgba(25,23,19,.22);color:#fdfcfb}
+.sfield .sx .ic{width:12px;height:12px}
+.fcancel{flex:none;padding:6px 0;border:0;background:none;font:500 15px/1 -apple-system,sans-serif;color:rgb(51,123,208)}
+.fbar{padding-top:10px}
+/* something is unfinished: said once, in words, where the list starts */
+.attn{display:flex;align-items:center;gap:10px;width:100%;margin-top:12px;padding:10px 12px 10px 12px;border:0;
+  border-radius:14px;text-align:left;background:rgba(223,168,58,.13);color:#7a4f00}
+.attn .ai{flex:none;display:flex;color:#c68c1c}
+.attn .at{flex:1;min-width:0;font:500 13.5px/1.25 -apple-system,sans-serif}
+.attn .at b{font-weight:650}
+.attn .chevr{color:rgba(122,79,0,.45)}
+.attn.on{background:rgba(223,168,58,.18)}
+.attn .adone{flex:none;padding:6px 11px;border:0;border-radius:10px;background:rgba(255,255,255,.7);
+  font:600 13px/1 -apple-system,sans-serif;color:#7a4f00}
+#actlist>.sect:first-child,#actlist>.monthbar:first-child{margin-top:14px}
+
+/* ══════════════════════ the menu behind ••• ══════════════════════ */
+.popover.menu{width:252px;padding:5px}
+.popover.menu .prow{gap:11px;padding:10px 11px}
+.prow .mi{flex:none;display:flex;color:rgba(25,23,19,.55)}
+.prow .mi .ic{width:19px;height:19px}
+.msep{height:.5px;margin:4px 10px;background:rgba(25,23,19,.10)}
+.prow .chevr{margin-left:-4px}
+
+/* ══════════════════════ pull to refresh ══════════════════════ */
+#ptr{position:fixed;left:50%;top:0;z-index:40;width:36px;height:36px;margin-left:-18px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0;
+  color:rgba(25,23,19,.6);background:#fffefc;box-shadow:0 0 0 .5px rgba(25,23,19,.08),0 6px 16px -6px rgba(30,26,22,.35);
+  transform:translateY(-44px)}
+#ptr .ic{width:18px;height:18px}
+#ptr.go{transition:transform .3s cubic-bezier(.3,.9,.3,1),opacity .2s}
+#ptr.spin .ic{animation:spin .8s linear infinite}
+#ptr.ready{color:#191713}
 </style>
 </head>
 <body>
@@ -1131,7 +1215,6 @@ function anyHidden(){ return PRIV.all||PRIV.balance; }
 
 /* ================================================================ utils */
 var EMO=/^[^0-9A-Za-zЀ-ӿ]+/;
-function glyph(s){ if(!s) return '•'; var m=String(s).match(EMO); return m?m[0].trim():String(s).slice(0,1); }
 function strip(s){ if(!s) return ''; return String(s).replace(EMO,'').trim()||String(s); }
 function esc(s){ return String(s===undefined||s===null?'':s).replace(/[&<>"']/g,function(c){
   return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
@@ -1152,6 +1235,342 @@ var DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'
 function ym(s){ return String(s).slice(0,7); }
 function daysBetween(a,b){ return Math.round((a-b)/86400000); }
 
+/* ================================================================ icons
+   Names in the sheet start with an emoji, and the app used to draw that
+   emoji as the picture. Emoji are painted by the phone, each in its own
+   style and colour, and on a pastel tile they looked like stickers. Now
+   every name gets a line icon from one family, in its category's colour.
+
+   Which icon: the name is read first (English, Ukrainian or Russian
+   words), then the emoji in front of it, then the family it belongs to,
+   and a plain tag when nothing fits. A category added or renamed in
+   Settings finds a sensible icon without anyone touching this file.
+
+   Drawings: Lucide (lucide.dev, ISC licence, (c) Lucide Contributors) and
+   a few from Tabler Icons (tabler.io, MIT licence, (c) Paweł Kuna). */
+var IC={"cart":"<circle cx=\"8\" cy=\"21\" r=\"1\"/><circle cx=\"19\" cy=\"21\" r=\"1\"/><path d=\"M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12\"/>",
+ "basket":"<path d=\"m15 11-1 9\"/><path d=\"m19 11-4-7\"/><path d=\"M2 11h20\"/><path d=\"m3.5 11 1.6 7.4a2 2 0 0 0 2 1.6h9.8a2 2 0 0 0 2-1.6l1.7-7.4\"/><path d=\"M4.5 15.5h15\"/><path d=\"m5 11 4-7\"/><path d=\"m9 11 1 9\"/>",
+ "coffee":"<path d=\"M10 2v2\"/><path d=\"M14 2v2\"/><path d=\"M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1\"/><path d=\"M6 2v2\"/>",
+ "house":"<path d=\"M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8\"/><path d=\"M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"/>",
+ "houseplug":"<path d=\"M10 12V8.964\"/><path d=\"M14 12V8.964\"/><path d=\"M15 12a1 1 0 0 1 1 1v2a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2a1 1 0 0 1 1-1z\"/><path d=\"M8.5 21H5a2 2 0 0 1-2-2v-9a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2h-5a2 2 0 0 1-2-2v-2\"/>",
+ "bus":"<path d=\"M8 6v6\"/><path d=\"M15 6v6\"/><path d=\"M2 12h19.6\"/><path d=\"M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3\"/><circle cx=\"7\" cy=\"18\" r=\"2\"/><path d=\"M9 18h5\"/><circle cx=\"16\" cy=\"18\" r=\"2\"/>",
+ "busfront":"<path d=\"M4 6 2 7\"/><path d=\"M10 6h4\"/><path d=\"m22 7-2-1\"/><rect width=\"16\" height=\"16\" x=\"4\" y=\"3\" rx=\"2\"/><path d=\"M4 11h16\"/><path d=\"M8 15h.01\"/><path d=\"M16 15h.01\"/><path d=\"M6 19v2\"/><path d=\"M18 21v-2\"/>",
+ "heartpulse":"<path d=\"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z\"/><path d=\"M3.22 12H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27\"/>",
+ "pill":"<path d=\"m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z\"/><path d=\"m8.5 8.5 7 7\"/>",
+ "sparkles":"<path d=\"M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z\"/><path d=\"M20 3v4\"/><path d=\"M22 5h-4\"/><path d=\"M4 17v2\"/><path d=\"M5 18H3\"/>",
+ "party":"<path d=\"M5.8 11.3 2 22l10.7-3.79\"/><path d=\"M4 3h.01\"/><path d=\"M22 8h.01\"/><path d=\"M15 2h.01\"/><path d=\"M22 20h.01\"/><path d=\"m22 2-2.24.75a2.9 2.9 0 0 0-1.96 3.12c.1.86-.57 1.63-1.45 1.63h-.38c-.86 0-1.6.6-1.76 1.44L14 10\"/><path d=\"m22 13-.82-.33c-.86-.34-1.82.2-1.98 1.11c-.11.7-.72 1.22-1.43 1.22H17\"/><path d=\"m11 2 .33.82c.34.86-.2 1.82-1.11 1.98C9.52 4.9 9 5.52 9 6.23V7\"/><path d=\"M11 13c1.93 1.93 2.83 4.17 2 5-.83.83-3.07-.07-5-2-1.93-1.93-2.83-4.17-2-5 .83-.83 3.07.07 5 2Z\"/>",
+ "ferris":"<circle cx=\"12\" cy=\"12\" r=\"2\"/><path d=\"M12 2v4\"/><path d=\"m6.8 15-3.5 2\"/><path d=\"m20.7 7-3.5 2\"/><path d=\"M6.8 9 3.3 7\"/><path d=\"m20.7 17-3.5-2\"/><path d=\"m9 22 3-8 3 8\"/><path d=\"M8 22h8\"/><path d=\"M18 18.7a9 9 0 1 0-12 0\"/>",
+ "bag":"<path d=\"M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z\"/><path d=\"M3 6h18\"/><path d=\"M16 10a4 4 0 0 1-8 0\"/>",
+ "luggage":"<path d=\"M6 20a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2\"/><path d=\"M8 18V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v14\"/><path d=\"M10 20h4\"/><circle cx=\"16\" cy=\"20\" r=\"2\"/><circle cx=\"8\" cy=\"20\" r=\"2\"/>",
+ "plane":"<path d=\"M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z\"/>",
+ "cap":"<path d=\"M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z\"/><path d=\"M22 10v6\"/><path d=\"M6 12.5V16a6 3 0 0 0 12 0v-3.5\"/>",
+ "landmark":"<line x1=\"3\" x2=\"21\" y1=\"22\" y2=\"22\"/><line x1=\"6\" x2=\"6\" y1=\"18\" y2=\"11\"/><line x1=\"10\" x2=\"10\" y1=\"18\" y2=\"11\"/><line x1=\"14\" x2=\"14\" y1=\"18\" y2=\"11\"/><line x1=\"18\" x2=\"18\" y1=\"18\" y2=\"11\"/><polygon points=\"12 2 20 7 4 7\"/>",
+ "candy":"<path d=\"m9.5 7.5-2 2a4.95 4.95 0 1 0 7 7l2-2a4.95 4.95 0 1 0-7-7Z\"/><path d=\"M14 6.5v10\"/><path d=\"M10 7.5v10\"/><path d=\"m16 7 1-5 1.37.68A3 3 0 0 0 19.7 3H21v1.3c0 .46.1.92.32 1.33L22 7l-5 1\"/><path d=\"m8 17-1 5-1.37-.68A3 3 0 0 0 4.3 21H3v-1.3a3 3 0 0 0-.32-1.33L2 17l5-1\"/>",
+ "carrot":"<path d=\"M2.27 21.7s9.87-3.5 12.73-6.36a4.5 4.5 0 0 0-6.36-6.37C5.77 11.84 2.27 21.7 2.27 21.7zM8.64 14l-2.05-2.04M15.34 15l-2.46-2.46\"/><path d=\"M22 9s-1.33-2-3.5-2C16.86 7 15 9 15 9s1.33 2 3.5 2S22 9 22 9z\"/><path d=\"M15 2s-2 1.33-2 3.5S15 9 15 9s2-1.84 2-3.5C17 3.33 15 2 15 2z\"/>",
+ "croissant":"<path d=\"m4.6 13.11 5.79-3.21c1.89-1.05 4.79 1.78 3.71 3.71l-3.22 5.81C8.8 23.16.79 15.23 4.6 13.11Z\"/><path d=\"m10.5 9.5-1-2.29C9.2 6.48 8.8 6 8 6H4.5C2.79 6 2 6.5 2 8.5a7.71 7.71 0 0 0 2 4.83\"/><path d=\"M8 6c0-1.55.24-4-2-4-2 0-2.5 2.17-2.5 4\"/><path d=\"m14.5 13.5 2.29 1c.73.3 1.21.7 1.21 1.5v3.5c0 1.71-.5 2.5-2.5 2.5a7.71 7.71 0 0 1-4.83-2\"/><path d=\"M18 16c1.55 0 4-.24 4 2 0 2-2.17 2.5-4 2.5\"/>",
+ "wine":"<path d=\"M8 22h8\"/><path d=\"M7 10h10\"/><path d=\"M12 15v7\"/><path d=\"M12 15a5 5 0 0 0 5-5c0-2-.5-4-2-8H9c-1.5 4-2 6-2 8a5 5 0 0 0 5 5Z\"/>",
+ "zap":"<path d=\"M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z\"/>",
+ "utensils":"<path d=\"M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2\"/><path d=\"M7 2v20\"/><path d=\"M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7\"/>",
+ "burger":"<path d=\"M4 15h16a4 4 0 0 1 -4 4h-8a4 4 0 0 1 -4 -4z\"/><path d=\"M12 4c3.783 0 6.953 2.133 7.786 5h-15.572c.833 -2.867 4.003 -5 7.786 -5z\"/><path d=\"M5 12h14\"/>",
+ "pizza":"<path d=\"m12 14-1 1\"/><path d=\"m13.75 18.25-1.25 1.42\"/><path d=\"M17.775 5.654a15.68 15.68 0 0 0-12.121 12.12\"/><path d=\"M18.8 9.3a1 1 0 0 0 2.1 7.7\"/><path d=\"M21.964 20.732a1 1 0 0 1-1.232 1.232l-18-5a1 1 0 0 1-.695-1.232A19.68 19.68 0 0 1 15.732 2.037a1 1 0 0 1 1.232.695z\"/>",
+ "beer":"<path d=\"M17 11h1a3 3 0 0 1 0 6h-1\"/><path d=\"M9 12v6\"/><path d=\"M13 12v6\"/><path d=\"M14 7.5c-1 0-1.44.5-3 .5s-2-.5-3-.5-1.72.5-2.5.5a2.5 2.5 0 0 1 0-5c.78 0 1.57.5 2.5.5S9.44 2 11 2s2 1.5 3 1.5 1.72-.5 2.5-.5a2.5 2.5 0 0 1 0 5c-.78 0-1.5-.5-2.5-.5Z\"/><path d=\"M5 8v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V8\"/>",
+ "moped":"<path d=\"M18 17m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0\"/><path d=\"M5 16v1a2 2 0 0 0 4 0v-5h-3a3 3 0 0 0 -3 3v1h10a6 6 0 0 1 5 -4v-5a2 2 0 0 0 -2 -2h-1\"/><path d=\"M6 9l3 0\"/>",
+ "bulb":"<path d=\"M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5\"/><path d=\"M9 18h6\"/><path d=\"M10 22h4\"/>",
+ "phone":"<rect width=\"14\" height=\"20\" x=\"5\" y=\"2\" rx=\"2\" ry=\"2\"/><path d=\"M12 18h.01\"/>",
+ "wifi":"<path d=\"M12 20h.01\"/><path d=\"M2 8.82a15 15 0 0 1 20 0\"/><path d=\"M5 12.859a10 10 0 0 1 14 0\"/><path d=\"M8.5 16.429a5 5 0 0 1 7 0\"/>",
+ "sofa":"<path d=\"M20 9V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v3\"/><path d=\"M2 16a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5a2 2 0 0 0-4 0v1.5a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5V11a2 2 0 0 0-4 0z\"/><path d=\"M4 18v2\"/><path d=\"M20 18v2\"/><path d=\"M12 4v9\"/>",
+ "wrench":"<path d=\"M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z\"/>",
+ "metro":"<path d=\"M2 22V12a10 10 0 1 1 20 0v10\"/><path d=\"M15 6.8v1.4a3 2.8 0 1 1-6 0V6.8\"/><path d=\"M10 15h.01\"/><path d=\"M14 15h.01\"/><path d=\"M10 19a4 4 0 0 1-4-4v-3a6 6 0 1 1 12 0v3a4 4 0 0 1-4 4Z\"/><path d=\"m9 19-2 3\"/><path d=\"m15 19 2 3\"/>",
+ "tram":"<rect width=\"16\" height=\"16\" x=\"4\" y=\"3\" rx=\"2\"/><path d=\"M4 11h16\"/><path d=\"M12 3v8\"/><path d=\"m8 19-2 3\"/><path d=\"m18 22-2-3\"/><path d=\"M8 15h.01\"/><path d=\"M16 15h.01\"/>",
+ "van":"<path d=\"M18 19V9a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v8a2 2 0 0 0 2 2h2\"/><path d=\"M2 9h3a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2\"/><path d=\"M22 17v1a1 1 0 0 1-1 1H10v-9a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v9\"/><circle cx=\"8\" cy=\"19\" r=\"2\"/>",
+ "taxi":"<path d=\"M10 2h4\"/><path d=\"m21 8-2 2-1.5-3.7A2 2 0 0 0 15.646 5H8.4a2 2 0 0 0-1.903 1.257L5 10 3 8\"/><path d=\"M7 14h.01\"/><path d=\"M17 14h.01\"/><rect width=\"18\" height=\"8\" x=\"3\" y=\"10\" rx=\"2\"/><path d=\"M5 18v2\"/><path d=\"M19 18v2\"/>",
+ "train":"<path d=\"M8 3.1V7a4 4 0 0 0 8 0V3.1\"/><path d=\"m9 15-1-1\"/><path d=\"m15 15 1-1\"/><path d=\"M9 19c-2.8 0-5-2.2-5-5v-4a8 8 0 0 1 16 0v4c0 2.8-2.2 5-5 5Z\"/><path d=\"m8 19-2 3\"/><path d=\"m16 19 2 3\"/>",
+ "car":"<path d=\"M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2\"/><circle cx=\"7\" cy=\"17\" r=\"2\"/><path d=\"M9 17h6\"/><circle cx=\"17\" cy=\"17\" r=\"2\"/>",
+ "bike":"<circle cx=\"18.5\" cy=\"17.5\" r=\"3.5\"/><circle cx=\"5.5\" cy=\"17.5\" r=\"3.5\"/><circle cx=\"15\" cy=\"5\" r=\"1\"/><path d=\"M12 17.5V14l-3-3 4-3 2 3h2\"/>",
+ "fuel":"<line x1=\"3\" x2=\"15\" y1=\"22\" y2=\"22\"/><line x1=\"4\" x2=\"14\" y1=\"9\" y2=\"9\"/><path d=\"M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18\"/><path d=\"M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2a2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L18 5\"/>",
+ "tooth":"<path d=\"M12 5.5c-1.074 -.586 -2.583 -1.5 -4 -1.5c-2.1 0 -4 1.247 -4 5c0 4.899 1.056 8.41 2.671 10.537c.573 .756 1.97 .521 2.567 -.236c.398 -.505 .819 -1.439 1.262 -2.801c.292 -.771 .892 -1.504 1.5 -1.5c.602 0 1.21 .737 1.5 1.5c.443 1.362 .864 2.295 1.262 2.8c.597 .759 2 .993 2.567 .237c1.615 -2.127 2.671 -5.637 2.671 -10.537c0 -3.74 -1.908 -5 -4 -5c-1.423 0 -2.92 .911 -4 1.5z\"/><path d=\"M12 5.5l3 1.5\"/>",
+ "stethoscope":"<path d=\"M11 2v2\"/><path d=\"M5 2v2\"/><path d=\"M5 3H4a2 2 0 0 0-2 2v4a6 6 0 0 0 12 0V5a2 2 0 0 0-2-2h-1\"/><path d=\"M8 15a6 6 0 0 0 12 0v-3\"/><circle cx=\"20\" cy=\"10\" r=\"2\"/>",
+ "testtube":"<path d=\"M14.5 2v17.5c0 1.4-1.1 2.5-2.5 2.5c-1.4 0-2.5-1.1-2.5-2.5V2\"/><path d=\"M8.5 2h7\"/><path d=\"M14.5 16h-5\"/>",
+ "glasses":"<circle cx=\"6\" cy=\"15\" r=\"4\"/><circle cx=\"18\" cy=\"15\" r=\"4\"/><path d=\"M14 15a2 2 0 0 0-2-2 2 2 0 0 0-2 2\"/><path d=\"M2.5 13 5 7c.7-1.3 1.4-2 3-2\"/><path d=\"M21.5 13 19 7c-.7-1.3-1.5-2-3-2\"/>",
+ "dumbbell":"<path d=\"M14.4 14.4 9.6 9.6\"/><path d=\"M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.767 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.829l-1.768 1.767a2 2 0 1 1 2.828 2.829z\"/><path d=\"m21.5 21.5-1.4-1.4\"/><path d=\"M3.9 3.9 2.5 2.5\"/><path d=\"M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829l2.828-2.828a2 2 0 1 1 2.829 2.828l1.767-1.768a2 2 0 1 1 2.829 2.829z\"/>",
+ "run":"<path d=\"M13 4m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0\"/><path d=\"M4 17l5 1l.75 -1.5\"/><path d=\"M15 21l0 -4l-4 -3l1 -6\"/><path d=\"M7 12l0 -3l5 -1l3 3l3 1\"/>",
+ "citrus":"<path d=\"M21.66 17.67a1.08 1.08 0 0 1-.04 1.6A12 12 0 0 1 4.73 2.38a1.1 1.1 0 0 1 1.61-.04z\"/><path d=\"M19.65 15.66A8 8 0 0 1 8.35 4.34\"/><path d=\"m14 10-5.5 5.5\"/><path d=\"M14 17.85V10H6.15\"/>",
+ "heart":"<path d=\"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z\"/>",
+ "scissors":"<circle cx=\"6\" cy=\"6\" r=\"3\"/><path d=\"M8.12 8.12 12 12\"/><path d=\"M20 4 8.12 15.88\"/><circle cx=\"6\" cy=\"18\" r=\"3\"/><path d=\"M14.8 14.8 20 20\"/>",
+ "perfume":"<path d=\"M10 6v3\"/><path d=\"M14 6v3\"/><path d=\"M5 9m0 2a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2z\"/><path d=\"M12 15m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0\"/><path d=\"M9 3h6v3h-6z\"/>",
+ "bath":"<path d=\"M10 4 8 6\"/><path d=\"M17 19v2\"/><path d=\"M2 12h20\"/><path d=\"M7 19v2\"/><path d=\"M9 5 7.621 3.621A2.121 2.121 0 0 0 4 5v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5\"/>",
+ "washer":"<path d=\"M3 6h3\"/><path d=\"M17 6h.01\"/><rect width=\"18\" height=\"20\" x=\"3\" y=\"2\" rx=\"2\"/><circle cx=\"12\" cy=\"13\" r=\"5\"/><path d=\"M12 18a2.5 2.5 0 0 0 0-5 2.5 2.5 0 0 1 0-5\"/>",
+ "gamepad":"<line x1=\"6\" x2=\"10\" y1=\"11\" y2=\"11\"/><line x1=\"8\" x2=\"8\" y1=\"9\" y2=\"13\"/><line x1=\"15\" x2=\"15.01\" y1=\"12\" y2=\"12\"/><line x1=\"18\" x2=\"18.01\" y1=\"10\" y2=\"10\"/><path d=\"M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z\"/>",
+ "clapper":"<path d=\"M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3Z\"/><path d=\"m6.2 5.3 3.1 3.9\"/><path d=\"m12.4 3.4 3.1 4\"/><path d=\"M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z\"/>",
+ "mic":"<path d=\"m11 7.601-5.994 8.19a1 1 0 0 0 .1 1.298l.817.818a1 1 0 0 0 1.314.087L15.09 12\"/><path d=\"M16.5 21.174C15.5 20.5 14.372 20 13 20c-2.058 0-3.928 2.356-6 2-2.072-.356-2.775-3.369-1.5-4.5\"/><circle cx=\"16\" cy=\"7\" r=\"5\"/>",
+ "ticket":"<path d=\"M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z\"/><path d=\"M13 5v2\"/><path d=\"M13 17v2\"/><path d=\"M13 11v2\"/>",
+ "bowling":"<path d=\"M7 11v.01\"/><path d=\"M11 10v.01\"/><path d=\"M10 14v.01\"/><path d=\"M11.059 6.07a8 8 0 1 0 .32 15.81\"/><path d=\"M15.969 9h4\"/><path d=\"M14.969 5c0 1.5 1 2 1 4c0 2.5 -2 4.5 -2 7c0 2.6 1.9 6 1.9 6h4.1s2 -3.4 2 -6c0 -2.5 -2 -4.5 -2 -7c0 -2 1 -2.5 1 -4a3 3 0 1 0 -6 0\"/>",
+ "book":"<path d=\"M12 7v14\"/><path d=\"M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z\"/>",
+ "dice":"<rect width=\"12\" height=\"12\" x=\"2\" y=\"10\" rx=\"2\" ry=\"2\"/><path d=\"m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6\"/><path d=\"M6 18h.01\"/><path d=\"M10 14h.01\"/><path d=\"M15 6h.01\"/><path d=\"M18 9h.01\"/>",
+ "repeat":"<path d=\"m17 2 4 4-4 4\"/><path d=\"M3 11v-1a4 4 0 0 1 4-4h14\"/><path d=\"m7 22-4-4 4-4\"/><path d=\"M21 13v1a4 4 0 0 1-4 4H3\"/>",
+ "pin":"<path d=\"M12 17v5\"/><path d=\"M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z\"/>",
+ "shirt":"<path d=\"M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z\"/>",
+ "shoe":"<path d=\"M4 6h5.426a1 1 0 0 1 .863 .496l1.064 1.823a3 3 0 0 0 1.896 1.407l4.677 1.114a4 4 0 0 1 3.074 3.89v2.27a1 1 0 0 1 -1 1h-16a1 1 0 0 1 -1 -1v-10a1 1 0 0 1 1 -1z\"/><path d=\"M14 13l1 -2\"/><path d=\"M8 18v-1a4 4 0 0 0 -4 -4h-1\"/><path d=\"M10 12l1.5 -3\"/>",
+ "watch":"<circle cx=\"12\" cy=\"12\" r=\"6\"/><polyline points=\"12 10 12 12 13 13\"/><path d=\"m16.13 7.66-.81-4.05a2 2 0 0 0-2-1.61h-2.68a2 2 0 0 0-2 1.61l-.78 4.05\"/><path d=\"m7.88 16.36.8 4a2 2 0 0 0 2 1.61h2.72a2 2 0 0 0 2-1.61l.81-4.05\"/>",
+ "laptop":"<path d=\"M20 16V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9m16 0H4m16 0 1.28 2.55a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45L4 16\"/>",
+ "laptop2":"<rect width=\"18\" height=\"12\" x=\"3\" y=\"4\" rx=\"2\" ry=\"2\"/><line x1=\"2\" x2=\"22\" y1=\"20\" y2=\"20\"/>",
+ "cable":"<path d=\"M17 21v-2a1 1 0 0 1-1-1v-1a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v1a1 1 0 0 1-1 1\"/><path d=\"M19 15V6.5a1 1 0 0 0-7 0v11a1 1 0 0 1-7 0V9\"/><path d=\"M21 21v-2h-4\"/><path d=\"M3 5h4V3\"/><path d=\"M7 5a1 1 0 0 1 1 1v1a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a1 1 0 0 1 1-1V3\"/>",
+ "lamp":"<path d=\"M8 2h8l4 10H4L8 2Z\"/><path d=\"M12 12v6\"/><path d=\"M8 22v-2c0-1.1.9-2 2-2h4a2 2 0 0 1 2 2v2H8Z\"/>",
+ "gift":"<rect x=\"3\" y=\"8\" width=\"18\" height=\"4\" rx=\"1\"/><path d=\"M12 8v13\"/><path d=\"M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7\"/><path d=\"M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5\"/>",
+ "flower":"<path d=\"M12 5a3 3 0 1 1 3 3m-3-3a3 3 0 1 0-3 3m3-3v1M9 8a3 3 0 1 0 3 3M9 8h1m5 0a3 3 0 1 1-3 3m3-3h-1m-2 3v-1\"/><circle cx=\"12\" cy=\"8\" r=\"2\"/><path d=\"M12 10v12\"/><path d=\"M12 22c4.2 0 7-1.667 7-5-4.2 0-7 1.667-7 5Z\"/><path d=\"M12 22c-4.2 0-7-1.667-7-5 4.2 0 7 1.667 7 5Z\"/>",
+ "bed":"<path d=\"M2 20v-8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8\"/><path d=\"M4 10V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4\"/><path d=\"M12 4v6\"/><path d=\"M2 18h20\"/>",
+ "castle":"<path d=\"M22 20v-9H2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2Z\"/><path d=\"M18 11V4H6v7\"/><path d=\"M15 22v-4a3 3 0 0 0-3-3a3 3 0 0 0-3 3v4\"/><path d=\"M22 11V9\"/><path d=\"M2 11V9\"/><path d=\"M6 4V2\"/><path d=\"M18 4V2\"/><path d=\"M10 4V2\"/><path d=\"M14 4V2\"/>",
+ "presentation":"<path d=\"M2 3h20\"/><path d=\"M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3\"/><path d=\"m7 21 5-5 5 5\"/>",
+ "university":"<circle cx=\"12\" cy=\"10\" r=\"1\"/><path d=\"M22 20V8h-4l-6-4-6 4H2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2\"/><path d=\"M6 17v.01\"/><path d=\"M6 13v.01\"/><path d=\"M18 17v.01\"/><path d=\"M18 13v.01\"/><path d=\"M14 22v-5a2 2 0 0 0-2-2a2 2 0 0 0-2 2v5\"/>",
+ "folder":"<path d=\"m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2\"/>",
+ "package":"<path d=\"M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z\"/><path d=\"M12 22V12\"/><path d=\"m3.3 7 7.703 4.734a2 2 0 0 0 1.994 0L20.7 7\"/><path d=\"m7.5 4.27 9 5.15\"/>",
+ "exchange":"<path d=\"M5 18m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0\"/><path d=\"M19 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0\"/><path d=\"M19 8v5a5 5 0 0 1 -5 5h-3l3 -3m0 6l-3 -3\"/><path d=\"M5 16v-5a5 5 0 0 1 5 -5h3l-3 -3m0 6l3 -3\"/>",
+ "card":"<rect width=\"20\" height=\"14\" x=\"2\" y=\"5\" rx=\"2\"/><line x1=\"2\" x2=\"22\" y1=\"10\" y2=\"10\"/>",
+ "handheart":"<path d=\"M11 14h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 16\"/><path d=\"m7 20 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9\"/><path d=\"m2 15 6 6\"/><path d=\"M19.5 8.5c.7-.7 1.5-1.6 1.5-2.7A2.73 2.73 0 0 0 16 4a2.78 2.78 0 0 0-5 1.8c0 1.2.8 2 1.5 2.8L16 12Z\"/>",
+ "piggy":"<path d=\"M19 5c-1.5 0-2.8 1.4-3 2-3.5-1.5-11-.3-11 5 0 1.8 0 3 2 4.5V20h4v-2h3v2h4v-4c1-.5 1.7-1 2-2h2v-4h-2c0-1-.5-1.5-1-2V5z\"/><path d=\"M2 9v1c0 1.1.9 2 2 2h1\"/><path d=\"M16 11h.01\"/>",
+ "fee":"<path d=\"M9 14l6 -6\"/><circle cx=\"9.5\" cy=\"8.5\" r=\".5\" fill=\"currentColor\"/><circle cx=\"14.5\" cy=\"13.5\" r=\".5\" fill=\"currentColor\"/><path d=\"M5 21v-16a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v16l-3 -2l-2 2l-2 -2l-2 2l-2 -2l-3 2\"/>",
+ "cash":"<path d=\"M7 15h-3a1 1 0 0 1 -1 -1v-8a1 1 0 0 1 1 -1h12a1 1 0 0 1 1 1v3\"/><path d=\"M7 9m0 1a1 1 0 0 1 1 -1h12a1 1 0 0 1 1 1v8a1 1 0 0 1 -1 1h-12a1 1 0 0 1 -1 -1z\"/><path d=\"M12 14a2 2 0 1 0 4 0a2 2 0 0 0 -4 0\"/>",
+ "transfer":"<path d=\"m16 3 4 4-4 4\"/><path d=\"M20 7H4\"/><path d=\"m8 21-4-4 4-4\"/><path d=\"M4 17h16\"/>",
+ "bitcoin":"<path d=\"M11.767 19.089c4.924.868 6.14-6.025 1.216-6.894m-1.216 6.894L5.86 18.047m5.908 1.042-.347 1.97m1.563-8.864c4.924.869 6.14-6.025 1.215-6.893m-1.215 6.893-3.94-.694m5.155-6.2L8.29 4.26m5.908 1.042.348-1.97M7.48 20.364l3.126-17.727\"/>",
+ "undo":"<path d=\"M9 14 4 9l5-5\"/><path d=\"M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11\"/>",
+ "handcoins":"<path d=\"M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17\"/><path d=\"m7 21 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9\"/><path d=\"m2 16 6 6\"/><circle cx=\"16\" cy=\"9\" r=\"2.9\"/><circle cx=\"6\" cy=\"5\" r=\"3\"/>",
+ "sliders":"<line x1=\"21\" x2=\"14\" y1=\"4\" y2=\"4\"/><line x1=\"10\" x2=\"3\" y1=\"4\" y2=\"4\"/><line x1=\"21\" x2=\"12\" y1=\"12\" y2=\"12\"/><line x1=\"8\" x2=\"3\" y1=\"12\" y2=\"12\"/><line x1=\"21\" x2=\"16\" y1=\"20\" y2=\"20\"/><line x1=\"12\" x2=\"3\" y1=\"20\" y2=\"20\"/><line x1=\"14\" x2=\"14\" y1=\"2\" y2=\"6\"/><line x1=\"8\" x2=\"8\" y1=\"10\" y2=\"14\"/><line x1=\"16\" x2=\"16\" y1=\"18\" y2=\"22\"/>",
+ "toy":"<rect width=\"18\" height=\"12\" x=\"3\" y=\"8\" rx=\"1\"/><path d=\"M10 8V5c0-.6-.4-1-1-1H6a1 1 0 0 0-1 1v3\"/><path d=\"M19 8V5c0-.6-.4-1-1-1h-3a1 1 0 0 0-1 1v3\"/>",
+ "briefcase":"<path d=\"M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16\"/><rect width=\"20\" height=\"14\" x=\"2\" y=\"6\" rx=\"2\"/>",
+ "banknote":"<rect width=\"20\" height=\"12\" x=\"2\" y=\"6\" rx=\"2\"/><circle cx=\"12\" cy=\"12\" r=\"2\"/><path d=\"M6 12h.01M18 12h.01\"/>",
+ "handshake":"<path d=\"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z\"/><path d=\"M12 5 9.04 7.96a2.17 2.17 0 0 0 0 3.08c.82.82 2.13.85 3 .07l2.07-1.9a2.82 2.82 0 0 1 3.79 0l2.96 2.66\"/><path d=\"m18 15-2-2\"/><path d=\"m15 18-2-2\"/>",
+ "percent":"<path d=\"M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z\"/><path d=\"m15 9-6 6\"/><path d=\"M9 9h.01\"/><path d=\"M15 15h.01\"/>",
+ "refund":"<path d=\"M5 21v-16a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v16l-3 -2l-2 2l-2 -2l-2 2l-2 -2l-3 2\"/><path d=\"M15 14v-2a2 2 0 0 0 -2 -2h-4l2 -2m0 4l-2 -2\"/>",
+ "trend":"<polyline points=\"22 7 13.5 15.5 8.5 10.5 2 17\"/><polyline points=\"16 7 22 7 22 13\"/>",
+ "wallet":"<path d=\"M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1\"/><path d=\"M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4\"/>",
+ "receipt":"<path d=\"M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z\"/><path d=\"M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8\"/><path d=\"M12 17.5v-11\"/>",
+ "apple":"<path d=\"M12 20.94c1.5 0 2.75 1.06 4 1.06 3 0 6-8 6-12.22A4.91 4.91 0 0 0 17 5c-2.22 0-4 1.44-5 2-1-.56-2.78-2-5-2a4.9 4.9 0 0 0-5 4.78C2 14 5 22 8 22c1.25 0 2.5-1.06 4-1.06Z\"/><path d=\"M10 2c1 .5 2 2 2 5\"/>",
+ "music":"<path d=\"M9 18V5l12-2v13\"/><circle cx=\"6\" cy=\"18\" r=\"3\"/><circle cx=\"18\" cy=\"16\" r=\"3\"/>",
+ "tv":"<rect width=\"20\" height=\"15\" x=\"2\" y=\"7\" rx=\"2\" ry=\"2\"/><polyline points=\"17 2 12 7 7 2\"/>",
+ "paw":"<circle cx=\"11\" cy=\"4\" r=\"2\"/><circle cx=\"18\" cy=\"8\" r=\"2\"/><circle cx=\"20\" cy=\"16\" r=\"2\"/><path d=\"M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.045Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z\"/>",
+ "baby":"<path d=\"M9 12h.01\"/><path d=\"M15 12h.01\"/><path d=\"M10 16c.5.3 1.2.5 2 .5s1.5-.2 2-.5\"/><path d=\"M19 6.3a9 9 0 0 1 1.8 3.9 2 2 0 0 1 0 3.6 9 9 0 0 1-17.6 0 2 2 0 0 1 0-3.6A9 9 0 0 1 12 3c2 0 3.5 1.1 3.5 2.5s-.9 2.5-2 2.5c-.8 0-1.5-.4-1.5-1\"/>",
+ "shield":"<path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\"/>",
+ "parking":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M9 17V7h4a3 3 0 0 1 0 6H9\"/>",
+ "tag":"<path d=\"M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z\"/><circle cx=\"7.5\" cy=\"7.5\" r=\".5\" fill=\"currentColor\"/>",
+ "flame":"<path d=\"M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z\"/>",
+ "eye":"<path d=\"M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/>",
+ "eyeoff":"<path d=\"M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49\"/><path d=\"M14.084 14.158a3 3 0 0 1-4.242-4.242\"/><path d=\"M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143\"/><path d=\"m2 2 20 20\"/>",
+ "more":"<circle cx=\"12\" cy=\"12\" r=\"1\"/><circle cx=\"19\" cy=\"12\" r=\"1\"/><circle cx=\"5\" cy=\"12\" r=\"1\"/>",
+ "refresh":"<path d=\"M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8\"/><path d=\"M21 3v5h-5\"/><path d=\"M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16\"/><path d=\"M8 16H3v5\"/>",
+ "settings":"<path d=\"M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/>",
+ "calendar":"<path d=\"M8 2v4\"/><path d=\"M16 2v4\"/><rect width=\"18\" height=\"18\" x=\"3\" y=\"4\" rx=\"2\"/><path d=\"M3 10h18\"/>",
+ "alert":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><line x1=\"12\" x2=\"12\" y1=\"8\" y2=\"12\"/><line x1=\"12\" x2=\"12.01\" y1=\"16\" y2=\"16\"/>",
+ "chevdown":"<path d=\"m6 9 6 6 6-6\"/>",
+ "check":"<path d=\"M20 6 9 17l-5-5\"/>",
+ "grid":"<rect width=\"7\" height=\"7\" x=\"3\" y=\"3\" rx=\"1\"/><rect width=\"7\" height=\"7\" x=\"14\" y=\"3\" rx=\"1\"/><rect width=\"7\" height=\"7\" x=\"14\" y=\"14\" rx=\"1\"/><rect width=\"7\" height=\"7\" x=\"3\" y=\"14\" rx=\"1\"/>",
+ "search":"<circle cx=\"11\" cy=\"11\" r=\"8\"/><path d=\"m21 21-4.3-4.3\"/>",
+ "x":"<path d=\"M18 6 6 18\"/><path d=\"m6 6 12 12\"/>",
+ "list":"<path d=\"M3 12h.01\"/><path d=\"M3 18h.01\"/><path d=\"M3 6h.01\"/><path d=\"M8 12h13\"/><path d=\"M8 18h13\"/><path d=\"M8 6h13\"/>",
+ "in":"<path d=\"M17 7 7 17\"/><path d=\"M17 17H7V7\"/>",
+ "out":"<path d=\"M7 7h10v10\"/><path d=\"M7 17 17 7\"/>"};
+function svgIc(k,sz,sw){
+  var s=sz||20;
+  return '<svg class="ic" viewBox="0 0 24 24" width="'+s+'" height="'+s+'" fill="none" stroke="currentColor"'+
+    ' stroke-width="'+(sw||1.8)+'" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(IC[k]||IC.tag)+'</svg>';
+}
+/* Read top to bottom, first match wins - so the narrow names sit above the
+   broad words they contain ("Transfer to my other card" is not a card,
+   "Coffee" is not a fee, "Trolleybus" is not a bus). */
+var IC_RULES=[
+  /* the main categories and the account types, by their whole name */
+  [/^food\s*(&|and)\s*drinks?$/,'basket'],[/^caf[eé]s?\s*(&|and)\s*delivery$/,'coffee'],
+  [/^home\s*(&|and)\s*utilit/,'houseplug'],[/^transport$/,'bus'],[/^health$/,'heartpulse'],
+  [/^personal care$/,'sparkles'],[/^fun\s*(&|and)\s*leisure$/,'ferris'],[/^shopping$/,'bag'],
+  [/^travel$/,'luggage'],[/^education\s*(&|and)\s*career$/,'cap'],[/^financial movements/,'landmark'],
+  [/^not split yet$|^receipts?$/,'receipt'],
+  [/^(bank|debit|credit) card$/,'card'],[/^cash$/,'wallet'],[/^savings$/,'piggy'],[/^crypto(currency)?$/,'bitcoin'],
+  /* money moving about */
+  [/transfer (to|from) my other|between (my )?accounts/,'transfer'],
+  [/balance correction|коригув|корректир/,'sliders'],
+  [/cash withdrawal|банкомат|(^|\s)atm\b|зняття готів|снятие налич/,'cash'],
+  [/crypto|крипт|bitcoin|(^|\s)(btc|usdt|eth)\b/,'bitcoin'],
+  [/credit repay|погашення кредит|погашение кредит/,'card'],
+  [/saving|piggy|заощадж|накопич|сбереж|копилк|скарбничк/,'piggy'],
+  [/debt return|повернення борг|возврат долг|борг повер/,'undo'],
+  [/(^|\s)(lent|lend|lending|loaned?)\b|позич|одолж|в борг|в долг/,'handcoins'],
+  [/exchange|обмін|обмен/,'exchange'],
+  [/donat|charit|благод|донат/,'handheart'],
+  [/(^|\s)(fees?|fines?|tax(es)?)\b|штраф|коміс|комис|податок|налог/,'fee'],
+  [/(^|\s)post(al)?\b|nova ?poshta|parcel|пошт|почт|посилк|посылк/,'package'],
+  /* food */
+  [/tech accessor|cable|charger|кабел|заряд/,'cable'],
+  [/grocer|supermarket|продукт|супермаркет/,'cart'],
+  [/sweet|snack|candy|солод|сладк|снек|цукерк|конфет/,'candy'],
+  [/market|ринок|рынок|базар|овоч/,'carrot'],
+  [/baker|bread|хліб|хлеб|випічк|выпечк/,'croissant'],
+  [/alcohol|wine|алког|(^|\s)вин[оа]($|[\s,.;\/&])/,'wine'],
+  [/energy drink|енергет|энергет/,'zap'],
+  [/coffee|caf[eé]|(^|\s)кав[аиу]|кав.ярн|кофе|кафе/,'coffee'],
+  [/restaurant|ресторан/,'utensils'],
+  [/fast ?food|burger|бургер|фастфуд|фаст-фуд|mcdonald/,'burger'],
+  [/sushi|pizza|суші|суши|піц|пицц/,'pizza'],
+  [/(^|\s)bars?\b|beer|(^|\s)pubs?\b|пиво|(^|\s)(бар|бари|бары|паб)($|\s)/,'beer'],
+  [/deliver|доставк|glovo|wolt/,'moped'],
+  /* home */
+  [/^rent$|(^|\s)rent(al)?\b|оренд|аренд|квартплат/,'house'],
+  [/utilit|комунал|коммунал|electric|електроенерг|електрик|электроэнерг|электричеств|(^|\s)світло/,'bulb'],
+  [/headphone|earphone|airpods|навушник|наушник/,'music'],
+  [/mobile|phone|телефон|зв.язок|связь/,'phone'],
+  [/network|internet|інтернет|интернет|wi-?fi/,'wifi'],
+  [/furniture|меблі|мебел/,'sofa'],
+  [/repair|ремонт/,'wrench'],
+  /* getting about */
+  [/metro|subway|метро/,'metro'],
+  [/trolley|тролейб|троллейб/,'busfront'],
+  [/(^|\s)tram|трамв/,'tram'],
+  [/marshrut|маршрут|minibus/,'van'],
+  [/(^|\s)bus\b|автобус/,'bus'],
+  [/taxi|такс|(^|\s)uber\b|uklon/,'taxi'],
+  [/(^|\s)trains?\b|railway|(^|\s)rail\b|поїзд|поезд|укрзаліз/,'train'],
+  [/blablacar|carpool|попутк/,'car'],
+  [/bicycle|scooter|(^|\s)bike|велосип|самокат/,'bike'],
+  [/(^|\s)fuel|petrol|бензин|пальн|топлив/,'fuel'],
+  [/parking|паркув|парков/,'parking'],
+  /* health and care */
+  [/pharm|аптек/,'pill'],
+  [/dentist|dental|стомат|(^|\s)зуб/,'tooth'],
+  [/doctor|clinic|лікар|врач|клінік|клиник/,'stethoscope'],
+  [/(^|\s)tests?$|analys|аналіз|анализ|(^|\s)lab\b/,'testtube'],
+  [/glasses|lenses|окуляр|очки|лінз|линз/,'glasses'],
+  [/(^|\s)gym\b|fitness|спортзал|фітнес|фитнес/,'dumbbell'],
+  [/sport|спорт|training|workout|cardio|тренув|трениров|yoga|(^|\s)йога|swim|басейн|бассейн/,'run'],
+  [/vitamin|supplement|вітамін|витамин/,'citrus'],
+  [/intim|інтим|интим/,'heart'],
+  [/haircut|barber|(^|\s)hair|стриж|перукар|парикмах|барбер/,'scissors'],
+  [/cosmetic|makeup|perfume|косметик|парфум|парфюм/,'perfume'],
+  [/toiletr|hygien|гігієн|гигиен|shampoo|шампун/,'bath'],
+  [/laundry|dry.?clean|прання|пральн|стирк|прачеч|хімчист|химчист/,'washer'],
+  /* time off */
+  [/board ?game|настіль|настол/,'dice'],
+  [/(^|\s)games?\b|gaming|(^|\s)(ігри|игры)|steam|playstation|xbox/,'gamepad'],
+  [/movie|cinema|(^|\s)film|кіно|кино|фільм|фильм/,'clapper'],
+  [/concert|концерт/,'mic'],
+  [/(^|\s)part(y|ies)\b|вечірк|вечеринк|тусовк/,'party'],
+  [/(^|\s)events?\b|ticket|квит|билет|поді[яї]|событ/,'ticket'],
+  [/bowling|(^|\s)pool\b|billiard|боулінг|боулинг|більярд|бильярд/,'bowling'],
+  [/(^|\s)books?\b|книг/,'book'],
+  [/subscri|підписк|подписк|spotify|netflix|youtube/,'repeat'],
+  [/^other$|(^|\s)misc|^інше$|^другое$|^прочее$/,'pin'],
+  /* things */
+  [/cloth|одяг|одежд/,'shirt'],
+  [/(^|\s)shoe|sneaker|взутт|обув|кросів|кроссов/,'shoe'],
+  [/accessor|аксесуар|аксессуар|jewel|прикрас|украшен/,'watch'],
+  [/electronic|gadget|електрон|электрон|гаджет|технік|техник/,'laptop'],
+  [/home goods|household|побут|(^|\s)быт|господар|хозяйств/,'lamp'],
+  [/(^|\s)toys?\b|іграшк|игрушк|lego/,'toy'],
+  [/gift|подар/,'gift'],
+  [/flower|квіт|цвет/,'flower'],
+  [/flight|airline|(^|\s)avia|переліт|перелет|авіа|авиа|літак|самолет/,'plane'],
+  [/hotel|apartment|hostel|airbnb|готел|гостиниц|житло|жилье/,'bed'],
+  [/souvenir|сувенір|сувенир/,'castle'],
+  [/course|курс/,'presentation'],
+  [/universit|університет|университет|tuition/,'university'],
+  [/portfolio|портфол/,'folder'],
+  /* money in */
+  [/salary|payroll|зарплат|(^|\s)зп($|\s)|оклад/,'briefcase'],
+  [/advance|bonus|аванс|бонус|премі|премия/,'banknote'],
+  [/freelance|side income|фріланс|фриланс|підробі|подработ/,'laptop2'],
+  [/scholarship|stipend|стипенд/,'cap'],
+  [/parent|батьк|родител|(^|\s)family|сім.я|семья/,'handshake'],
+  [/cashback|кешбек|кэшбек/,'percent'],
+  [/refund|повернення|возврат/,'refund'],
+  [/interest|deposit|депозит|відсот|процент/,'trend'],
+  /* broad words, last */
+  [/(^|\s)(pets?|vet|dogs?|cats?)\b|тварин|животн|ветеринар|собак/,'paw'],
+  [/(^|\s)(kids?|child|children|baby)\b|дитин|дитяч|детск|ребен/,'baby'],
+  [/insur|страхув|страхов/,'shield'],
+  [/music|музик|музык/,'music'],
+  [/(^|\s)tv\b|телебач|телевид/,'tv'],
+  [/(^|\s)car\b|(^|\s)авто|машин/,'car'],
+  [/cash|готів|налич/,'wallet'],
+  [/card|(^|\s)карт(к[аиуі]|[аиу])($|\s)/,'card'],
+  [/bank|банк/,'landmark'],
+  [/transfer|переказ|перевод/,'transfer'],
+  [/travel|(^|\s)trip|подорож|путешеств|поїздк|поездк/,'luggage'],
+  [/(^|\s)food|їжа|(^|\s)еда/,'utensils'],
+  [/health|здоров/,'heartpulse'],
+  [/shop|покупк|магаз/,'bag'],
+  [/educat|освіт|образован|study|навчан|учеб/,'cap']
+];
+/* The emoji, when the words gave nothing away. Written without the
+   invisible joiners and variation marks, which is how emojiOf reads them. */
+var IC_EMOJI={
+  '🛒':'cart','🧺':'washer','🍬':'candy','🍭':'candy','🍫':'candy','🍪':'candy','🍩':'candy','🥕':'carrot','🥦':'carrot',
+  '🥬':'carrot','🍎':'apple','🍏':'apple','🍌':'apple','🥐':'croissant','🍞':'croissant','🥖':'croissant','🍷':'wine',
+  '🍾':'wine','🥂':'wine','🍸':'wine','🥃':'wine','🍺':'beer','🍻':'beer','⚡':'zap','☕':'coffee','🍵':'coffee','🧋':'coffee',
+  '🍽':'utensils','🍴':'utensils','🥘':'utensils','🍔':'burger','🍟':'burger','🌭':'burger','🍕':'pizza','🍣':'pizza',
+  '🍱':'pizza','🛵':'moped','🏍':'moped','🏠':'house','🏡':'house','🏘':'house','🏢':'house','💡':'bulb','🔌':'cable',
+  '🔋':'cable','📱':'phone','☎':'phone','📞':'phone','🌐':'wifi','📶':'wifi','📡':'wifi','🛋':'sofa','🪑':'sofa','🛏':'bed',
+  '🔧':'wrench','🔨':'wrench','🛠':'wrench','🪛':'wrench','🚇':'metro','🚉':'metro','🚌':'bus','🚍':'busfront','🚎':'busfront',
+  '🚊':'tram','🚋':'tram','🚐':'van','🚕':'taxi','🚖':'taxi','🚆':'train','🚄':'train','🚅':'train','🚂':'train','🚗':'car',
+  '🚙':'car','🛴':'bike','🚲':'bike','⛽':'fuel','🅿':'parking','💊':'pill','💉':'pill','🦷':'tooth','🩺':'stethoscope',
+  '🏥':'stethoscope','🧪':'testtube','👓':'glasses','🕶':'glasses','🏋':'dumbbell','🤸':'run','🏃':'run','⚽':'run','🏀':'run',
+  '🧘':'run','🏊':'run','🍊':'citrus','🍋':'citrus','🔞':'heart','❤':'heart','💕':'heart','💇':'scissors','✂':'scissors',
+  '💈':'scissors','💄':'perfume','💅':'perfume','🧴':'sparkles','✨':'sparkles','🧼':'bath','🛁':'bath','🧻':'bath','🎮':'gamepad',
+  '🕹':'gamepad','👾':'gamepad','🎬':'clapper','🎥':'clapper','🍿':'clapper','📺':'tv','🎤':'mic','🎵':'music','🎶':'music',
+  '🎧':'music','🥳':'party','🎉':'party','🎊':'party','🎟':'ticket','🎫':'ticket','🎭':'ticket','🎳':'bowling','🎱':'bowling',
+  '📚':'book','📖':'book','📕':'book','🎲':'dice','♟':'dice','🧩':'dice','🔁':'repeat','🔂':'repeat','🔃':'repeat','🔄':'transfer',
+  '📌':'pin','📍':'pin','👕':'shirt','👔':'shirt','👗':'shirt','👖':'shirt','🧥':'shirt','👚':'shirt','👟':'shoe','👞':'shoe',
+  '👠':'shoe','🥾':'shoe','👜':'bag','👛':'bag','🎒':'bag','⌚':'watch','💍':'watch','💎':'watch','💻':'laptop','🖥':'laptop',
+  '⌨':'laptop','🧹':'lamp','🧽':'lamp','🪴':'flower','🎁':'gift','💐':'flower','🌷':'flower','🌹':'flower','🌸':'flower',
+  '✈':'plane','🛫':'plane','🛬':'plane','🏨':'bed','🏩':'bed','🧳':'luggage','🌍':'luggage','🌴':'luggage','🧸':'toy',
+  '🪀':'toy','🗿':'castle','🏰':'castle','🗽':'castle','🎓':'cap','🏫':'university','🏛':'university','📁':'folder','📂':'folder',
+  '🗂':'folder','📮':'package','📦':'package','✉':'package','📬':'package','💱':'exchange','💳':'card','🤝':'handheart',
+  '🐷':'piggy','🐖':'piggy','📄':'fee','📃':'fee','🧾':'receipt','🏧':'cash','🪙':'bitcoin','🔙':'undo','↩':'refund','↪':'undo',
+  '🤲':'handcoins','🧮':'sliders','💼':'briefcase','💵':'banknote','💶':'banknote','💷':'banknote','💴':'banknote','💰':'piggy',
+  '💸':'landmark','🏦':'landmark','📈':'trend','🧑💻':'laptop2','👨💻':'laptop2','👩💻':'laptop2','👨👩👦':'handshake',
+  '👪':'handshake','🐶':'paw','🐱':'paw','🐾':'paw','🐕':'paw','🐈':'paw','👶':'baby','🍼':'baby','🛡':'shield'
+};
+/* the leading emoji alone, without joiners, skin tones or variation marks */
+function emojiOf(s){
+  var m=String(s||'').match(EMO);
+  return m?m[0].replace(/[\uFE0E\uFE0F\u200D\s]|\uD83C[\uDFFB-\uDFFF]/g,''):'';
+}
+var IC_CACHE={};
+/* the icon for a name; family is where to look next when the name says
+   nothing - an expense's main category */
+function icKey(name,family){
+  var raw=String(name||''), ck=raw+'\u0001'+(family||'');
+  if(IC_CACHE.hasOwnProperty(ck)) return IC_CACHE[ck];
+  var n=strip(raw).toLowerCase().replace(/\s+/g,' ').trim(), k='';
+  for(var i=0;i<IC_RULES.length&&!k;i++) if(IC_RULES[i][0].test(n)) k=IC_RULES[i][1];
+  if(!k){ var g=emojiOf(raw); if(g) k=IC_EMOJI[g]||IC_EMOJI[g.slice(0,2)]||IC_EMOJI[g.charAt(0)]||''; }
+  if(!k&&family&&family!==name) k=icKey(family);
+  return (IC_CACHE[ck]=k||'tag');
+}
+/* Money coming in is one family, whatever its source: the same green as
+   its amount. Everything else takes the colour its category always had. */
+var HUE_IN=150;
+/* the colours an icon badge is drawn in, for one hue */
+function icStyle(hue){
+  return '--ib:'+ok(.50,.12,hue)+';--ibt:'+ok(.72,.10,hue,.20);
+}
+/* the round badge at the start of a row */
+function icBadge(k,hue,cls){
+  return '<span class="badge ib'+(cls?' '+cls:'')+'" style="'+icStyle(hue)+'">'+svgIc(k,20)+'</span>';
+}
+/* a bank logo that did not load gives way to the icon */
+function logoFail(img,k,hue){
+  var p=img&&img.parentNode; if(!p) return;
+  p.classList.add('ib'); p.setAttribute('style',icStyle(hue)); p.innerHTML=svgIc(k,20);
+}
+/* a category, a subcategory or a source, in a badge of its family's colour */
+function catBadge(name,family,cls){ return icBadge(icKey(name,family),hueOf(family||name),cls); }
+function srcBadge(name,cls){ return icBadge(icKey(name),HUE_IN,cls); }
+/* an icon sitting inside a line of text, tinted like its badge would be */
+function inIc(name,family,hue){
+  /* hue null: the icon takes the colour of the text around it */
+  var h=(hue!==undefined)?hue:hueOf(family||name);
+  return '<span class="inic"'+(h===null?'':' style="color:'+ok(.52,.12,h)+'"')+'>'+svgIc(icKey(name,family),16,2)+'</span>';
+}
+/* an account: what kind of account it is, in the colour of its own name */
+function accKey(a){ return icKey(bankType(a&&a.type)); }
+
 /* ================================================================ state */
 /* D is the server's world (see the header). S is this page's, and a few
    of its keys are not guessable:
@@ -1162,12 +1581,12 @@ function daysBetween(a,b){ return Math.round((a-b)/86400000); }
      lid          running id for split lines in the receipt editor
      fCat/fSub/fSrc/fAcc  armed filters (arrays - multi-select)
      fBad         'needs attention' mode: ignores the date window
-     fOpen        whether the filter row is unfolded
+     qOpen/q      the search-and-filter panel, and what is typed in it
      sel/selDel   selected rows; cleared on every reply, see applyData
      open         which receipts are expanded
      qsel/qdel/qedit/qonce  quick-action editing state */
 var D=null;
-var S={tab:'Activity',filter:'All',fCat:[],fSub:[],fSrc:[],fAcc:[],fBad:false,fOpen:false,lid:0,qid:0,flushing:false,qcb:{},shopsAll:false,shop:null,shopSort:'new',selDay:null,open:{},sheet:null,busy:false,
+var S={tab:'Activity',filter:'All',fCat:[],fSub:[],fSrc:[],fAcc:[],fBad:false,lid:0,qid:0,flushing:false,qcb:{},shopsAll:false,shop:null,shopSort:'new',selDay:null,open:{},sheet:null,busy:false,
        pending:{},cid:0,seq:0,applied:0,
        qsel:null,qdel:null,qedit:null,qonce:null,
        q:'',qOpen:false,older:null,olderAsked:false,pendingDel:{},
@@ -1316,6 +1735,7 @@ function load(){
   var snap=readSnap();
   if(snap){
     D=snap.d;
+    S.syncedAt=Number(snap.at)||0;
     /* the copy may be from yesterday; today is today */
     var now=iso(new Date());
     if(String(D.today||'')<now) D.today=now;
@@ -1345,6 +1765,7 @@ function load(){
       applyData(res,seq);
     }else{
       D=res;
+      S.syncedAt=Date.now();
       rebuildTx();
       /* the first load lands on whichever tab is first in the bar */
       if(!S.landed){ S.landed=true; S.tab=landTab(); renderTabs(); }
@@ -1428,6 +1849,7 @@ function applyData(res,seq){
   if(seq!==undefined){ if(seq<S.applied) return; S.applied=seq; }
   D=res;
   S.fromSnap=false;
+  S.syncedAt=Date.now();
   /* the first load lands on whichever tab is first in the bar; after that it
      is wherever you were */
   if(!S.landed){ S.landed=true; S.tab=landTab(); renderTabs(); }
@@ -1941,6 +2363,8 @@ function lensPaint(){
   var lens=document.getElementById("tablens"), core=document.getElementById("lenscore");
   var g=LENS.geo;
   if(!lens||!core||!g) return;
+  /* glass up with nothing in it can never be what anyone meant */
+  if(core.children.length<3||!core.children[2].children.length) lensBuild();
   var fx=Math.max(6,Math.min(g.barW-6,LENS.x-g.barLeft));
   lens.style.left=(fx-LENS_W/2)+"px";
   var local=fx-g.ox;
@@ -2084,58 +2508,173 @@ function lensUp(){
     if(ix>-1&&order[ix]) go(order[ix]);
   }
 
-  /* Settle onto the tab you chose, then fade. No rebuild of the copies here:
-     re-cloning twenty-one icons mid-settle was a visible hitch, and nobody can
-     tell which copy is highlighted while it is on its way out. */
+  /* The copies inside the glass still show the old tab as the chosen one;
+     moving that highlight is one class per copy, where re-cloning twenty-one
+     icons mid-settle was a visible hitch. */
+  lensSync();
+  /* Settle onto the tab you chose, then fade.
+
+     The copies are left in the glass once it has faded - the next press
+     clones fresh ones anyway. They used to be emptied on a timer 620ms after
+     the fade began, and that timer was never cancelled: tap a second tab
+     inside that time and it fired in the middle of the NEW gesture, deleting
+     the copies while the glass was up. That is the lens that came up as an
+     empty white button. Hidden, the glass costs nothing: CSS takes it out of
+     rendering (visibility) once the fade has finished. */
   var home=tabCentre();
   lensGlide(home||LENS.x,LENS_OUT_MS,function(){
     if(LENS.on) return;
     var l=document.getElementById("tablens");
     if(l) l.classList.remove("show");
-    setTimeout(function(){
-      var c=document.getElementById("lenscore");
-      if(c&&!LENS.on) c.innerHTML="";
-    },620);
   });
 }
-document.addEventListener("pointerdown",lensDown,true);
-function head(title,right){
-  return '<div class="page-head"><h1>'+title+'</h1><div class="right">'+(right||'')+
-    '<button class="iconbtn" onclick="openSettings()" title="Settings">'+GEAR_ICON+'</button>'+
-    '<button class="iconbtn" onclick="openPriv()" title="Privacy">'+(anyHidden()?'\uD83D\uDE48':'\uD83D\uDC41\uFE0F')+'</button>'+
-    '<button class="iconbtn rfb" onclick="refresh(this)" title="Refresh">\u21bb</button></div></div>';
+/* move the highlight inside the glass to the tab that is chosen now */
+function lensSync(){
+  var core=document.getElementById("lenscore"), tabs=document.getElementById("tabs");
+  if(!core||!tabs) return;
+  var on=[].indexOf.call(tabs.children,tabs.querySelector(".tab.on"));
+  for(var i=0;i<core.children.length;i++){
+    var kids=core.children[i].children;
+    for(var j=0;j<kids.length;j++) kids[j].classList.toggle("on",j===on);
+  }
 }
-function openPriv(){
+document.addEventListener("pointerdown",lensDown,true);
+/* Every page has the same header: the title, whatever that page adds, and
+   one round button. Refresh, the two privacy switches and Settings used to
+   be three buttons of their own on every page; they are one menu now.
+   While a privacy switch is on, the button wears a crossed-out eye instead
+   of its dots, so it is never a secret that the numbers are hidden. */
+function head(title,right,o){
+  o=o||{};
+  return '<div class="page-head'+(o.cls?' '+o.cls:'')+'"><div class="ph-l"><div class="ph-t">'+(o.titleHtml||('<h1>'+title+'</h1>'))+(o.after||'')+'</div>'+
+    (o.sub||'')+'</div><div class="right">'+(right||'')+moreBtn()+'</div></div>';
+}
+function moreBtn(){
+  var hid=anyHidden();
+  return '<button class="iconbtn more'+(hid?' priv':'')+'" onclick="openMenu(this)" aria-label="'+(hid?'Numbers are hidden - menu':'Menu')+'">'+
+    (hid?svgIc('eyeoff',19,1.9):svgIc('more',21,2.3))+'</button>';
+}
+/* The menu hangs from the button that opened it, wherever that button is. */
+function openMenu(btn){
+  if(btn&&btn.getBoundingClientRect){
+    var r=btn.getBoundingClientRect();
+    S.menuAt={top:Math.round(r.bottom+8),right:Math.max(10,Math.round(window.innerWidth-r.right-2))};
+  }
+  S.menuOpen=true;
+  drawMenu();
+}
+function drawMenu(){
+  var at=S.menuAt||{top:80,right:14};
+  var ago=S.syncedAt?agoWords(S.syncedAt):'';
   document.getElementById('modal').innerHTML=
     '<div class="scrim" style="background:rgba(28,26,23,.10)" onclick="closeModal()"></div>'+
-    '<div class="popover">'+
-      privRow('balance','Hide balance','Masks what is in your accounts') +
-      privRow('all','Hide all numbers','Masks every amount in the app') +
+    '<div class="popover menu" style="top:'+at.top+'px;right:'+at.right+'px">'+
+      '<button class="prow" onclick="closeModal();refresh()"><span class="mi">'+svgIc('refresh')+'</span>'+
+        '<span class="t"><b>Refresh</b><span>'+(ago?'Updated '+ago:'Ask the sheet for the latest')+'</span></span></button>'+
+      '<div class="msep"></div>'+
+      privRow('balance','Hide balance','Masks what is in your accounts')+
+      privRow('all','Hide all numbers','Masks every amount in the app')+
+      '<div class="msep"></div>'+
+      '<button class="prow" onclick="closeModal();openSettings()"><span class="mi">'+svgIc('settings')+'</span>'+
+        '<span class="t"><b>Settings</b></span><span class="chevr">\u203A</span></button>'+
     '</div>';
 }
 function privRow(key,title,note){
   var on=PRIV[key];
   return '<button class="prow" onclick="setPriv('+q(key)+')">'+
+    '<span class="mi">'+svgIc(on?'eyeoff':'eye')+'</span>'+
     '<span class="t"><b>'+title+'</b><span>'+note+'</span></span>'+
     '<span class="sw'+(on?' on':'')+'" style="'+(on?'background:'+GREEN_L:'')+'"><i></i></span></button>';
 }
 function setPriv(key){
   PRIV[key]=!PRIV[key];
-  savePriv(); render(); openPriv();
+  savePriv(); render(true); if(S.menuOpen) drawMenu();
 }
 function togglePrivBalance(){
   if(PRIV.all) return;
   PRIV.balance=!PRIV.balance; savePriv(); render();
 }
-function refresh(btn){
-  if(btn){ btn.classList.add('spinning'); }
+function agoWords(t){
+  var s=Math.max(0,Math.round((Date.now()-t)/1000));
+  if(s<45) return 'just now';
+  var m=Math.round(s/60);
+  if(m<60) return m+' min ago';
+  var h=Math.round(m/60);
+  return h<24?(h+' h ago'):'over a day ago';
+}
+function refresh(){
+  if(S.refreshing) return;
+  S.refreshing=true;
+  document.body.classList.add('refreshing');
   commitUndo();
   /* fresh:true reads Setup, the Calendar and the plan again instead of the
      ten-minute copy - for when the sheet was edited by hand */
   API.call('bootstrap',{fresh:true},function(err,res){
-    if(err){ toast(err); if(btn) btn.classList.remove('spinning'); return; }
+    S.refreshing=false;
+    document.body.classList.remove('refreshing');
+    ptrDone();
+    if(err){ toast(err); return; }
     applyData(res,++S.seq); toast('Up to date');
   });
+}
+/* ---- pull to refresh -------------------------------------------------------
+   Refresh left the header for the ••• menu, and the gesture every iPhone list
+   answers to took its place: at the very top of a page, pull down and let go.
+   The page itself does not move (the rubber band is switched off for the
+   whole app), so a small puck comes down from under the header instead,
+   turning as you pull, and spins while the sheet answers. */
+var PTR=null, PTR_AT=58;
+function ptrEl(){
+  var el=document.getElementById('ptr');
+  if(!el){ el=document.createElement('div'); el.id='ptr'; el.innerHTML=svgIc('refresh',18,2.2); document.body.appendChild(el); }
+  return el;
+}
+function ptrPull(P){ return Math.min(104,Math.max(0,P.d)*0.5); }
+document.addEventListener('touchstart',function(e){
+  PTR=null;
+  if(!D||S.refreshing||DRAG||e.touches.length!==1) return;
+  if((window.scrollY||window.pageYOffset||0)>0) return;
+  var m=document.getElementById('modal'), m2=document.getElementById('modal2');
+  if((m&&m.firstChild)||(m2&&m2.firstChild)||document.body.classList.contains('connecting')) return;
+  var t=e.target;
+  if(!t.closest||t.closest('.tabbar,.fab,#fabwrap,.selbar,input,textarea,select,.grip')) return;
+  PTR={x:e.touches[0].clientX,y:e.touches[0].clientY,d:0,on:false};
+},{passive:true});
+document.addEventListener('touchmove',function(e){
+  var P=PTR; if(!P) return;
+  var t=e.touches[0], dx=t.clientX-P.x, dy=t.clientY-P.y;
+  if(!P.on){
+    /* sideways is a swipe, upwards is a scroll - neither is this */
+    if((Math.abs(dx)>12&&Math.abs(dx)>Math.abs(dy))||dy<-4||(window.scrollY||0)>0){ PTR=null; return; }
+    if(dy<12) return;
+    P.on=true;
+    var ph=document.querySelector('.page-head');
+    P.top=ph?Math.round(ph.getBoundingClientRect().bottom):60;
+    var el0=ptrEl(); el0.classList.remove('go','spin'); el0.style.top=P.top+'px';
+  }
+  P.d=dy-12;
+  var pull=ptrPull(P), el=ptrEl();
+  el.style.opacity=String(Math.min(1,pull/28));
+  el.style.transform='translateY('+(pull-40)+'px) rotate('+Math.round(pull*4.2)+'deg)';
+  el.classList.toggle('ready',pull>=PTR_AT);
+},{passive:true});
+function ptrEnd(){
+  var P=PTR; PTR=null;
+  if(!P||!P.on) return;
+  var el=ptrEl();
+  el.classList.add('go');
+  if(ptrPull(P)>=PTR_AT&&!S.refreshing){
+    el.style.transform='translateY(14px)'; el.classList.add('spin');
+    try{ if(navigator.vibrate) navigator.vibrate(8); }catch(err){}
+    refresh();
+  }else ptrDone();
+}
+document.addEventListener('touchend',ptrEnd,{passive:true});
+document.addEventListener('touchcancel',ptrEnd,{passive:true});
+function ptrDone(){
+  var el=document.getElementById('ptr'); if(!el) return;
+  el.classList.add('go'); el.classList.remove('spin','ready');
+  el.style.opacity='0'; el.style.transform='translateY(-40px)';
 }
 function toggle(k){ S.open[k]=!S.open[k]; render(); }
 
@@ -2218,9 +2757,9 @@ function corrFmt(t,v,bare){
   var s=bmoney(v,2);
   return bare?s.replace(" \u20b4",""):s;
 }
-var CORR_ICON='<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 8h9"/><path d="M19 8h1"/><path d="M4 16h4"/><path d="M14 16h6"/><circle cx="16" cy="8" r="2.2"/><circle cx="11" cy="16" r="2.2"/></svg>';
+var CORR_ICON=svgIc('sliders',19,1.9);
 
-var XFER_ICON='<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5h13M13.5 5 17 8.5 13.5 12"/><path d="M20 15.5H7M10.5 12 7 15.5 10.5 19"/></svg>';
+var XFER_ICON=svgIc('transfer',19,1.9);
 function txRow(t,onclick,drag,sel){
   var e=isExp(t);
   var xf=isXfer(t);
@@ -2231,12 +2770,13 @@ function txRow(t,onclick,drag,sel){
   /* nothing but a mark on it: then the mark is what this row is */
   if(fl.length&&!t.sub&&!t.main){ key=fl[0].name; title=strip(fl[0].name); }
   var bits=[];
-  if(fl.length&&(t.sub||t.main)) bits.push(fl.map(function(f){ return glyph(f.name); }).join(' '));
   if(e&&t.shop&&!xf) bits.push(t.shop);
   if(t.note&&!cr) bits.push(t.note);
   if(!xf&&!cr) bits.push(strip(t.account));
   var meta=bits.join(' · ');
-  if(t.trip&&!cr) meta='✈️ '+meta;
+  /* a mark or a trip is a small icon in front of the second line */
+  var marks=(t.trip&&!cr?'<span class="mk">'+svgIc('plane',13,2)+'</span>':'')+
+    ((fl.length&&(t.sub||t.main))?fl.map(function(f){ return '<span class="mk">'+svgIc(icKey(f.name),13,2)+'</span>'; }).join(''):'');
   if(cr){
     /* the account and the two balances are the whole story */
     var pr=corrPair(t);
@@ -2267,8 +2807,9 @@ function txRow(t,onclick,drag,sel){
     (t.pending?' style="opacity:.5"':'')+' onclick="'+onclick+'">'+
     (picking?'<span class="selck">'+CHECK_ICON+'</span>':'')+
     (drag?'<span class="grip" onpointerdown="gripDown(event)" onclick="event.stopPropagation();event.preventDefault()">'+GRIP_ICON+'</span>':'')+
-    '<div class="badge" style="color:'+ink(cr?'Balance correction':(e?t.main:t.source))+';background:'+tint(cr?'Balance correction':(e?t.main:t.source),.20)+'">'+(xf?XFER_ICON:(cr?CORR_ICON:esc(glyph(key))))+'</div>'+
-    '<div class="rmain"><div class="rtitle">'+((xf||cr)?title:esc(title||'—'))+'</div><div class="rmeta">'+esc(meta)+'</div></div>'+
+    (xf?icBadge('transfer',hueOf(t.main||'Transfer')):cr?icBadge('sliders',hueOf('Balance correction')):
+      e?catBadge(key,t.main):srcBadge(key))+
+    '<div class="rmain"><div class="rtitle">'+((xf||cr)?title:esc(title||'—'))+'</div><div class="rmeta">'+marks+esc(meta)+'</div></div>'+
     '<div><div class="ramt" style="color:'+((xf||cr)?'rgba(25,23,19,.50)':(e?'#191713':GREEN))+'">'+amt+'</div>'+
     (extra?'<div class="rsub">'+esc(extra)+'</div>':'')+'</div>'+
     '</button>';
@@ -2281,61 +2822,112 @@ function barFill(w,name,over){
 }
 
 /* ================================================================ 1 · ACTIVITY */
+/* One row. The title says what the list is showing - All activity, Income
+   or Expenses - and is itself the switch: tap it for the three, for month
+   by month, and for whatever still needs finishing. Beside it the streak,
+   the magnifier (search and the filters together) and the ••• menu.
+   What needs finishing is also said in words at the top of the list, and
+   only when something does. */
+var VIEWS=[['All','All activity','list'],['Income','Income','in'],['Expenses','Expenses','out']];
+function viewLabel(){
+  for(var i=0;i<VIEWS.length;i++) if(VIEWS[i][0]===S.filter) return VIEWS[i][1];
+  return VIEWS[0][1];
+}
 function pageActivity(){
+  var h=head('','<span class="acttools">'+streakBadge()+findBtn()+'</span>',{cls:'acthead',
+    titleHtml:'<button class="ttlbtn" onclick="openViewMenu(this)" aria-haspopup="menu" aria-label="Choose what the list shows">'+
+      '<h1>'+viewLabel()+'</h1>'+svgIc('chevdown',20,2.4)+'</button>'});
+  return h+'<div id="actbody">'+actBody()+'</div>';
+}
+/* the menu that hangs from the title */
+function openViewMenu(btn){
+  if(btn&&btn.getBoundingClientRect){
+    var r=btn.getBoundingClientRect();
+    S.viewAt={top:Math.round(r.bottom+6),left:Math.max(10,Math.round(r.left-6))};
+  }
+  S.menuOpen=true;
+  drawViewMenu();
+}
+function drawViewMenu(){
+  var at=S.viewAt||{top:80,left:12}, nBad=D.tx.filter(unbalanced).length, m=S.actMonth;
+  var tick='<span class="tick">'+svgIc('check',18,2.4)+'</span>';
+  var h=VIEWS.map(function(v){
+    var on=S.filter===v[0]&&!S.fBad;
+    return '<button class="prow'+(on?' cur':'')+'" onclick="closeModal();setFilter('+q(v[0])+')"><span class="mi">'+svgIc(v[2])+'</span>'+
+      '<span class="t"><b>'+v[1]+'</b></span>'+(on?tick:'')+'</button>';
+  }).join('');
+  h+='<div class="msep"></div>'+
+    '<button class="prow" onclick="closeModal();openMonths()"><span class="mi">'+svgIc('calendar')+'</span>'+
+    '<span class="t"><b>Browse by month</b><span>'+esc(m?('Showing '+monthName(m)):'Showing the last 30 days')+'</span></span>'+
+    '<span class="chevr">›</span></button>';
+  if(nBad||S.fBad){
+    h+='<button class="prow'+(S.fBad?' cur':'')+'" onclick="closeModal();toggleBad()"><span class="mi warn">'+svgIc('alert')+'</span>'+
+      '<span class="t"><b>Needs attention</b><span>'+nBad+' record'+(nBad===1?'':'s')+'</span></span>'+(S.fBad?tick:'')+'</button>';
+  }
+  document.getElementById('modal').innerHTML=
+    '<div class="scrim" style="background:rgba(28,26,23,.10)" onclick="closeModal()"></div>'+
+    '<div class="popover menu vmenu" style="top:'+at.top+'px;left:'+at.left+'px">'+h+'</div>';
+}
+function findBtn(){
+  return '<button class="iconbtn find'+(S.qOpen?' on':'')+(!S.qOpen&&(narrowed()||S.q)?' set':'')+'" onclick="toggleFind()"'+
+    ' aria-label="Search and filter">'+svgIc('search',19,2)+'</button>';
+}
+/* a category, source or account is narrowing the list */
+function narrowed(){ return !!(S.fCat.length||S.fSub.length||S.fSrc.length||S.fAcc.length); }
+/* everything under the header */
+function actBody(){
   var nBad=D.tx.filter(unbalanced).length;
-  var mo=S.actMonth||D.thisMonth;
-  var h=head('Activity'+streakBadge(),'<button class="stamp stampbtn'+(S.actMonth?' on':'')+'" onclick="openMonths()" aria-label="Browse by month">'+
-    MONS[Number(mo.slice(5,7))-1].toUpperCase()+' '+mo.slice(0,4)+'</button>');
-  h+='<div class="chiprow">'+['All','Income','Expenses'].map(function(f){
-      var on=S.filter===f;
-      return '<button class="chip'+(on?' on':'')+'" style="'+(on?'background:'+ACCENT+';box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 2px 8px -4px rgba(30,26,22,.3)':'')+'" onclick="setFilter(\''+f+'\')">'+f+'</button>';
-    }).join('')+
-    /* the receipts that do not add up sit opposite the three tabs: it is a
-       way of looking at the list, not one more thing to narrow it by */
-    '<span class="chipend">'+
-    (nBad
-      ? '<button class="chip badchip'+(S.fBad?' on':'')+'" onclick="toggleBad()"'+
-        ' aria-label="Show what still needs attention">!</button>' : '')+
-    '<button class="chip funnel srch'+(S.qOpen?' open':'')+(S.q?' set':'')+'" onclick="toggleSearch()" aria-label="Search">'+SEARCH_ICON+'</button>'+
-    /* the rest of the narrowing lives behind this one button, so the list
-       keeps the whole screen until you actually want to narrow it */
-    '<button class="chip funnel'+(S.fOpen?' open':'')+(anyFilter()?' set':'')+'"'+
-      ' onclick="toggleFilters()" aria-label="Filters">'+FUNNEL_ICON+'</button>'+
-    '</span></div>';
-
-  if(S.qOpen){
-    h+='<div class="searchbar"><input id="actsearch" class="tinput" type="search" enterkeyhint="search" autocomplete="off" autocorrect="off" spellcheck="false"'+
-       ' placeholder="Shop, note, category, account, amount, 2026-09…" value="'+esc(S.q)+'" oninput="onSearch(this.value)">'+
-       (S.q?'<button class="xbtn" onclick="clearSearch()" aria-label="Clear">✕</button>':'')+'</div>';
-  }
-
-  /* every tab gets the bar; each one only offers what it can narrow by */
-  if(S.fOpen){
-  h+='<div class="fbar">';
-  if(!S.fBad){
-    if(S.filter==='Expenses'){
-      h+=fpill('Category',S.fCat,'openCatFilter()');
-      h+=fpill('Subcategory',S.fSub,'openSubFilter()');
-    }else if(S.filter==='Income'){
-      h+=fpill('Source',S.fSrc,'openSrcFilter()');
-    }else{
-      /* on All a category and a source are the same question asked of the
-         two kinds of record, so they share one pill */
-      h+=fpill('Category',S.fCat.concat(S.fSrc),'openWhatFilter()');
-      h+=fpill('Subcategory',S.fSub,'openSubFilter()');
-    }
-  }
-  h+=fpill('Account',S.fAcc,'openAccFilter()');
-  if(anyFilter()) h+='<button class="fpill" onclick="clearFilters()"><span class="v">Clear</span><span class="x">✕</span></button>';
-  h+='</div>';  }
-
+  var h=findPanel()+attnRow(nBad);
   var tr=tripNow();
   if(tr){
     var ts=tripStats(tr.name);
-    h+='<button class="tripbar glass" onclick="openTripSum('+q(tr.name)+')"><span>✈️ '+esc(tr.name)+'</span>'+
+    h+='<button class="tripbar glass" onclick="openTripSum('+q(tr.name)+')"><span class="tripn">'+svgIc('plane',17,2)+esc(tr.name)+'</span>'+
        '<span class="tiny">Day '+tripDay(tr)+' · '+money(ts.total,0)+'</span></button>';
   }
   return h+'<div id="actlist">'+activityList()+'</div>';
+}
+/* Search and the filters open together: the field first, the pills under
+   it. Closed, the pills that are still doing something stay in sight, so
+   a narrowed list never looks like the whole of it. */
+function findPanel(){
+  if(S.qOpen){
+    return '<div class="findbar"><label class="sfield">'+svgIc('search',17,2)+
+      '<input id="actsearch" type="search" enterkeyhint="search" autocomplete="off" autocorrect="off" spellcheck="false"'+
+      ' placeholder="Shop, note, category, amount…" value="'+esc(S.q)+'" oninput="onSearch(this.value)">'+
+      (S.q?'<button class="sx" onclick="clearSearch()" aria-label="Clear">'+svgIc('x',12,3)+'</button>':'')+
+      '</label><button class="fcancel" onclick="toggleFind()">Cancel</button></div>'+
+      (S.fBad?'':'<div class="fbar">'+filterPills(false)+'</div>');
+  }
+  return (narrowed()&&!S.fBad)?'<div class="fbar">'+filterPills(true)+'</div>':'';
+}
+/* each list only offers what it can be narrowed by; onlySet leaves out the
+   pills that are not doing anything */
+function filterPills(onlySet){
+  var h='';
+  function add(label,arr,fn){ if(!onlySet||(arr&&arr.length)) h+=fpill(label,arr,fn); }
+  if(S.filter==='Expenses'){
+    add('Category',S.fCat,'openCatFilter()');
+    add('Subcategory',S.fSub,'openSubFilter()');
+  }else if(S.filter==='Income'){
+    add('Source',S.fSrc,'openSrcFilter()');
+  }else{
+    /* on All a category and a source are the same question asked of the
+       two kinds of record, so they share one pill */
+    add('Category',S.fCat.concat(S.fSrc),'openWhatFilter()');
+    add('Subcategory',S.fSub,'openSubFilter()');
+  }
+  add('Account',S.fAcc,'openAccFilter()');
+  if(narrowed()) h+='<button class="fpill" onclick="clearFilters()"><span class="v">Clear</span><span class="x">✕</span></button>';
+  return h;
+}
+/* the old "!" chip, said in words */
+function attnRow(n){
+  var ic='<span class="ai">'+svgIc('alert',18,2)+'</span>';
+  if(S.fBad) return '<div class="attn on">'+ic+'<span class="at"><b>Needs attention</b> · '+n+' record'+(n===1?'':'s')+'</span>'+
+    '<button class="adone" onclick="toggleBad()">Done</button></div>';
+  if(!n) return '';
+  return '<button class="attn" onclick="toggleBad()">'+ic+'<span class="at"><b>'+n+' record'+(n===1?'':'s')+'</b> need'+(n===1?'s':'')+' attention</span>'+
+    '<span class="chevr">›</span></button>';
 }
 /* The list part of Activity on its own, so typing in the search box can
    redraw it without taking the keyboard away. */
@@ -2559,13 +3151,13 @@ function streakInfo(){
 function streakBadge(){
   var st=streakInfo(), lit=st.today&&st.cur>0;
   return '<button class="streak'+(lit?' lit':'')+'" onclick="openStreak()" aria-label="Streak: '+st.cur+' day'+(st.cur===1?'':'s')+'">'+
-    '<span class="fl">🔥</span>'+(st.cur?'<b>'+st.cur+'</b>':'')+'</button>';
+    svgIc('flame',16,2)+(st.cur?'<b>'+st.cur+'</b>':'')+'</button>';
 }
 function openStreak(){
   var st=streakInfo(), today=D.today;
   var h=sheetTop('Streak','');
   h+='<div class="hero" style="text-align:center;padding:22px 18px">'+
-    '<div style="font-size:44px;line-height:1;'+(st.today&&st.cur?'':'filter:grayscale(1);opacity:.45')+'">🔥</div>'+
+    '<div class="bigflame'+(st.today&&st.cur?' lit':'')+'">'+svgIc('flame',46,1.6)+'</div>'+
     '<div style="margin-top:10px;font:700 30px/1.1 -apple-system,sans-serif;letter-spacing:-.6px">'+st.cur+' day'+(st.cur===1?'':'s')+'</div>'+
     '<div class="tiny" style="margin-top:6px">'+(st.cur?'in a row with everything written down':'Write something down today to start one')+'</div>'+
     (st.best>st.cur?'<div class="tiny" style="margin-top:4px">Best: '+st.best+' days</div>':(st.cur>1?'<div class="tiny" style="margin-top:4px">Your best so far</div>':''))+
@@ -2617,14 +3209,13 @@ function streakCheck(){
   try{ seen=localStorage.getItem('budget.streakMs')||''; }catch(e){}
   if(seen===mark) return;
   try{ localStorage.setItem('budget.streakMs',mark); }catch(e){}
-  toast('🔥 '+st.cur+' days in a row!',3500);
+  toast(st.cur+' days in a row!',3500);
 }
 /* ---- search ------------------------------------------------------------
    Every word has to be found somewhere in the record: its shop, note,
    category, subcategory, source, account or marks - folded the same way the
    shop box folds them, so "novus" finds "Новус" - or be its amount (65 finds
    65, 65.00 and 650) or the start of its date (2026-09). */
-var SEARCH_ICON='<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6"/><path d="M15.2 15.2 20 20"/></svg>';
 function searchTokens(q){ return String(q||'').trim().split(/\s+/).filter(Boolean); }
 function txText(t){
   var bits=[t.shop,t.note,t.sub,t.main,t.source,t.account,t.trip];
@@ -2660,12 +3251,12 @@ function onSearch(v){
     if(S.q.trim()) ensureOlder();
     drawActList();
     /* the clear button comes and goes without redrawing the field */
-    var bar=document.querySelector('.searchbar'), x=bar&&bar.querySelector('.xbtn');
-    if(bar&&S.q&&!x) bar.insertAdjacentHTML('beforeend','<button class="xbtn" onclick="clearSearch()" aria-label="Clear">✕</button>');
+    var bar=document.querySelector('.sfield'), x=bar&&bar.querySelector('.sx');
+    if(bar&&S.q&&!x) bar.insertAdjacentHTML('beforeend','<button class="sx" onclick="clearSearch()" aria-label="Clear">'+svgIc('x',12,3)+'</button>');
     if(x&&!S.q) x.parentNode.removeChild(x);
   },140);
 }
-function toggleSearch(){
+function toggleFind(){
   S.qOpen=!S.qOpen;
   if(!S.qOpen){ S.q=''; S.qLimit=0; }
   render(true);
@@ -2674,7 +3265,7 @@ function toggleSearch(){
 function clearSearch(){
   S.q=''; S.qLimit=0; drawActList();
   var el=document.getElementById('actsearch'); if(el){ el.value=''; el.focus(); }
-  var x=document.querySelector('.searchbar .xbtn'); if(x) x.parentNode.removeChild(x);
+  var x=document.querySelector('.sfield .sx'); if(x) x.parentNode.removeChild(x);
 }
 function moreResults(){ S.qLimit=(S.qLimit||120)+200; drawActList(); }
 function setFilter(f){ S.filter=f; S.fCat=[]; S.fSub=[]; S.fSrc=[]; S.fAcc=[]; S.fBad=false; render(); }
@@ -2768,7 +3359,7 @@ function rangeBar(){
 function openRangePicker(){
   openPicker({title:'Period', current:pref('range','m'),
     groups:[{label:'',items:RANGES.map(function(r){
-      return {value:r.key,label:r.label,glyph:'\u25F7',tintKey:r.key}; })}],
+      return {value:r.key,label:r.label,icon:'calendar',hue:255}; })}],
     apply:function(v){ if(v) setPref('range',v); render(); }});
 }
 function openRangeAcc(){
@@ -2844,7 +3435,7 @@ function pageSummary(){
     rows.forEach(function(r){
       var open=!!S.open['cat:'+r.name];
       h+='<button class="row" style="border-bottom:none" onclick="toggle('+q('cat:'+r.name)+')">'+
-        '<div class="badge" style="color:'+ink(r.name)+';background:'+tint(r.name,.22)+'">'+esc(glyph(r.name))+'</div>'+
+        catBadge(r.name)+
         '<div class="rmain"><div style="display:flex;justify-content:space-between;align-items:baseline">'+
           '<span style="font:590 14.5px/1 -apple-system;letter-spacing:-.2px">'+esc(strip(r.name))+'</span>'+
           '<span style="font:600 14px/1 -apple-system;letter-spacing:-.2px">'+money(r.value,0)+'</span></div>'+
@@ -2853,7 +3444,7 @@ function pageSummary(){
       if(open){
         h+='<div style="padding:0 16px 12px 66px">'+r.kids.map(function(k){
           return '<div style="display:flex;justify-content:space-between;padding:6px 0;font:400 13px/1 -apple-system;color:rgba(25,23,19,.6)">'+
-            '<span>'+esc(glyph(k.name))+' '+esc(strip(k.name))+'</span><span class="mono">'+money(k.value,0)+'</span></div>';
+            '<span>'+inIc(k.name,r.name)+esc(strip(k.name))+'</span><span class="mono">'+money(k.value,0)+'</span></div>';
         }).join('')+'</div>';
       }
     });
@@ -2920,14 +3511,14 @@ function pageBudget(){
     var kids=byMain[mc];
     var cap=sum(kids,function(s){return s.limit;});
     var sp=sum(kids,function(s){return spentBySub[s.name]||0;});
-    h+='<div class="sect"><span>'+esc(glyph(mc))+' '+esc(strip(mc))+'</span><span class="r">'+money(sp,0)+' / '+money(cap,0)+'</span></div>';
+    h+='<div class="sect"><span>'+inIc(mc)+esc(strip(mc))+'</span><span class="r">'+money(sp,0)+' / '+money(cap,0)+'</span></div>';
     kids.forEach(function(s){
       var spent=spentBySub[s.name]||0, over=spent>s.limit;
       h+='<button style="display:block;width:100%;text-align:left;margin-bottom:10px" class="glass" onclick="openLimits()">'+
         '<div style="padding:14px 16px">'+
         '<div style="display:flex;align-items:center;gap:10px">'+
-          '<div style="flex:none;width:10px;height:10px;border-radius:3px;background:'+ok(.66,.13,hueOf(s.main))+'"></div>'+
-          '<span style="flex:1;font:600 15.5px/1.2 -apple-system;letter-spacing:-.3px">'+esc(glyph(s.name))+' '+esc(strip(s.name))+'</span>'+
+          catBadge(s.name,s.main,'sm')+
+          '<span style="flex:1;font:600 15.5px/1.2 -apple-system;letter-spacing:-.3px">'+esc(strip(s.name))+'</span>'+
           '<span style="font:600 11.5px/1 -apple-system;padding:6px 10px;border-radius:20px;color:'+(over?ok(.5,.16,27):ok(.45,.10,155))+';background:'+(over?ok(.7,.15,27,.16):ok(.7,.12,155,.16))+'">'+
             (over?money(spent-s.limit,0)+' over':money(s.limit-spent,0)+' left')+'</span></div>'+
         '<div class="track lg" style="margin-top:12px">'+barFill(spent/s.limit*100,s.main,over)+'</div>'+
@@ -3281,7 +3872,7 @@ function planRow(it,occ,pm){
   }
   return '<div class="row planrow">'+
     '<button class="rcpmain" onclick="openCalEdit('+(it.row||0)+')">'+
-      '<div class="badge" style="color:'+ok(.42,.11,hue)+';background:'+ok(.66,.13,hue,.20)+';font-size:15px">'+(credit?'💳':'🔁')+'</div>'+
+      icBadge(credit?'card':'repeat',hue)+
       '<div class="rmain"><div class="rtitle">'+esc(it.service)+'</div>'+
       '<div class="rmeta">'+pill+esc(when?fmtShort(when):'all paid')+' · '+esc(strip(it.account))+(it.left?' · '+esc(String(it.left))+' left':'')+'</div></div>'+
       '<div><div class="ramt">'+money(it.uah||it.cost,0)+'</div>'+
@@ -3543,7 +4134,7 @@ function expectRow(x,act,kind){
   var f=(kind==='i')?bmoney:money;
   var showPct=!(kind==='i'&&anyHidden());
   return '<div class="row" style="align-items:flex-start">'+
-    '<div class="badge" style="color:'+ink(x.name)+';background:'+tint(x.name,.20)+'">'+esc(glyph(x.name))+'</div>'+
+    (kind==='i'?srcBadge(x.name):catBadge(x.name,(D.subMap&&D.subMap[x.name]||{}).main))+
     '<div class="rmain"><div style="display:flex;justify-content:space-between;align-items:baseline">'+
       '<span class="rtitle">'+esc(strip(x.name))+'</span>'+
       '<span style="font:600 14px/1 -apple-system;letter-spacing:-.2px">'+f(x.expected,0)+'</span></div>'+
@@ -3657,7 +4248,7 @@ function pageAccounts(){
   keys.forEach(function(k){
     var list=groups[k];
     var tot=sum(list,function(a){return a.uah||0;});
-    h+='<div class="sect"><span>'+esc(glyph(k))+' '+esc(strip(k))+'</span><span class="r">'+bmoney(tot,0)+'</span></div>';
+    h+='<div class="sect"><span>'+inIc(k,'',null)+esc(strip(k))+'</span><span class="r">'+bmoney(tot,0)+'</span></div>';
     h+='<div class="glass list">'+list.map(accountRow).join('')+'</div>';
   });
   if(empties){
@@ -3686,9 +4277,7 @@ function accountRow(a){
   if(a.bank) sub.push(a.bank);
   if(a.last4) sub.push('\u2022\u2022\u2022\u2022 '+a.last4);
   if(!sub.length) sub.push(strip(bankType(a.type)));
-  var badge=a.logo
-    ? '<div class="badge" style="background:#fff"><img src="'+esc(a.logo)+'" alt="" onerror="this.style.display=\'none\'"></div>'
-    : '<div class="badge" style="color:'+ink(a.name)+';background:'+tint(a.name,.20)+'">'+esc(glyph(a.name))+'</div>';
+  var badge=accLogo(a,'badge');
   var right='<div class="ramt" style="color:'+((a.uah||0)<0&&!anyHidden()?RED:'#191713')+'">'+bmoney(a.uah||0,2)+'</div>';
   if((a.creditLimit||0)>0) right+='<div class="rsub">'+bmoney(a.available||0,0)+' free of '+bmoney(a.creditLimit,0)+'</div>';
   else if(a.currency&&a.currency!=='UAH') right+='<div class="rsub">'+(anyHidden()?DOTS:esc(a.balance+' '+a.currency))+'</div>';
@@ -3788,7 +4377,7 @@ function openAccount(name){
   if(cb.length){
     h+='<div class="glass list">'+cb.map(function(c){
       return '<div class="row">'+
-        '<div class="badge" style="color:'+ink(c.label)+';background:'+tint(c.label,.20)+'">'+esc(glyph(c.label))+'</div>'+
+        catBadge(c.label)+
         '<div class="rmain"><div class="rtitle">'+esc(c.label)+'</div></div>'+
         '<div class="cbrate">'+esc(c.rate||'\u2014')+'</div></div>';
     }).join('')+'</div>';
@@ -4065,7 +4654,7 @@ function markOptions(cur){
   /* only the ones that can turn up on a shop receipt */
   var use=FLAGS.filter(function(f){ return f.key==='gift'||f.key===cur; });
   return '<optgroup label="Marks">'+
-    use.map(function(f){ return opt('~'+f.key,glyph(f.name)+'  '+strip(f.name),cur===f.key); }).join('')+
+    use.map(function(f){ return opt('~'+f.key,strip(f.name),cur===f.key); }).join('')+
     '</optgroup>';
 }
 function rlSub(id,v){
@@ -4116,10 +4705,13 @@ function closeSheet(){ S.sheet=null; closeAccPicker(); document.getElementById('
 function shq(k,v){ if(S.sheet) S.sheet[k]=v; }
 function currencyOf(name){ var a=D.accMap[name]; return a?a.currency:'UAH'; }
 
+/* an account: its bank's logo when the sheet has one, otherwise what kind
+   of account it is, in the colour of its own name */
 function accLogo(a,cls){
-  if(!a) return '<span class="'+cls+'">\uD83D\uDCB3</span>';
-  if(a.logo) return '<span class="'+cls+'"><img src="'+esc(a.logo)+'" alt="" onerror="this.parentNode.textContent='+q(glyph(a.name))+'"></span>';
-  return '<span class="'+cls+'" style="background:'+tint(a.name,.22)+';color:'+ink(a.name)+'">'+esc(glyph(a.name))+'</span>';
+  var hue=a?hueOf(a.name):hueOf('Account'), k=a?accKey(a):'card';
+  if(a&&a.logo) return '<span class="'+cls+'" style="background:#fff"><img src="'+esc(a.logo)+'" alt=""'+
+    ' onerror="logoFail(this,'+q(k)+','+hue+')"></span>';
+  return '<span class="'+cls+' ib" style="'+icStyle(hue)+'">'+svgIc(k,20)+'</span>';
 }
 function accFieldInner(name){
   var a=D.accMap[name];
@@ -4153,9 +4745,10 @@ function drawPicker(){
     '<div class="sheet-body" style="margin-top:14px">';
   function rowHtml(it){
     var on=it.any?pickerAnyOn(cfg):pickerOn(cfg,it.value);
+    var hue=(it.hue!==undefined)?it.hue:hueOf(it.tintKey||it.value||it.label);
     var badge=it.logo
-      ? '<span class="badge" style="background:#fff"><img src="'+esc(it.logo)+'" alt="" onerror="this.parentNode.textContent='+q(it.glyph||'')+'"></span>'
-      : '<span class="badge" style="color:'+ink(it.tintKey||it.value||it.label)+';background:'+tint(it.tintKey||it.value||it.label,.20)+'">'+esc(it.glyph||'\u2022')+'</span>';
+      ? '<span class="badge" style="background:#fff"><img src="'+esc(it.logo)+'" alt="" onerror="logoFail(this,'+q(it.icon||'tag')+','+hue+')"></span>'
+      : icBadge(it.icon||'tag',hue);
     return '<button class="row" onclick="pickerPick('+q(it.value)+')">'+badge+
       '<span class="rmain"><span class="rtitle" style="display:block">'+esc(it.label)+'</span>'+
       (it.meta?'<span class="rmeta" style="display:block">'+esc(it.meta)+'</span>':'')+'</span>'+
@@ -4163,11 +4756,11 @@ function drawPicker(){
       '<span class="tick" style="color:'+(on?ACCENT:'transparent')+'">\u2713</span></button>';
   }
   if(cfg.anyLabel){
-    h+='<div class="glass list" style="margin-bottom:4px">'+rowHtml({value:'',label:cfg.anyLabel,glyph:'\u2731',tintKey:'any',any:true})+'</div>';
+    h+='<div class="glass list" style="margin-bottom:4px">'+rowHtml({value:'',label:cfg.anyLabel,icon:'grid',hue:255,any:true})+'</div>';
   }
   cfg.groups.forEach(function(g){
     if(!g.items.length) return;
-    if(g.label) h+='<div class="sect" style="margin-top:12px"><span>'+esc(g.label)+'</span></div>';
+    if(g.label) h+='<div class="sect" style="margin-top:12px"><span>'+(g.icon?'<span class="inic">'+svgIc(g.icon,16,2)+'</span>':'')+esc(g.label)+'</span></div>';
     h+='<div class="glass list"'+(g.label?'':' style="margin-top:8px"')+'>'+g.items.map(rowHtml).join('')+'</div>';
   });
   h+='<div style="height:10px"></div></div></div>';
@@ -4188,22 +4781,22 @@ function accountGroupsForPicker(){
   var keys=order.filter(function(k){return groups[k];})
     .concat(Object.keys(groups).filter(function(k){return order.indexOf(k)<0;}));
   return keys.map(function(k){
-    return { label:glyph(k)+' '+strip(k), items:groups[k].map(function(a){
+    return { label:strip(k), icon:icKey(k), items:groups[k].map(function(a){
       var sub=[];
       if(a.bank) sub.push(a.bank);
       if(a.last4) sub.push('\u2022\u2022\u2022\u2022 '+a.last4);
-      return {value:a.name,label:strip(a.name),glyph:glyph(a.name),logo:a.logo,
+      return {value:a.name,label:strip(a.name),icon:accKey(a),hue:hueOf(a.name),logo:a.logo,
               meta:sub.join(' \u00b7 '),right:a.currency,tintKey:a.name};
     })};
   });
 }
 function catItems(){
   return D.setup.mainCategories.map(function(m){
-    return {value:m,label:strip(m),glyph:glyph(m),tintKey:m}; });
+    return {value:m,label:strip(m),icon:icKey(m),tintKey:m}; });
 }
 function srcItems(){
   return (D.setup.incomeSources||[]).map(function(x){
-    return {value:x.name,label:strip(x.name),glyph:glyph(x.name),tintKey:x.name}; });
+    return {value:x.name,label:strip(x.name),icon:icKey(x.name),hue:HUE_IN}; });
 }
 /* a subcategory whose family is no longer asked for could only ever come
    back empty, so it leaves with the family */
@@ -4234,9 +4827,9 @@ function openSubFilter(){
   var groups=[];
   var mains=S.fCat.length?S.fCat:D.setup.mainCategories;
   mains.forEach(function(m){
-    groups.push({label:mains.length>1?glyph(m)+' '+strip(m):'',
+    groups.push({label:mains.length>1?strip(m):'',icon:icKey(m),
       items:D.setup.subcategories.filter(function(x){return x.main===m;})
-        .map(function(x){ return {value:x.name,label:strip(x.name),glyph:glyph(x.name),tintKey:m}; })});
+        .map(function(x){ return {value:x.name,label:strip(x.name),icon:icKey(x.name,m),tintKey:m}; })});
   });
   openPicker({title:'Filter by subcategory', anyLabel:'All subcategories', multi:true, key:'fSub',
     groups:groups,
@@ -4264,10 +4857,6 @@ function fPut(key,x){
   var a=S[key], i=a.indexOf(x);
   if(i<0) a.push(x); else a.splice(i,1);
 }
-var FUNNEL_ICON='<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor"'+
-  ' stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">'+
-  '<path d="M4 5h16l-6.2 7.2v5.1l-3.6 1.9v-7z"/></svg>';
-function toggleFilters(){ S.fOpen=!S.fOpen; render(); }
 /* the pill wears the first thing picked and counts the rest, so the bar
    stays one line however many are on */
 function fpill(label,arr,onclick){
@@ -4275,7 +4864,7 @@ function fpill(label,arr,onclick){
   var n=arr.length, first=arr[0]||'';
   var style=n?'background:'+tint(first,.30)+';color:'+ink(first):'';
   return '<button class="fpill'+(n?' set':'')+'" style="'+style+'" onclick="'+onclick+'">'+
-    (n?'<span>'+esc(glyph(first))+'</span><span class="v">'+esc(strip(first))+
+    (n?'<span class="fpi">'+svgIc(icKey(first),14,2)+'</span><span class="v">'+esc(strip(first))+
         (n>1?' +'+(n-1):'')+'</span>'
        :'<span class="v">'+esc(label)+'</span>')+
     '<span class="x">\u25BC</span></button>';
@@ -4315,7 +4904,7 @@ function openAccPicker(target){
   var keys=order.filter(function(k){return groups[k];})
     .concat(Object.keys(groups).filter(function(k){return order.indexOf(k)<0;}));
   keys.forEach(function(k){
-    h+='<div class="sect" style="margin-top:12px"><span>'+esc(glyph(k))+' '+esc(strip(k))+'</span></div>';
+    h+='<div class="sect" style="margin-top:12px"><span>'+inIc(k,'',null)+esc(strip(k))+'</span></div>';
     h+='<div class="glass list">'+groups[k].map(function(a){
       var on=a.name===cur;
       var sub=[];
@@ -4432,7 +5021,7 @@ function drawGuesses(){
     if(g.k==='e'&&g.shop) meta.push(g.shop);
     meta.push(strip(g.account));
     return '<button class="gchip'+(on?' on':'')+'" onclick="useGuess('+i+')">'+
-      '<span class="gg" style="color:'+ink(key)+';background:'+tint(key,.2)+'">'+esc(glyph(key))+'</span>'+
+      '<span class="gg ib" style="'+icStyle(g.k==='e'?hueOf(g.main||key):HUE_IN)+'">'+svgIc(icKey(key,g.main),17)+'</span>'+
       '<span class="gw"><span class="gt">'+esc(strip(key))+'</span><span class="gm">'+esc(meta.join(' · '))+'</span></span></button>';
   }).join('');
 }
@@ -4474,7 +5063,7 @@ function tripDay(t){
 }
 function tripSwitch(s){
   var tn=s.trip||s.tripAlt;
-  return swRow('✈️ '+esc(tn),s.trip?'Part of this trip':'Not part of the trip',!!s.trip,'toggleSheetTrip()');
+  return swRow('<span class="inic">'+svgIc('plane',16,2)+'</span>'+esc(tn),s.trip?'Part of this trip':'Not part of the trip',!!s.trip,'toggleSheetTrip()');
 }
 function toggleSheetTrip(){
   var s=S.sheet; if(!s) return;
@@ -4493,7 +5082,7 @@ function tripStats(name){
   var days=(first&&last)?Math.max(1,daysBetween(parseD(last),parseD(first))+1):1;
   var byCat={};
   spend.forEach(function(t){
-    var k=t.main||(isReceipt(t)?'🧾 Not split yet':'Other');
+    var k=t.main||(isReceipt(t)?UNSPLIT:'Other');
     byCat[k]=(byCat[k]||0)+Math.abs(txAmount(t));
   });
   return {list:list,spend:spend,total:total,first:first,last:last,days:days,perDay:total/days,byCat:byCat};
@@ -4523,7 +5112,7 @@ function drawTrip(){
     var ts=tripStats(tr.name);
     h+='<div class="hero" style="padding:20px">'+
       '<div class="eyebrow">Day '+tripDay(tr)+' · since '+esc(fmtShort(tr.from))+'</div>'+
-      '<div style="margin-top:8px;font:700 24px/1.15 -apple-system,sans-serif;letter-spacing:-.5px">✈️ '+esc(tr.name)+'</div>'+
+      '<div class="tripttl">'+svgIc('plane',22,2)+esc(tr.name)+'</div>'+
       '<div class="tiny" style="margin-top:8px">'+money(ts.total,0)+' spent · '+money(ts.perDay,0)+' a day</div></div>';
     h+='<p class="tiny" style="margin:12px 4px 0">Every expense you add is part of this trip until you end it. Scheduled payments stay out; any record can be switched in or out from its own sheet.</p>';
     h+='<button class="paybtn" onclick="openTripSum('+q(tr.name)+',1)">See the trip</button>';
@@ -4548,7 +5137,7 @@ function drawTrip(){
       others.map(function(n){
         var st=tripStats(n);
         var when=st.first?(fmtShort(st.first)+(st.last&&st.last!==st.first?' – '+fmtShort(st.last):'')+' · '):'';
-        return navRow('✈️ '+esc(n),when+money(st.total,0),'openTripSum('+q(n)+',1)');
+        return navRow('<span class="inic">'+svgIc('plane',16,2)+'</span>'+esc(n),when+money(st.total,0),'openTripSum('+q(n)+',1)');
       }).join('')+'</div>';
   }
   h+=sheetEnd();
@@ -4569,7 +5158,7 @@ function startTrip(){
     bg('editMany',{items:past.map(txRef),trip:name},null,function(){ past.forEach(function(t){ t.trip=''; }); });
   }
   S.tripDraft=null;
-  toast('✈️ '+name+' — have a good trip');
+  toast(name+' — have a good trip');
   render(true); drawTrip();
 }
 function endTrip(){
@@ -4581,7 +5170,7 @@ function endTrip(){
 }
 function openTripSum(name,back){
   var ts=tripStats(name), tr=tripNow(), live=!!(tr&&tr.name===name);
-  var h=sheetTop('✈️ '+name,'',back?'drawTrip()':'');
+  var h=sheetTop(name,'',back?'drawTrip()':'');
   h+='<div class="hero" style="padding:20px">'+
     '<div class="eyebrow">'+(live?('Day '+tripDay(tr)+' · since '+esc(fmtShort(tr.from))):
       esc((ts.first?fmtShort(ts.first):'')+(ts.last&&ts.last!==ts.first?' – '+fmtShort(ts.last):'')))+'</div>'+
@@ -4593,7 +5182,7 @@ function openTripSum(name,back){
     h+='<div class="sect"><span>Where it went</span></div><div class="glass" style="padding:4px 0">'+
       cats.map(function(c){
         var v=ts.byCat[c], pc=ts.total?Math.max(2,v/ts.total*100):0;
-        return '<div class="triprow"><div class="th"><span>'+esc(glyph(c))+' '+esc(strip(c))+'</span><b>'+money(v,0)+'</b></div>'+
+        return '<div class="triprow"><div class="th"><span>'+inIc(c)+esc(strip(c))+'</span><b>'+money(v,0)+'</b></div>'+
           '<div class="tbar"><i style="width:'+pc.toFixed(1)+'%;background:'+tint(c,.85)+'"></i></div></div>';
       }).join('')+'</div>';
   }
@@ -4658,7 +5247,7 @@ function flagRow(s){
     FLAGS.map(function(f){
       var on=(s.flags||[]).indexOf(f.key)>-1;
       return '<button class="mchip'+(on?' on':'')+'" id="mchip_'+f.key+'"'+
-        ' onclick="toggleFlag('+q(f.key)+')"><span class="mglyph">'+esc(glyph(f.name))+'</span>'+
+        ' onclick="toggleFlag('+q(f.key)+')"><span class="mglyph">'+svgIc(icKey(f.name),16,2)+'</span>'+
         esc(strip(f.name))+'</button>';
     }).join('')+'</div>';
 }
@@ -4678,7 +5267,7 @@ function subOptions(main,value){
   function items(m){
     return D.setup.subcategories.filter(function(x){
       return x.main===m&&(!isCorrName(x.name)||x.name===value)&&(!isFlagName(x.name)||x.name===value); })
-      .map(function(x){ return opt(x.name,glyph(x.name)+'  '+strip(x.name),x.name===value); }).join('');
+      .map(function(x){ return opt(x.name,strip(x.name),x.name===value); }).join('');
   }
   var head=opt('','Choose subcategory\u2026',!value);
   if(main) return head+items(main);
@@ -4687,12 +5276,12 @@ function subOptions(main,value){
   var seen=D.setup.mainCategories;
   var h=head+seen.map(function(m){
     var body=items(m);
-    return body?'<optgroup label="'+esc(glyph(m)+'  '+strip(m))+'">'+body+'</optgroup>':'';
+    return body?'<optgroup label="'+esc(strip(m))+'">'+body+'</optgroup>':'';
   }).join('');
   /* anything whose family is no longer in the setup still has to be pickable */
   var rest=D.setup.subcategories.filter(function(x){
     return seen.indexOf(x.main)<0&&(!isCorrName(x.name)||x.name===value)&&(!isFlagName(x.name)||x.name===value); })
-    .map(function(x){ return opt(x.name,glyph(x.name)+'  '+strip(x.name),x.name===value); }).join('');
+    .map(function(x){ return opt(x.name,strip(x.name),x.name===value); }).join('');
   return h+rest;
 }
 
@@ -4727,7 +5316,7 @@ function drawSheet(){
   if(inc){
     h+=field('Source','<select class="tinput sel" id="f_src" onchange="shq(\'source\',this.value)">'+
         opt('','Choose source\u2026',!s.source)+
-        D.setup.incomeSources.filter(function(x){ return !isCorrName(x.name)||x.name===s.source; }).map(function(x){ return opt(x.name,glyph(x.name)+'  '+strip(x.name),x.name===s.source); }).join('')+
+        D.setup.incomeSources.filter(function(x){ return !isCorrName(x.name)||x.name===s.source; }).map(function(x){ return opt(x.name,strip(x.name),x.name===s.source); }).join('')+
       '</select>');
   }else{
     /* A receipt is one payment you will split later, so it asks for no category
@@ -4738,7 +5327,7 @@ function drawSheet(){
     } else {
     h+=field('Category','<select class="tinput sel" id="f_main" onchange="onMainChange(this.value)">'+
         opt('','All categories',!s.main)+
-        D.setup.mainCategories.map(function(m){ return opt(m,glyph(m)+'  '+strip(m),m===s.main); }).join('')+
+        D.setup.mainCategories.map(function(m){ return opt(m,strip(m),m===s.main); }).join('')+
       '</select>');
     h+=field('Subcategory','<select class="tinput sel" id="f_sub" onchange="onSubChange(this.value)">'+
         subOptions(s.main,s.sub)+'</select>');
@@ -5671,11 +6260,11 @@ function drawLimits(){
   h+='<p class="tiny" style="margin:12px 4px 0">Saved to the “Monthly limit (UAH)” column on the Setup sheet. Leave blank for no limit.</p>';
   D.setup.mainCategories.forEach(function(m){
     var kids=byMain[m]||[]; if(!kids.length) return;
-    h+='<div class="fieldlabel">'+esc(glyph(m))+' '+esc(strip(m))+'</div>';
+    h+='<div class="fieldlabel">'+inIc(m)+esc(strip(m))+'</div>';
     h+='<div class="glass" style="padding:4px 0">'+kids.map(function(s){
       var v=S.limitDraft[s.name];
       return '<div style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:.5px solid rgba(25,23,19,.06)">'+
-        '<span style="flex:1;font:500 14px/1.2 -apple-system">'+esc(glyph(s.name))+' '+esc(strip(s.name))+'</span>'+
+        '<span style="flex:1;font:500 14px/1.2 -apple-system">'+inIc(s.name,m)+esc(strip(s.name))+'</span>'+
         '<input inputmode="decimal" class="tinput" style="width:104px;padding:9px 11px;text-align:right;font-size:14px" placeholder="—" value="'+(v||v===0?v:'')+'" oninput="S.limitDraft['+q(s.name)+']=this.value">'+
         '</div>';
     }).join('')+'</div>';
@@ -5863,7 +6452,7 @@ function drawSettings(){
     swRow('Receipts open by default',
       pref('rcpOpen',true)!==false?'Their lines show straight away':'They start folded up',
       pref('rcpOpen',true)!==false,'toggleRcpOpen()')+
-    navRow('Trip mode',tripNow()?('✈️ '+tripNow().name+' · day '+tripDay(tripNow())):'Off','drawTrip()')+
+    navRow('Trip mode',tripNow()?(tripNow().name+' · day '+tripDay(tripNow())):'Off','drawTrip()')+
     (inGas()?'':navRow('Notifications',pushIsOn()?'On':'Off','openNotify()'))+
     '</div>';
   var orph=orphanCount();
@@ -5924,7 +6513,7 @@ function drawMains(){
       '<button class="exprm" onclick="catDrop(\'m\','+i+')">\u2715</button></div>';
   }).join('');
   h+='<button class="expadd" style="color:'+ACCENT+'" onclick="catAdd(\'m\')">+ Add category</button></div>';
-  h+='<p class="tiny" style="margin:12px 4px 0">Keep the emoji at the front of the name \u2014 that is what the app draws as the icon.</p>';
+  h+='<p class="tiny" style="margin:12px 4px 0">The app picks each icon from the name. An emoji at the front can stay \u2014 the sheet still shows it, and the app uses it when the words alone say nothing.</p>';
   h+=sheetEnd();
   document.getElementById('modal').innerHTML=h;
 }
@@ -5950,14 +6539,14 @@ function drawSubs(){
   Object.keys(byMain).forEach(function(m){ if(order.indexOf(m)<0) order.push(m); });
   order.forEach(function(m){
     var idx=byMain[m]||[]; if(!idx.length) return;
-    h+='<div class="fieldlabel">'+esc(glyph(m))+' '+esc(strip(m)||'No category')+'</div>'+
+    h+='<div class="fieldlabel">'+inIc(m)+esc(strip(m)||'No category')+'</div>'+
       '<div class="glass" style="padding:4px 0">'+idx.map(function(i){
         var x=S.catS[i];
         var bits=[];
         if(!x.real) bits.push('not counted');
         bits.push(x.limit!==''&&x.limit!==null?('limit '+x.limit):'no limit');
         if(x.shop) bits.push(x.shop);
-        return navRow(esc(glyph(x.name))+' '+esc(strip(x.name)),bits.join(' \u00b7 '),'openSubEdit('+i+')');
+        return navRow(inIc(x.name,x.main)+esc(strip(x.name)),bits.join(' \u00b7 '),'openSubEdit('+i+')');
       }).join('')+'</div>';
   });
   h+='<button class="expadd" style="color:'+ACCENT+';margin-top:10px" onclick="openSubEdit(-1)">+ Add subcategory</button>';
@@ -5977,7 +6566,7 @@ function drawSubEdit(){
   h+='<div class="glass" style="padding:2px 0">'+
     fRow('Name','<input class="tinput fin" value="'+esc(d.name)+'" oninput="S.subD.name=this.value">')+
     fRow('Category','<select class="tinput fin" onchange="S.subD.main=this.value">'+
-      S.catM.map(function(m){ return opt(m.name,glyph(m.name)+'  '+strip(m.name),m.name===d.main); }).join('')+'</select>')+
+      S.catM.map(function(m){ return opt(m.name,strip(m.name),m.name===d.main); }).join('')+'</select>')+
     fRow('Counts as spending',tog(d.real,'S.subD.real=!S.subD.real;drawSubEdit()'))+
     fRow('Monthly limit','<input class="tinput fin" inputmode="decimal" placeholder="none" value="'+esc(String(d.limit))+'" oninput="S.subD.limit=this.value">')+
     fRow('Default shop','<input class="tinput fin" placeholder="none" value="'+esc(d.shop)+'" oninput="S.subD.shop=this.value">')+
@@ -6036,7 +6625,7 @@ function drawAccEdit(){
     fRow('Name','<input class="tinput fin" value="'+esc(d.name)+'" oninput="S.accD.name=this.value">')+
     fRow('Bank','<input class="tinput fin" placeholder="none" value="'+esc(d.bank)+'" oninput="S.accD.bank=this.value">')+
     fRow('Type','<select class="tinput fin" onchange="S.accD.type=this.value">'+
-      types.map(function(t){ return opt(t,glyph(t)+'  '+strip(t),t===d.type); }).join('')+'</select>')+
+      types.map(function(t){ return opt(t,strip(t),t===d.type); }).join('')+'</select>')+
     fRow('Currency','<select class="tinput fin" onchange="S.accD.currency=this.value">'+
       curs.map(function(c){ return opt(c,c,c===d.currency); }).join('')+'</select>')+
     fRow('Credit limit','<input class="tinput fin" inputmode="decimal" placeholder="none" value="'+esc(String(d.creditLimit||''))+'" oninput="S.accD.creditLimit=this.value">')+
@@ -6102,14 +6691,14 @@ function drawCalEdit(){
     fRow('Currency','<select class="tinput fin" onchange="S.calD.currency=this.value">'+
       curs.map(function(c){ return opt(c,c,c===d.currency); }).join('')+'</select>')+
     fRow('Category','<select class="tinput fin" onchange="S.calD.kind=this.value">'+opt('','None',!d.kind)+
-      cats.map(function(c){ return opt(c,glyph(c)+'  '+strip(c),c===d.kind); }).join('')+'</select>')+
+      cats.map(function(c){ return opt(c,strip(c),c===d.kind); }).join('')+'</select>')+
     fRow('Every','<input class="tinput fin" inputmode="numeric" style="width:64px;flex:none" value="'+esc(String(d.every))+'" oninput="S.calD.every=this.value">'+
       '<select class="tinput fin" style="margin-left:8px" onchange="S.calD.unit=this.value">'+
       units.map(function(u){ return opt(u,u,u===d.unit); }).join('')+'</select>')+
     fRow('First payment','<input class="tinput fin" type="date" value="'+esc(d.first||'')+'" onchange="S.calD.first=this.value">')+
     fRow('Repeats','<input class="tinput fin" placeholder="Forever" value="'+esc(d.repeats)+'" oninput="S.calD.repeats=this.value">')+
     fRow('Account','<select class="tinput fin" onchange="S.calD.account=this.value">'+opt('','None',!d.account)+
-      accs.map(function(a){ return opt(a,glyph(a)+'  '+strip(a),a===d.account); }).join('')+'</select>')+
+      accs.map(function(a){ return opt(a,strip(a),a===d.account); }).join('')+'</select>')+
     fRow('Notes','<input class="tinput fin" placeholder="none" value="'+esc(d.notes)+'" oninput="S.calD.notes=this.value">')+
     '</div>';
   if(d.row) h+='<button class="delbtn" onclick="calRemove()">Delete payment</button>';
@@ -6216,7 +6805,6 @@ function rcpOpen(id){
   var def=pref('rcpOpen',true)!==false;
   return (S.rcpShut&&S.rcpShut[id])?!def:def;
 }
-var RCP_ICON='<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3v18l2-1.4 2 1.4 2-1.4 2 1.4 2-1.4 2 1.4V3l-2 1.4L13 3l-2 1.4L9 3 7 4.4z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>';
 
 function receiptBlock(t,drag,sel){
   var left=receiptLeft(t), open=rcpOpen(t.receipt), lines=linesOf(t.receipt);
@@ -6241,7 +6829,7 @@ function receiptBlock(t,drag,sel){
     (drag?'<span class="grip" onpointerdown="gripDown(event)" onclick="event.stopPropagation();event.preventDefault()">'+GRIP_ICON+'</span>':'')+
     '<button class="rcpmain" onclick="'+(picking?'selTap(\'e\','+t.row+')':'rcpToggle('+q(t.receipt)+')')+'">'+
       (picking?'<span class="selck">'+CHECK_ICON+'</span>':'')+
-      '<span class="badge" style="color:'+ink('Receipt')+';background:'+tint('Receipt',.20)+'">'+RCP_ICON+'</span>'+
+      icBadge('receipt',hueOf('Receipt'))+
       '<span class="rmain"><span class="rtitle">'+esc(strip(t.shop)||'Receipt')+
         (open_?'<span class="rcpmark">!</span>':'')+
         '</span><span class="rmeta">'+esc(bits.join(' \u00b7 '))+'</span></span>'+
@@ -6466,9 +7054,9 @@ function selUnreceiptWhy(){
 function selUnreceipt(){
   var groups=[];
   D.setup.mainCategories.forEach(function(m){
-    groups.push({label:glyph(m)+' '+strip(m),
+    groups.push({label:strip(m),icon:icKey(m),
       items:D.setup.subcategories.filter(function(x){ return x.main===m&&!isCorrName(x.name); })
-        .map(function(x){ return {value:x.name,label:strip(x.name),glyph:glyph(x.name),tintKey:m}; })});
+        .map(function(x){ return {value:x.name,label:strip(x.name),icon:icKey(x.name,m),tintKey:m}; })});
   });
   openPicker({title:'What was it for?', current:'', groups:groups,
     apply:function(v){ if(v) commitUnreceipt(v); }});
@@ -6595,7 +7183,7 @@ function drawMulti(){
     (tripNames().length?fRow('Trip','<select class="tinput fin" onchange="S.multi.trip=this.value">'+
       opt('__keep','Keep as they are',!d.trip||d.trip==='__keep')+
       opt('__none','Not in a trip',d.trip==='__none')+
-      tripNames().map(function(n){ return opt(n,'✈️ '+n,d.trip===n); }).join('')+
+      tripNames().map(function(n){ return opt(n,n,d.trip===n); }).join('')+
       '</select>'):'')+
     '</div>';
   /* moving money between currencies changes the number, not the value */
@@ -6688,7 +7276,7 @@ function quickRow(a){
   return '<button class="row qrow qsw'+(sel?' selon':'')+'" data-qk="'+esc(a.id)+'"'+
     ' onclick="fireQuick('+q(a.id)+')">'+
     '<span class="qswp">'+SLIDER_ICON+'</span>'+
-    '<span class="badge" style="color:'+ink(key||'?')+';background:'+tint(key||'?',.20)+'">'+esc(glyph(key||'?'))+'</span>'+
+    (e?catBadge(key,a.main||(D.subMap&&D.subMap[key]||{}).main):srcBadge(key))+
     '<span class="rmain"><span class="rtitle">'+esc(title)+'</span>'+
       (bits.length?'<span class="rmeta">'+esc(bits.join(' \u00b7 '))+'</span>':'')+'</span>'+
     '<span class="ramt" style="color:'+(e?'#191713':GREEN)+'">'+amt+'</span></button>';
@@ -6957,7 +7545,7 @@ function saveQuickOnce(){
 function closeModal(){
   /* the panels that own an amount let go of it here, so the pad can never
      be handed a target that is no longer on screen */
-  S.line=null; S.qonce=null; S.shop=null;
+  S.line=null; S.qonce=null; S.shop=null; S.menuOpen=false;
   S.accOpen=null; S.monthsOpen=false; S.notifyOpen=false;
   if(S.cardShown){ S.cardShown={}; clearTimeout(S.cardT); }
   document.getElementById('modal').innerHTML='';
@@ -7017,7 +7605,7 @@ function expBlock(title,items,kind){
   h+=items.map(function(x){
     var k=x.row+':'+x.col, gone=!!S.expDel[k];
     return '<div class="exprow'+(gone?' gone':'')+'">'+
-      '<span class="expname">'+esc(glyph(x.name))+' '+esc(strip(x.name))+'</span>'+
+      '<span class="expname">'+(kind==='i'?inIc(x.name,'',HUE_IN):inIc(x.name,(D.subMap&&D.subMap[x.name]||{}).main))+esc(strip(x.name))+'</span>'+
       '<input inputmode="decimal" class="tinput expamt"'+(gone?' disabled':'')+
         ' value="'+(x.expected||'')+'" oninput="S.expDraft['+q(k)+']=this.value">'+
       '<button class="exprm" onclick="expToggleDel('+q(k)+')">'+(gone?'\u21ba':'\u2715')+'</button>'+
@@ -7029,7 +7617,7 @@ function expBlock(title,items,kind){
       '<select class="tinput expname" onchange="expSetName('+i+',this.value)">'+
         opt('','Choose\u2026',!a.name)+
         expChoices(kind,a.name).map(function(x){
-          return opt(x.name,glyph(x.name)+'  '+strip(x.name),x.name===a.name);
+          return opt(x.name,strip(x.name),x.name===a.name);
         }).join('')+
       '</select>'+
       '<input inputmode="decimal" class="tinput expamt" placeholder="0" value="'+esc(String(a.expected))+'" oninput="expSetAmt('+i+',this.value)">'+
@@ -7079,7 +7667,7 @@ window.__S=S;
    As a website, a small service worker keeps these files on the phone, so
    the app opens instantly and with no signal. A new version is fetched in
    the background; when it arrives, a note offers to switch to it. */
-var APP_VERSION='2026.09.29.6';
+var APP_VERSION='2026.09.30.1';
 (function(){
   try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persist(); }catch(e){}
   if(inGas()||!('serviceWorker' in navigator)) return;
