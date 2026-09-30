@@ -770,6 +770,74 @@ select.expname{padding:9px 10px;font-size:14px;border-radius:13px}
 .fabq svg{display:block}
 
 /* ---- quick actions ---------------------------------------------------- */
+/* each action its own card with room between, so a finger lands on one and
+   never on the edge of the next */
+.qlist{display:flex;flex-direction:column;gap:10px}
+.qlist .row.qcard{border-radius:20px;border-bottom:0;padding:15px 16px;min-height:68px;background:var(--sf,rgba(255,255,255,.8));
+  border:.5px solid var(--sf-line,rgba(25,23,19,.08));box-shadow:var(--sf-e1,0 6px 18px -12px rgba(30,26,22,.3))}
+.qlist .row.qcard.selon{background:rgba(47,107,255,.09);border-color:rgba(47,107,255,.35)}
+.qlist .row.qnew{background:rgba(47,107,255,.05);border:1.5px dashed rgba(47,107,255,.32);box-shadow:none}
+.qhint{margin:14px 8px 0;text-align:center;line-height:1.45}
+.qtabs{margin:2px 0 16px!important}
+.qtip{margin:0 4px 4px;line-height:1.45}
+.qform .fieldlabel{margin:16px 4px 8px}
+.qform .tinput{min-height:48px}
+.qform .qnote{margin:7px 4px 0;line-height:1.4}
+.qsave{margin-top:24px}
+/* the month as a filter, beside the other pills */
+.fpill.mon.set{background:rgba(47,107,255,.14);color:#2F5BD8}
+/* shops */
+.shoprow{display:flex;align-items:center;gap:12px;width:100%;padding:13px 16px;text-align:left;background:none;border-bottom:.5px solid rgba(25,23,19,.07)}
+.shoprow:last-child{border-bottom:0}
+.shoprow .sn{flex:1;min-width:0;font:500 15px/1.25 -apple-system,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.shoprow .sc{flex:none;font:500 13px/1 -apple-system,sans-serif;color:rgba(25,23,19,.45)}
+.tidygrp{padding:6px 0 12px;margin-top:12px}
+.tidyopt{display:flex;align-items:center;gap:12px;width:100%;padding:12px 16px;text-align:left;background:none}
+.tidyopt .rad{flex:none;width:22px;height:22px;border-radius:50%;box-shadow:inset 0 0 0 2px rgba(25,23,19,.2)}
+.tidyopt.on .rad{box-shadow:inset 0 0 0 7px #2F6BFF}
+.tidyopt .sn{flex:1;min-width:0;font:500 15px/1.25 -apple-system,sans-serif}
+.tidyopt .sc{flex:none;font:500 13px/1 -apple-system,sans-serif;color:rgba(25,23,19,.45)}
+.tidyopt .keep{flex:none;font:600 11px/1 -apple-system,sans-serif;letter-spacing:.3px;text-transform:uppercase;color:#2F6BFF}
+.tidybtns{display:flex;gap:10px;padding:8px 16px 0}
+.tidybtns button{flex:1;padding:12px 8px;border-radius:14px;font:600 14px/1 -apple-system,sans-serif;background:rgba(25,23,19,.06);color:#191713}
+.tidybtns button.go{background:#2F6BFF;color:#fff}
+.segrow{display:flex;gap:8px;padding:12px 16px}
+.segrow button{flex:1;padding:11px 8px;border-radius:13px;font:600 13.5px/1.2 -apple-system,sans-serif;background:rgba(25,23,19,.06);color:rgba(25,23,19,.7)}
+.segrow button.on{background:#191713;color:#fff}
+/* keep adding: floats just above the keys, so it is there without scrolling */
+.ghostbtn.addmore{position:sticky;bottom:6px;z-index:4;margin-top:18px;background:#fbfaf8;
+  box-shadow:0 8px 20px -10px rgba(30,26,22,.45),inset 0 0 0 .5px rgba(25,23,19,.16)}
+/* the rest of a receipt, in one tap */
+.rlbtns{display:flex;gap:8px;align-items:stretch}
+.rlbtns .rladd{flex:1}
+.rlrest{flex:1;position:relative;display:flex;align-items:center;justify-content:center;border-radius:14px;
+  background:rgba(47,107,255,.08);color:#2F5BD8;font:600 14px/1 -apple-system,sans-serif;padding:12px 10px}
+.rlrest select{position:absolute;inset:0;opacity:0;width:100%;height:100%;font-size:16px}
+.restrow{display:flex;align-items:center;gap:12px;padding:10px 12px 10px 16px;margin-bottom:12px}
+.restrow .rt{flex:none;font:600 14px/1.2 -apple-system,sans-serif}
+.restrow .selwrap{flex:1;min-width:0}
+/* an amount changed where it is */
+.amttap{cursor:pointer;margin:-8px -6px -8px 0;padding:8px 6px 8px 10px;border-radius:12px}
+.amttap:active{background:rgba(47,107,255,.10)}
+.amtopen{display:block;margin:6px auto 0}
+/* check later */
+.ckpill{display:inline-flex;align-items:center;gap:3px;margin-right:6px;padding:2px 6px 2px 4px;border-radius:7px;vertical-align:1px;
+  font:650 10.5px/1.25 -apple-system,sans-serif;color:#9a5b00;background:rgba(240,160,40,.16)}
+.ckpill svg{display:block}
+.chkrow{display:flex;align-items:center;gap:12px;width:100%;margin-top:12px;padding:13px 16px;text-align:left}
+.chkrow .ci{flex:none;width:34px;height:34px;border-radius:11px;display:flex;align-items:center;justify-content:center;
+  color:#9a5b00;background:rgba(240,160,40,.16)}
+.chkrow .ct{flex:1;min-width:0}
+.chkrow .ct b{display:block;font:600 15px/1.2 -apple-system,sans-serif}
+.chkrow .ct span{display:block;margin-top:3px;font:400 12.5px/1.35 -apple-system,sans-serif;color:rgba(25,23,19,.5)}
+.chkrow.on{box-shadow:inset 0 0 0 1.5px rgba(240,160,40,.55)}
+/* notification times */
+.timerow{display:flex;align-items:center;gap:12px;padding:10px 14px 10px 16px;border-bottom:.5px solid rgba(25,23,19,.07)}
+.timerow:last-child{border-bottom:0}
+.timerow .tl{flex:1;min-width:0}
+.timerow .tl b{display:block;font:600 15px/1.2 -apple-system,sans-serif}
+.timerow .tl span{display:block;margin-top:3px;font:400 12.5px/1.35 -apple-system,sans-serif;color:rgba(25,23,19,.5)}
+.timerow .selwrap{flex:none;width:112px}
 /* the title and meta are spans here, so they need telling to stack - the
    same thing that caught the receipt header */
 .qrow .rmain>span,.qnew .rmain>span{display:block}
@@ -780,10 +848,10 @@ select.expname{padding:9px 10px;font-size:14px;border-radius:13px}
   justify-content:center;font:300 24px/1 -apple-system,sans-serif;
   color:#2F6BFF;background:rgba(47,107,255,.10)}
 .qnew .rtitle{font:600 15px/1.2 -apple-system,sans-serif;color:#2F6BFF}
-.qbar{display:flex;gap:8px;margin-top:12px}
+.qbar{display:flex;gap:12px;margin-top:16px}
 .qbtn{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
-  padding:13px 10px;border-radius:16px;
-  font:600 13.5px/1 -apple-system,sans-serif;color:#191713;
+  padding:15px 10px;min-height:52px;border-radius:16px;
+  font:600 14px/1 -apple-system,sans-serif;color:#191713;
   background:rgba(255,255,255,.62);border:.5px solid rgba(255,255,255,.7);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.9);transition:transform .16s,background .2s}
 .qbtn svg{display:block}
@@ -2860,10 +2928,10 @@ function toggle(k){ S.open[k]=!S.open[k]; render(); }
 /* ── transfers between your own accounts ────────────────────────────────
    Recognised by the subcategory the Setup sheet already defines, and paired
    by the receiving account name the app stores in the expense's Shop cell. */
-/* Taking cash out is the same thing: money moving to your own cash. It
-   keeps its own words in the sheet - "Cash withdrawal" on the card, "Cash
-   withdrawal received" on the cash - and everything else about it, the
-   form, the pair of rows, the fee, is a transfer's. */
+/* Taking cash out is the same thing: money moving to your own cash, written
+   with the transfer's own words. Records from when it had a category of its
+   own ("Cash withdrawal") are still read as transfers until the sheet's
+   Budget menu has folded them in. */
 var XFER_SUB_RE=/transfer\s+to\s+my\s+other/i, XFER_SRC_RE=/transfer\s+from\s+my\s+other/i;
 var ATM_RE=/cash withdrawal|банкомат|(^|\s)atm\b|зняття готів|снятие налич/i;
 var FEE_RE=/\bfees?\b|комісі|комисси/i;
@@ -2882,11 +2950,12 @@ function isCashAcc(name){ var a=D.accMap&&D.accMap[name]; return !!a&&isCash(a);
 /* the words a transfer is written with: into your cash from anything that
    is not cash it is a withdrawal, and says so */
 function xferWords(from,to){
+  /* into your cash is a transfer like any other - only its fee is still
+     called an ATM's. A sheet with no transfer category at all falls back to
+     the withdrawal words it still has. */
   var cash=!!to&&isCashAcc(to)&&!isCashAcc(from);
-  /* a sheet script from before this version pairs only the transfer words,
-     so until it is updated a withdrawal is written as a transfer */
-  var atm=apiV()>=4?atmSubName():'', xs=xferSubName(), useAtm=!!atm&&(cash||!xs);
-  return {sub:useAtm?atm:xs, src:(useAtm?atmSrcName():'')||xferSrcName()||atmSrcName(), atm:cash};
+  var xs=xferSubName();
+  return {sub:xs||atmSubName(), src:xferSrcName()||atmSrcName(), atm:cash};
 }
 /* a cash account to take money out into: one in the card's own currency
    first, then any */
@@ -2978,7 +3047,7 @@ function txRow(t,onclick,drag,sel){
   if(!xf&&!cr) bits.push(strip(t.account));
   var meta=bits.join(' · ');
   /* a mark or a trip is a small icon in front of the second line */
-  var marks=(t.trip&&!cr?'<span class="mk">'+svgIc('plane',13,2)+'</span>':'')+
+  var marks=(e&&hasTok(t,'check')?'<span class="ckpill">'+svgIc('flag',11,2.4)+'Check</span>':'')+(t.trip&&!cr?'<span class="mk">'+svgIc('plane',13,2)+'</span>':'')+
     (e&&projectsOf(t).length?'<span class="mk">'+svgIc('folder',13,2)+'</span>':'')+
     (e&&goalsOf(t).length?'<span class="mk">'+svgIc('piggy',13,2)+'</span>':'')+
     ((fl.length&&(t.sub||t.main))?fl.map(function(f){ return '<span class="mk">'+svgIc(icKey(f.name),13,2)+'</span>'; }).join(''):'');
@@ -3021,7 +3090,7 @@ function txRow(t,onclick,drag,sel){
     (xf?icBadge('transfer',hueOf(t.main||'Transfer')):cr?icBadge('sliders',hueOf('Balance correction')):
       e?catBadge(key,t.main):srcBadge(key))+
     '<div class="rmain"><div class="rtitle">'+((xf||cr)?title:esc(title||'—'))+'</div><div class="rmeta">'+marks+esc(meta)+'</div></div>'+
-    '<div><div class="ramt" style="color:'+((xf||cr||grey||st==='owed')?'rgba(25,23,19,.50)':(e?'#191713':GREEN))+'">'+amt+'</div>'+
+    '<div'+(amtEditable(t,picking)?' class="amttap" onclick="openAmt(event,\''+t.k+'\','+t.row+')"':'')+'><div class="ramt" style="color:'+((xf||cr||grey||st==='owed')?'rgba(25,23,19,.50)':(e?'#191713':GREEN))+'">'+amt+'</div>'+
     (extra?'<div class="rsub">'+esc(extra)+'</div>':'')+'</div>'+
     '</button>';
 }
@@ -3116,7 +3185,9 @@ function findPanel(){
 /* each list only offers what it can be narrowed by; onlySet leaves out the
    pills that are not doing anything */
 function filterPills(onlySet){
-  var h='';
+  /* the month is one more way to narrow the list, so it sits with the rest -
+     the same choice as Browse by month under the title */
+  var h=onlySet?'':monthPill();
   function add(label,arr,fn){ if(!onlySet||(arr&&arr.length)) h+=fpill(label,arr,fn); }
   if(S.filter==='Expenses'){
     add('Category',S.fCat,'openCatFilter()');
@@ -3132,6 +3203,12 @@ function filterPills(onlySet){
   add('Account',S.fAcc,'openAccFilter()');
   if(narrowed()) h+='<button class="fpill" onclick="clearFilters()"><span class="v">Clear</span><span class="x">✕</span></button>';
   return h;
+}
+function monthPill(){
+  var m=S.actMonth;
+  return '<button class="fpill mon'+(m?' set':'')+'" onclick="openMonths()">'+
+    (m?'<span class="fpi">'+svgIc('calendar',14,2)+'</span>':'')+
+    '<span class="v">'+esc(m?monthName(m):'Month')+'</span><span class="x">\u25BC</span></button>';
 }
 /* the old "!" chip, said in words */
 function attnRow(n){
@@ -3149,12 +3226,16 @@ function activityList(){
   var cutoff=iso(new Date(Date.now()-30*86400000));
   /* one month at a time, once a month is picked - a search and the "!" list
      still look through everything */
-  var mo=(!searching&&!S.fBad&&S.actMonth)||'';
+  var mo=(!S.fBad&&S.actMonth)||'';
   if(mo&&mo<=olderFrom()) ensureOlder();
   /* a search looks through everything that is loaded, not the last 30 days */
   var list=searching?txAll().slice():(S.fBad?D.tx.slice():
     (mo?txAll().filter(function(t){ return ym(t.date)===mo; }):D.tx.filter(function(t){ return t.date>=cutoff; })));
-  if(searching){ var toks=searchTokens(S.q); list=list.filter(function(t){ return !t.pending&&matchTx(t,toks); }); }
+  if(searching){
+    var toks=searchTokens(S.q); list=list.filter(function(t){ return !t.pending&&matchTx(t,toks); });
+    /* a month picked in the filters narrows a search too */
+    if(mo) list=list.filter(function(t){ return ym(t.date)===mo; });
+  }
   /* transfers are money you still have, so neither tab claims them */
   if(S.filter==='Income') list=list.filter(function(t){return t.k==='i'&&!isCorr(t)&&!isXferSrc(t.source);});
   if(S.filter==='Expenses') list=list.filter(function(t){return t.k==='e'&&!isXfer(t)&&!isCorr(t);});
@@ -4874,7 +4955,9 @@ function rlineHtml(l){
 function splitEditor(s){
   var h='<div class="fieldlabel">Split <span class="opt">optional</span></div>';
   h+='<div class="rlines" id="rlines">'+(s.lines||[]).map(rlineHtml).join('')+
-    '<button class="rladd" onclick="rlAdd()">+ Add line</button></div>';
+    '<div class="rlbtns"><button class="rladd" onclick="rlAdd()">+ Add line</button>'+
+    '<label class="rlrest">Rest \u2192 category<select onchange="rlRest(this.value);this.selectedIndex=0" aria-label="Put the rest into a category">'+
+      opt('','Put the rest into\u2026',true)+subOptions('','').replace(opt('','Choose subcategory\u2026',true),'')+markOptions('')+'</select></label></div></div>';
   h+='<p class="tiny" id="splitnote" style="margin:7px 2px 0">'+esc(splitNote(s))+'</p>';
   return h;
 }
@@ -4886,7 +4969,7 @@ function rlAdd(){
   sheetLines().push(l);
   var box=document.getElementById('rlines');
   if(!box){ drawSheet(); return; }
-  var btn=box.querySelector('.rladd');
+  var btn=box.querySelector('.rlbtns')||box.querySelector('.rladd');
   btn.insertAdjacentHTML('beforebegin',rlineHtml(l));
   updateSplitNote();
   var el=document.getElementById(l.id);
@@ -5129,6 +5212,8 @@ function fpill(label,arr,onclick){
    still on its way. */
 function unbalanced(t){
   if(!t||t.pending) return false;
+  /* marked to check later: it waits here until the mark comes off */
+  if(t.k==='e'&&hasTok(t,'check')) return true;
   /* "nothing" means less than the smallest step the record's own currency
      has: a kopeck for hryvnias, but a hundred-millionth for a coin - or a
      perfectly real 0.001 BTC would count as no amount at all */
@@ -5678,10 +5763,7 @@ function dispSub(s){
    One field instead of two: the families are the headings, every category
    wears the icon it has in Activity, and the ones used most lately sit on
    top. A withdrawal is the entry it shares with transfers. */
-function subLabel(n){
-  var xs=xferSubName();
-  return (xs&&n===xs&&atmSubName())?'Transfer or cash withdrawal':strip(n);
-}
+function subLabel(n){ return strip(n); }
 function catPickable(x,value){
   var fold=!!(xferSubName()&&atmSubName());
   return (!isCorrName(x.name)||x.name===value)&&(!isFlagName(x.name)||x.name===value)&&
@@ -5833,9 +5915,13 @@ function drawSheet(){
   }
   /* trip mode: in the trip or out of it, one switch */
   if((s.trip||s.tripAlt)&&!(xferForm(s)&&!s.trip)) h+='<div class="glass" id="f_trip" style="padding:0;margin-top:14px">'+tripSwitch(s)+'</div>';
+  /* a whole day in one go: saved, and a fresh one opens on the same day and account */
+  if(!s.edit) h+='<button class="ghostbtn addmore" onclick="saveAndNext()">Save & add another</button>';
   if(s.edit){
     /* refunded, owed, paid back - or the button that starts a refund */
     h+='<div id="stwrap">'+stateBox(s)+'</div>';
+    /* something to come back to: it waits in the "!" list */
+    h+='<div id="chkwrap">'+checkRow(s)+'</div>';
     /* deleting a receipt takes its split lines with it, so say how many */
     var nl=s.receipt?linesOf((findTx('e',s.row)||{}).receipt).length:0;
     h+='<button class="delbtn" id="delbtn" onclick="deleteSheet()">'+
@@ -6277,6 +6363,8 @@ function saveSheet(){
   var words=xfer?xferWords(s.account,s.toAccount):null;
   if(words&&words.sub){ s.sub=words.sub; var wsm=D.subMap[words.sub]; if(wsm&&wsm.main) s.main=wsm.main; }
   var feeNote=(words?words.atm:isAtmName(s.sub))?'ATM fee':'Transfer fee';
+  /* a spelling merged away before is saved under the name you kept */
+  if(s.kind==='e'&&!xfer) s.shop=shopCanon(s.shop);
   var payload={
     kind:s.kind, id:s.id||'', row:s.row||0, was:s.was||{date:'',amount:0,account:''},
     date:s.date, amount:amt, currency:cur,
@@ -6405,7 +6493,7 @@ function saveSheet(){
     S.pending[cid]=xrow;
     D.tx.push(xrow);
     closeSheet(); prep(); render(false);
-    toast((words.atm?'Cash taken out':'Transferred')+(fee>0?', fee added':''));
+    toast('Transferred'+(words.atm?' to cash':'')+(fee>0?', fee added':''));
     bgThen('addTransfer',payload,sendFee,function(){
       D.tx=D.tx.filter(function(x){ return x.cid!==cid; }); dropFee();
     },cleanMain);
@@ -7209,6 +7297,7 @@ function drawSettings(){
       pref('rcpOpen',true)!==false?'Their lines show straight away':'They start folded up',
       pref('rcpOpen',true)!==false,'toggleRcpOpen()')+
     navRow('Trip mode',tripNow()?(tripNow().name+' · day '+tripDay(tripNow())):'Off','drawTrip()')+
+    navRow('Shops',(function(){ var g=shopGroups().length; return g?g+' shop'+(g===1?' is':'s are')+' written more than one way':'Rename a shop everywhere, tidy up spellings'; })(),'openShops()')+
     navRow('Shop rules',(function(){ var n=Object.keys(shopRules()).length; return n?n+' shop'+(n===1?'':'s')+' fill in their category and card':'A shop fills in its category and card'; })(),'drawShopRules()')+
     swRow('Show days with nothing',
       pref('emptyDays',true)!==false?'Every day is in Activity, with room to drop a record':'Only days with records',
@@ -7505,6 +7594,7 @@ function calRemove(){
    two counts as spending or income. The sheet script links them by id
    (the purchase's id plus -r or -b) and keeps both out of its own totals. */
 var NEED_V3='Paste the new Code.gs into the spreadsheet and update the deployment first \u2014 the old script cannot keep this.';
+var NEED_V5='Paste the new Code.gs into the spreadsheet and update the deployment first \u2014 the old script cannot do this.';
 var BACK_RE={r:/refund|повернення\s*кошт|возврат\s*(средств|денег)/i,
              b:/debt\s*return|return(ed)?\s*debt|повернення\s*борг|возврат\s*долг/i};
 function backSource(kind){
@@ -8799,6 +8889,10 @@ function drawLine(){
   h+='<div class="amt" id="lineamt"></div>';
   h+='<p class="tiny" style="margin:0 0 12px">'+esc(strip(d.account))+(d.shop?' \u00b7 '+esc(d.shop):'')+
      (Math.abs(d.left)>0.005?' \u00b7 '+money(Math.abs(d.left),0)+(d.left>0?' still unsplit':' over the total'):' \u00b7 fully split')+'</p>';
+  /* what is still unsplit, into one category with one tap */
+  if(d.left>0.005) h+='<div class="restrow glass"><span class="rt">Rest \u00b7 '+money(d.left)+'</span>'+
+    '<div class="selwrap"><select class="tinput sel" onchange="lineRest(this.value)">'+opt('','Put it into\u2026',true)+
+      subOptions('','').replace(opt('','Choose subcategory\u2026',true),'')+'</select><span class="chev">\u25BC</span></div></div>';
   h+='<div class="glass" style="padding:2px 0">'+
     fRow('Category','<select class="tinput fin" onchange="S.line.sub=this.value">'+
       subOptions('',d.sub)+'</select>')+
@@ -9154,21 +9248,33 @@ function quickMissing(a){
   if(!(Number(a.amount)||0)) out.push('amount');
   if(!a.account||!(D.accMap&&D.accMap[a.account])) out.push('account');
   if(a.kind==='i'?!a.source:!a.sub) out.push('cat');
+  /* a transfer also needs somewhere to go */
+  if(quickIsXfer(a)&&!(a.to&&D.accMap&&D.accMap[a.to]&&a.to!==a.account)) out.push('to');
   return out;
+}
+function quickIsXfer(a){ return !!a&&a.kind!=='i'&&isXferSub(a.sub); }
+/* one field of the quick action screens: the label above, the control the
+   whole width under it - on a phone nothing then sits on top of anything */
+function qfield(label,control,select){
+  return '<div class="fieldlabel">'+label+'</div>'+
+    (select?'<div class="selwrap">'+control+'<span class="chev">\u25BC</span></div>':control);
+}
+function qaccOptions(cur,blank,except){
+  return opt('',blank,!cur)+(D.accounts||[]).filter(function(x){ return !except||x.name!==except||x.name===cur; })
+    .map(function(x){ return opt(x.name,strip(x.name),x.name===cur); }).join('');
 }
 
 function openQuick(){ S.qsel=null; drawQuick(); }
 function drawQuick(){
   var L=quickList();
   var h=sheetTop('Quick actions','');
-  h+='<div class="glass list">';
-  h+=L.map(function(a){ return quickRow(a); }).join('');
-  h+='<button class="row qnew" onclick="openQuickEdit(\'\')">'+
-     '<span class="qnewic">+</span>'+
-     '<span class="rmain"><span class="rtitle" style="display:block">New quick action</span></span>'+
-     '</button>';
-  h+='</div>';
-  if(!L.length) h+='<p class="tiny" style="margin:12px 4px 0">A quick action is one record you add a lot \u2014 the same amount, category and account every time.</p>';
+  h+='<div class="qlist">'+L.map(function(a){ return quickRow(a); }).join('')+
+     '<button class="row qnew qcard" onclick="openQuickEdit(\'\')">'+
+       '<span class="qnewic">+</span>'+
+       '<span class="rmain"><span class="rtitle" style="display:block">New quick action</span></span>'+
+     '</button></div>';
+  if(!L.length) h+='<p class="tiny qhint">A quick action is one record you add a lot — the same amount, category and account every time.</p>';
+  else if(!S.qsel) h+='<p class="tiny qhint">Tap to add it · hold to edit or delete · swipe right to change the account or date once</p>';
   if(S.qsel) h+='<div class="qbar">'+
     '<button class="qbtn" onclick="openQuickEdit('+q(S.qsel)+')">'+PENCIL_ICON+'<span>Edit</span></button>'+
     '<button class="qbtn danger'+(S.qdel===S.qsel?' armed':'')+'" onclick="deleteQuick('+q(S.qsel)+')">'+
@@ -9178,33 +9284,37 @@ function drawQuick(){
   document.getElementById('modal').innerHTML=h;
 }
 function quickRow(a){
-  var e=a.kind!=='i', sel=S.qsel===a.id;
+  var e=a.kind!=='i', sel=S.qsel===a.id, xf=quickIsXfer(a);
   var key=quickKey(a);
-  var title=a.name?strip(a.name):(strip(key)||(e?'New expense':'New income'));
+  var to=(xf&&a.to&&D.accMap&&D.accMap[a.to])?a.to:'';
+  var title=a.name?strip(a.name):(xf?(to?'To '+strip(to):'Transfer'):(strip(key)||(e?'New expense':'New income')));
   var miss=quickMissing(a);
   /* when something is missing, that is the fact worth reading, so the shop
      steps aside rather than pushing the hint off the end of the line */
   var bits=[];
-  if(a.name&&key) bits.push(strip(key));
-  if(e&&a.shop&&!miss.length) bits.push(a.shop);
-  if(a.account&&D.accMap&&D.accMap[a.account]&&miss.indexOf('account')<0) bits.push(strip(a.account));
+  if(a.name&&key&&!xf) bits.push(strip(key));
+  if(a.name&&to) bits.push('to '+strip(to));
+  if(e&&!xf&&a.shop&&!miss.length) bits.push(a.shop);
+  if(a.account&&D.accMap&&D.accMap[a.account]&&miss.indexOf('account')<0) bits.push((xf?'from ':'')+strip(a.account));
+  if(xf&&Number(a.fee)>0) bits.push('fee '+money(Number(a.fee)));
   if(miss.length) bits.push('asks each time');
-  var amt=(Number(a.amount)||0)?((e?'\u2212':'+')+money(Math.abs(Number(a.amount)))):'\u2014';
-  return '<button class="row qrow qsw'+(sel?' selon':'')+'" data-qk="'+esc(a.id)+'"'+
+  /* a transfer gains and loses nothing, so it carries no sign */
+  var amt=(Number(a.amount)||0)?((xf?'':(e?'−':'+'))+money(Math.abs(Number(a.amount)))):'—';
+  return '<button class="row qrow qsw qcard'+(sel?' selon':'')+'" data-qk="'+esc(a.id)+'"'+
     ' onclick="fireQuick('+q(a.id)+')">'+
     '<span class="qswp">'+SLIDER_ICON+'</span>'+
-    (e?catBadge(key,a.main||(D.subMap&&D.subMap[key]||{}).main):srcBadge(key))+
+    (xf?icBadge('transfer',hueOf(a.main||'Transfer')):(e?catBadge(key,a.main||(D.subMap&&D.subMap[key]||{}).main):srcBadge(key)))+
     '<span class="rmain"><span class="rtitle">'+esc(title)+'</span>'+
-      (bits.length?'<span class="rmeta">'+esc(bits.join(' \u00b7 '))+'</span>':'')+'</span>'+
-    '<span class="ramt" style="color:'+(e?'#191713':GREEN)+'">'+amt+'</span></button>';
+      (bits.length?'<span class="rmeta">'+esc(bits.join(' · '))+'</span>':'')+'</span>'+
+    '<span class="ramt" style="color:'+(xf?'rgba(25,23,19,.55)':(e?'#191713':GREEN))+'">'+amt+'</span></button>';
 }
 
 /* Writing the record is the same wherever it came from - a plain tap, the
    swipe panel, or the panel that asks for what the action left blank. An
    override belongs to this one record; the quick action is never touched. */
-/* Cash taken out, or a transfer, goes somewhere - an action made for one
-   before they were a pair opens the transfer form with everything it knows
-   filled in, instead of writing half of it. */
+/* A transfer that cannot be written in one go - nowhere to go, or no
+   transfer category in the sheet - opens the transfer form with everything
+   the action knows filled in, instead of writing half of it. */
 function quickAsXfer(a,over){
   over=over||{};
   closeModal(); S.qsel=null; S.qonce=null;
@@ -9212,47 +9322,79 @@ function quickAsXfer(a,over){
   var s=S.sheet; if(!s) return;
   var acct=over.account||a.account;
   if(acct&&D.accMap&&D.accMap[acct]) s.account=acct;
-  var amt=Number(over.amount!==undefined&&over.amount!==''?over.amount:a.amount)||0;
+  var amt=Number(over.amount!==undefined&&over.amount!==''?String(over.amount).replace(',','.'):a.amount)||0;
   if(amt) s.amount=numStr(amt);
   var sub=(over.sub!==undefined&&over.sub!=='')?over.sub:(a.sub||'');
   s.sub=sub; s.main=(D.subMap[sub]||{}).main||''; s.note=a.note||''; s.trip='';
   if(over.date) s.date=over.date;
-  s.toAccount=(a.shop&&D.accMap&&D.accMap[a.shop])?a.shop:(isAtmName(sub)?cashAccountFor(s.account):'');
+  var to=over.to||a.to||a.shop||'';
+  s.toAccount=(to&&D.accMap&&D.accMap[to]&&to!==s.account)?to:(isAtmName(sub)?cashAccountFor(s.account):'');
+  if(Number(a.fee)>0) s.fee=numStr(Number(a.fee));
   drawSheet();
 }
 function writeQuick(a,over){
   over=over||{};
   var acct=over.account||a.account;
   var date=over.date||D.today;
-  var amt=Number(over.amount!==undefined&&over.amount!==''?over.amount:a.amount)||0;
+  var raw=(over.amount!==undefined&&over.amount!=='')?over.amount:a.amount;
+  var amt=amtOf(String(raw==null?'':raw),decOf(currencyOf(acct)||'UAH'));
   var sub=over.sub!==undefined&&over.sub!==''?over.sub:(a.sub||'');
   var src=over.source!==undefined&&over.source!==''?over.source:(a.source||'');
   if(!amt){ toast('Enter an amount'); return false; }
   if(!acct||!(D.accMap&&D.accMap[acct])){ toast('Pick an account'); return false; }
   if(a.kind==='i'?!src:!sub){ toast(a.kind==='i'?'Pick a source':'Pick a category'); return false; }
-  if(a.kind==='e'&&isXferSub(sub)){ quickAsXfer(a,over); return true; }
+  if(a.kind==='e'&&isXferSub(sub)) return writeQuickXfer(a,over,acct,amt,date,sub);
   var cur=currencyOf(acct);
   var main=(D.subMap[sub]||{}).main||a.main||'';
+  /* a Savings transfer goes towards the goal the action names */
+  var flags=(a.kind==='e'&&a.goal&&isSavingsSub(sub)&&apiV()>=3)?['g:'+a.goal]:[];
   var f={kind:a.kind, amount:String(amt), account:acct, date:date,
-         main:main, sub:sub, source:src, shop:a.shop||'', note:a.note||'', id:newId(),
+         main:main, sub:sub, source:src, shop:a.shop||'', note:a.note||'', id:newId(), flags:flags,
          trip:a.kind==='e'?tripName():''};
   var cid='p'+(++S.cid);
   var payload={kind:a.kind, id:f.id, trip:f.trip, row:0, was:{date:'',amount:0,account:''},
     date:date, amount:amt, currency:cur, account:acct,
-    main:main, sub:sub, source:src, shop:f.shop, note:f.note};
+    main:main, sub:sub, source:src, shop:f.shop, note:f.note, flags:flags};
   var row=localTx(f,cur,cid);
   S.pending[cid]=row; D.tx.push(row);
   closeModal(); S.qsel=null; S.qonce=null; prep(); render(false);
-  toast((a.name?strip(a.name):strip(sub||src||''))+' \u00b7 '+money(amt)+' added');
+  toast((a.name?strip(a.name):strip(sub||src||''))+' · '+curMoney(amt,cur)+' added');
   bg('addTx',payload,function(){ delete S.pending[cid]; },function(){
     D.tx=D.tx.filter(function(x){ return x.cid!==cid; });
+  });
+  return true;
+}
+/* A transfer from a quick action: both halves at once, the way the form
+   writes them - in another currency at the rate in Setup - and its fee,
+   when the action has one, as its own expense just under it. */
+function writeQuickXfer(a,over,acct,amt,date,sub){
+  var to=over.to||a.to||'';
+  var words=xferWords(acct,to);
+  if(!to||!(D.accMap&&D.accMap[to])||to===acct||!words.sub||!words.src){ quickAsXfer(a,over); return true; }
+  var cur=currencyOf(acct)||'UAH', toCur=currencyOf(to)||'UAH', toAmt=amt;
+  if(toCur!==cur){ var pp=Math.pow(10,decOf(toCur)); toAmt=Math.round(amt*rateOf(cur)/(rateOf(toCur)||1)*pp)/pp; }
+  var main=(D.subMap[words.sub]||{}).main||'';
+  var fee=Number(a.fee)||0, feeSub=feeSubName();
+  if(!(fee>0&&feeSub&&apiV()>=3)) fee=0;
+  var id=newId(), feeNote=words.atm?'ATM fee':'Transfer fee';
+  var payload={kind:'e', id:id, row:0, was:{date:'',amount:0,account:''}, date:date, amount:amt, currency:cur,
+    account:acct, main:main, sub:words.sub, source:'', shop:to, note:a.note||'', flags:[],
+    sched:'', trip:'', to:to, toCurrency:toCur, toAmount:toAmt, inSource:words.src};
+  if(fee){ payload.fee=fee; payload.feeSub=feeSub; payload.feeNote=feeNote; payload.feeTrip=tripName()||''; }
+  var sh={kind:'e', id:id, date:date, amount:String(amt), account:acct, main:main, sub:words.sub, shop:to, note:a.note||'', flags:[], trip:''};
+  var cid='p'+(++S.cid), row=localTx(sh,cur,cid), fcid='';
+  S.pending[cid]=row; D.tx.push(row);
+  if(fee){ fcid='p'+(++S.cid); var fr=feeLocal(sh,fee,cur,id,fcid,feeNote,payload.feeTrip); S.pending[fcid]=fr; D.tx.push(fr); }
+  closeModal(); S.qsel=null; S.qonce=null; prep(); render(false);
+  toast((a.name?strip(a.name):'To '+strip(to))+' · '+curMoney(amt,cur)+(fee?', fee added':'')+' — transferred');
+  bg('addTransfer',payload,function(){ delete S.pending[cid]; if(fcid) delete S.pending[fcid]; },function(){
+    D.tx=D.tx.filter(function(x){ return x.cid!==cid&&(!fcid||x.cid!==fcid); });
   });
   return true;
 }
 function fireQuick(id){
   var a=quickById(id); if(!a) return;
   if(S.qsel){ S.qsel=null; drawQuick(); return; }
-  if(a.kind==='e'&&isXferSub(a.sub)){ quickAsXfer(a,null); return; }
   var miss=quickMissing(a);
   /* whatever the action left blank is asked for now, and only that */
   if(miss.length){ openQuickAsk(id,miss); return; }
@@ -9261,65 +9403,98 @@ function fireQuick(id){
 
 /* The editor asks for everything the record needs plus one optional name.
    Blank name is the normal case, not an omission - the row then shows the
-   record, which is what it will look like in Activity anyway. */
+   record, which is what it will look like in Activity anyway. Whatever the
+   category brings with it in the add sheet it brings here too: a transfer
+   asks where the money goes and its fee, a Savings transfer its goal. */
 function openQuickEdit(id){
   var a=id?quickById(id):null;
   S.qedit=a?{id:a.id,name:a.name||'',kind:a.kind||'e',amount:String(a.amount||''),
-             account:a.account||'',sub:a.sub||'',source:a.source||'',shop:a.shop||'',note:a.note||''}
+             account:a.account||'',sub:a.sub||'',source:a.source||'',shop:a.shop||'',note:a.note||'',
+             to:a.to||(quickIsXfer(a)&&D.accMap&&D.accMap[a.shop]?a.shop:''),fee:a.fee?String(a.fee):'',goal:a.goal||''}
           :{id:'',name:'',kind:'e',amount:'',account:lastAccount('e')||defaultAccount(),
-             sub:'',source:'',shop:'',note:''};
+             sub:'',source:'',shop:'',note:'',to:'',fee:'',goal:''};
   drawQuickEdit();
 }
 function qset(k,v){ if(S.qedit) S.qedit[k]=v; }
 function qsetKind(v){
   var d=S.qedit; if(!d||d.kind===v) return;
   d.kind=v;
-  if(v==='i'){ d.sub=''; d.shop=''; if(!d.account) d.account=lastAccount('i')||defaultAccount(); }
+  if(v==='i'){ d.sub=''; d.shop=''; d.to=''; d.fee=''; d.goal=''; if(!d.account) d.account=lastAccount('i')||defaultAccount(); }
   else { d.source=''; }
   drawQuickEdit();
 }
+/* the category decides which of the extra fields show, so the screen is
+   drawn again - the typed fields are all kept in S.qedit */
+function qsetSub(v){
+  var d=S.qedit; if(!d) return;
+  var was=isXferSub(d.sub)+'|'+isSavingsSub(d.sub);
+  d.sub=v;
+  if(!isXferSub(v)){ d.to=''; d.fee=''; }
+  if(!isSavingsSub(v)) d.goal='';
+  if(was!==isXferSub(v)+'|'+isSavingsSub(v)) drawQuickEdit();
+}
+function qsetAcc(v){
+  var d=S.qedit; if(!d) return;
+  d.account=v;
+  if(isXferSub(d.sub)){ if(d.to===v) d.to=''; drawQuickEdit(); }
+}
 function drawQuickEdit(){
   var d=S.qedit;
-  var inc=d.kind==='i';
+  var inc=d.kind==='i', xf=!inc&&isXferSub(d.sub), sav=!inc&&!xf&&isSavingsSub(d.sub)&&apiV()>=3;
   var h=sheetTop(d.id?'Edit quick action':'New quick action','saveQuickEdit()','drawQuick()');
-  h+='<div class="stabs" style="margin:0 0 14px">'+
+  h+='<div class="stabs qtabs">'+
     '<button class="stab'+(inc?'':' on')+'" onclick="qsetKind(\'e\')">Expense</button>'+
     '<button class="stab'+(inc?' on':'')+'" onclick="qsetKind(\'i\')">Income</button></div>';
-  h+='<p class="tiny" style="margin:0 0 12px">Leave a field blank and it asks you for it each time you tap the action.</p>';
-  h+='<div class="glass" style="padding:2px 0">'+
-    fRow('Name','<input class="tinput fin" placeholder="Optional" value="'+esc(d.name)+'" oninput="qset(\'name\',this.value)">')+
-    fRow('Amount','<input class="tinput fin" inputmode="decimal" placeholder="Ask each time" value="'+esc(d.amount)+'" oninput="qset(\'amount\',this.value)">')+
-    fRow('Account','<select class="tinput fin" onchange="qset(\'account\',this.value)">'+
-      opt('','Ask each time',!d.account)+
-      (D.accounts||[]).map(function(x){ return opt(x.name,strip(x.name),x.name===d.account); }).join('')+
-      '</select>')+
-    (inc
-      ? fRow('Source','<select class="tinput fin" onchange="qset(\'source\',this.value)">'+
+  h+='<p class="tiny qtip">Leave a field blank and it asks you for it each time you tap the action.</p>';
+  h+='<div class="qform">';
+  h+=qfield('Name <span class="opt">optional</span>','<input class="tinput" placeholder="Shown on the button" value="'+esc(d.name)+'" oninput="qset(\'name\',this.value)">');
+  h+=qfield('Amount','<input class="tinput" inputmode="decimal" placeholder="Ask each time" value="'+esc(d.amount)+'" oninput="qset(\'amount\',this.value)">');
+  h+=qfield(inc?'Source':'Category', inc
+      ? '<select class="tinput sel" onchange="qset(\'source\',this.value)">'+
           opt('','Ask each time',!d.source)+
           (D.setup.incomeSources||[]).filter(function(x){ return !isCorrName(x.name)||x.name===d.source; })
-            .map(function(x){ return opt(x.name,x.name,x.name===d.source); }).join('')+'</select>')
-      : fRow('Category','<select class="tinput fin" onchange="qset(\'sub\',this.value)">'+
+            .map(function(x){ return opt(x.name,x.name,x.name===d.source); }).join('')+'</select>'
+      : '<select class="tinput sel" onchange="qsetSub(this.value)">'+
           opt('','Ask each time',!d.sub)+
-          subOptions('',d.sub).replace(opt('','Choose subcategory\u2026',!d.sub),'')+'</select>'))+
-    (inc?'':fRow('Shop','<input class="tinput fin" placeholder="Optional" value="'+esc(d.shop)+'" oninput="qset(\'shop\',this.value)">'))+
-    fRow('Note','<input class="tinput fin" placeholder="Optional" value="'+esc(d.note)+'" oninput="qset(\'note\',this.value)">')+
-    '</div>';
+          subOptions('',d.sub).replace(opt('','Choose subcategory…',!d.sub),'')+'</select>', true);
+  h+=qfield(xf?'From account':'Account','<select class="tinput sel" onchange="qsetAcc(this.value)">'+qaccOptions(d.account,'Ask each time')+'</select>',true);
+  if(xf){
+    h+=qfield('To account','<select class="tinput sel" onchange="qset(\'to\',this.value)">'+qaccOptions(d.to,'Ask each time',d.account)+'</select>',true);
+    if(d.to&&d.account&&currencyOf(d.to)!==currencyOf(d.account))
+      h+='<p class="tiny qnote">It arrives in '+esc(currencyOf(d.to))+' at the rate in Setup.</p>';
+    if(feeSubName()&&apiV()>=3)
+      h+=qfield((d.to&&isCashAcc(d.to)&&!isCashAcc(d.account)?'ATM fee':'Fee')+' <span class="opt">optional</span>',
+        '<input class="tinput" inputmode="decimal" placeholder="None" value="'+esc(d.fee)+'" oninput="qset(\'fee\',this.value)">');
+  }
+  if(sav){
+    var gl=goalsList().map(function(g){ return g.name; });
+    if(d.goal&&gl.indexOf(d.goal)<0) gl.push(d.goal);
+    if(gl.length) h+=qfield('Saving goal <span class="opt">optional</span>','<select class="tinput sel" onchange="qset(\'goal\',this.value)">'+
+      opt('','No goal',!d.goal)+gl.map(function(n){ return opt(n,n,n===d.goal); }).join('')+'</select>',true);
+  }
+  if(!inc&&!xf) h+=qfield('Shop <span class="opt">optional</span>','<input class="tinput" placeholder="Where" value="'+esc(d.shop)+'" oninput="qset(\'shop\',this.value)">');
+  h+=qfield('Note <span class="opt">optional</span>','<input class="tinput" placeholder="None" value="'+esc(d.note)+'" oninput="qset(\'note\',this.value)">');
+  h+='</div>';
+  h+='<button class="paybtn qsave" onclick="saveQuickEdit()">'+(d.id?'Save':'Add quick action')+'</button>';
   h+=sheetEnd();
   document.getElementById('modal').innerHTML=h;
 }
 function saveQuickEdit(){
   var d=S.qedit; if(!d) return;
-  var raw=String(d.amount||'').replace(',','.');
+  var raw=String(d.amount||'').replace(',','.').trim();
   var amt=raw?parseFloat(raw):0;
-  if(raw&&!amt){ toast('That amount does not look like a number'); return; }
-  /* a transfer is two records and a conversion; a one-tap button is the
-     wrong shape for it, so it is not offered here */
-  if(isXferSub(d.sub)){ toast('Transfers and withdrawals cannot be quick actions'); return; }
+  if(raw&&!(amt>0)){ toast('That amount does not look like a number'); return; }
+  var xf=d.kind!=='i'&&isXferSub(d.sub);
+  var fraw=String(d.fee||'').replace(',','.').trim(), fee=fraw?parseFloat(fraw):0;
+  if(xf&&fraw&&!(fee>0)){ toast('That fee does not look like an amount'); return; }
+  if(xf&&d.to&&d.to===d.account){ toast('Pick a different account to move it to'); return; }
   /* everything else may be left blank on purpose - a blank field is asked
      for at the moment you tap the action, which is the point of leaving it */
   var a={id:d.id||newQuickId(), name:String(d.name||'').trim(), kind:d.kind, amount:amt||'',
          account:d.account||'', main:(D.subMap[d.sub]||{}).main||'', sub:d.sub||'',
-         source:d.source||'', shop:String(d.shop||'').trim(), note:String(d.note||'').trim()};
+         source:d.source||'', shop:xf?'':String(d.shop||'').trim(), note:String(d.note||'').trim()};
+  if(xf){ a.to=d.to||''; if(fee>0) a.fee=fee; }
+  if(!xf&&d.kind!=='i'&&isSavingsSub(d.sub)&&d.goal) a.goal=d.goal;
   var list=quickList(), found=false;
   for(var i=0;i<list.length;i++) if(list[i].id===a.id){ list[i]=a; found=true; }
   if(!found) list.push(a);
@@ -9424,51 +9599,60 @@ document.addEventListener('pointerdown',qswDown,true);
 function openQuickAsk(id,fields){
   var a=quickById(id); if(!a) return;
   var acctOk=a.account&&D.accMap&&D.accMap[a.account];
+  var toOk=a.to&&D.accMap&&D.accMap[a.to];
   S.qonce={id:id, fields:fields,
     amount:(Number(a.amount)||0)?String(a.amount):'',
     account:acctOk?a.account:(lastAccount(a.kind)||defaultAccount()),
-    sub:a.sub||'', source:a.source||'', date:D.today};
+    to:toOk?a.to:'', sub:a.sub||'', source:a.source||'', date:D.today};
   drawQuickOnce();
 }
 function openQuickOnce(id){
   var a=quickById(id); if(!a) return;
-  /* the swipe always offers these two, plus anything the action is missing */
+  /* the swipe always offers these two - where the money goes too, for a
+     transfer - plus anything the action is missing */
   var f=['account','date'], miss=quickMissing(a);
+  if(quickIsXfer(a)) f.splice(1,0,'to');
   miss.forEach(function(k){ if(f.indexOf(k)<0) f.push(k); });
   openQuickAsk(id,f);
 }
 function qonce(k,v){ if(S.qonce) S.qonce[k]=v; }
+function qonceAcc(v){
+  var o=S.qonce; if(!o) return;
+  o.account=v;
+  if(o.fields.indexOf('to')>=0&&o.to===v){ o.to=''; drawQuickOnce(); }
+}
 function drawQuickOnce(){
   var o=S.qonce, a=quickById(o.id); if(!a) return;
-  var e=a.kind!=='i', has=function(k){ return o.fields.indexOf(k)>=0; };
-  var title=a.name?strip(a.name):(strip(quickKey(a))||(e?'New expense':'New income'));
+  var e=a.kind!=='i', xf=quickIsXfer(a), has=function(k){ return o.fields.indexOf(k)>=0; };
+  var title=a.name?strip(a.name):(xf?'Transfer':(strip(quickKey(a))||(e?'New expense':'New income')));
   var h=sheetTop(title,'saveQuickOnce()','drawQuick()','Add');
   var sum=[];
-  if(!has('amount')) sum.push((e?'\u2212':'+')+money(Math.abs(Number(a.amount)||0)));
-  if(!has('cat')&&quickKey(a)) sum.push(strip(quickKey(a)));
-  if(e&&a.shop) sum.push(a.shop);
+  if(!has('amount')) sum.push((xf?'':(e?'−':'+'))+money(Math.abs(Number(a.amount)||0)));
+  if(!has('cat')&&quickKey(a)&&!xf) sum.push(strip(quickKey(a)));
+  if(xf&&!has('to')&&a.to) sum.push('to '+strip(a.to));
+  if(e&&!xf&&a.shop) sum.push(a.shop);
   sum.push('just this once');
-  h+='<p class="tiny" style="margin:0 0 12px">'+esc(sum.join(' \u00b7 '))+'</p>';
-  h+='<div class="glass" style="padding:2px 0">';
+  h+='<p class="tiny qtip">'+esc(sum.join(' · '))+'</p>';
+  h+='<div class="qform">';
   if(has('amount'))
-    h+=fRow('Amount','<input id="q_amt" class="tinput fin" inputmode="decimal" placeholder="0" value="'+esc(o.amount)+'" oninput="qonce(\'amount\',this.value)">');
+    h+=qfield('Amount','<input id="q_amt" class="tinput" inputmode="decimal" placeholder="0" value="'+esc(o.amount)+'" oninput="qonce(\'amount\',this.value)">');
   if(has('cat'))
-    h+=fRow(e?'Category':'Source', e
-      ? '<select class="tinput fin" onchange="qonce(\'sub\',this.value)">'+
-          opt('','Choose\u2026',!o.sub)+
-          subOptions('',o.sub).replace(opt('','Choose subcategory\u2026',!o.sub),'')+'</select>'
-      : '<select class="tinput fin" onchange="qonce(\'source\',this.value)">'+
-          opt('','Choose\u2026',!o.source)+
+    h+=qfield(e?'Category':'Source', e
+      ? '<select class="tinput sel" onchange="qonce(\'sub\',this.value)">'+
+          opt('','Choose…',!o.sub)+
+          subOptions('',o.sub).replace(opt('','Choose subcategory…',!o.sub),'')+'</select>'
+      : '<select class="tinput sel" onchange="qonce(\'source\',this.value)">'+
+          opt('','Choose…',!o.source)+
           (D.setup.incomeSources||[]).filter(function(x){ return !isCorrName(x.name)||x.name===o.source; })
-            .map(function(x){ return opt(x.name,x.name,x.name===o.source); }).join('')+'</select>');
+            .map(function(x){ return opt(x.name,x.name,x.name===o.source); }).join('')+'</select>', true);
   if(has('account'))
-    h+=fRow('Account','<select class="tinput fin" onchange="qonce(\'account\',this.value)">'+
-      opt('','Choose\u2026',!o.account)+
-      (D.accounts||[]).map(function(x){ return opt(x.name,strip(x.name),x.name===o.account); }).join('')+
-      '</select>');
+    h+=qfield(xf?'From account':'Account','<select class="tinput sel" onchange="qonceAcc(this.value)">'+qaccOptions(o.account,'Choose…')+'</select>',true);
+  if(has('to'))
+    h+=qfield('To account','<select class="tinput sel" onchange="qonce(\'to\',this.value)">'+qaccOptions(o.to,'Choose…',o.account)+'</select>',true);
   if(has('date'))
-    h+=fRow('Date','<input type="date" class="tinput fin" value="'+esc(o.date)+'" onchange="qonce(\'date\',this.value)">');
+    h+=qfield('Date','<input type="date" class="tinput" value="'+esc(o.date)+'" onchange="qonce(\'date\',this.value)">');
   h+='</div>';
+  h+='<button class="paybtn qsave" onclick="saveQuickOnce()">Add</button>';
   h+=sheetEnd();
   document.getElementById('modal').innerHTML=h;
   if(has('amount')) setTimeout(function(){ var el=document.getElementById('q_amt'); if(el) el.focus(); },80);
@@ -9477,7 +9661,8 @@ function saveQuickOnce(){
   var o=S.qonce; if(!o) return;
   var a=quickById(o.id); if(!a){ toast('That quick action is gone'); return; }
   if(o.fields.indexOf('date')>=0&&!o.date){ toast('Pick a date'); return; }
-  writeQuick(a,{account:o.account, date:o.date, amount:o.amount, sub:o.sub, source:o.source});
+  if(o.fields.indexOf('to')>=0&&!o.to){ toast('Choose where it goes'); return; }
+  writeQuick(a,{account:o.account, date:o.date, amount:o.amount, sub:o.sub, source:o.source, to:o.to});
 }
 function closeModal(){
   /* the panels that own an amount let go of it here, so the pad can never
@@ -9605,7 +9790,7 @@ window.__S=S;
    As a website, a small service worker keeps these files on the phone, so
    the app opens instantly and with no signal. A new version is fetched in
    the background; when it arrives, a note offers to switch to it. */
-var APP_VERSION='2026.09.30.3';
+var APP_VERSION='2026.09.30.4';
 (function(){
   try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persist(); }catch(e){}
   if(inGas()||!('serviceWorker' in navigator)) return;
@@ -9757,8 +9942,8 @@ function drawNotify(){
   }else if(!pushIsOn()){
     var ready=!!(P&&P.reg);
     h+='<div class="hero" style="padding:18px 20px"><div class="eyebrow">What you get</div><div class="nlist">'+
-         '<p><b>Payments due today</b> — around 10:00, from the Calendar.</p>'+
-         '<p><b>An evening reminder</b> — around 21:00, only when nothing is written down for the day.</p>'+
+         '<p><b>Payments due today</b> — around '+notifyAt().morning+', from the Calendar.</p>'+
+         '<p><b>An evening reminder</b> — around '+notifyAt().evening+', only when nothing is written down for the day.</p>'+
          '<p><b>Over a monthly limit</b> — once per category a month.</p>'+
          '<p><b>Credit card payments</b> — three days before a card is due.</p>'+
          '<p><b>Cancel before it renews</b> — for trials and subscriptions you mean to stop.</p>'+
@@ -9768,10 +9953,15 @@ function drawNotify(){
          (ready?'Turn on notifications':(P&&P.err?'Not available right now':'Getting ready…'))+'</button>'+
        (P&&P.err?'<p class="tiny" style="margin:10px 4px 0;color:#c73e2d">'+esc(P.err)+'</p>':'');
   }else{
-    var n=pref('notify',{})||{};
+    var n=pref('notify',{})||{}, at=notifyAt();
     h+='<div class="glass" style="padding:4px 0">'+
-         swRow('Payments due today','Around 10:00 · from the Calendar',n.due!==false,"toggleNotify('due')")+
-         swRow('Evening reminder','Around 21:00 · only if nothing is written down',n.evening!==false,"toggleNotify('evening')")+
+         timeRow('Morning','Payments due, card payments, limits','morning',at.morning)+
+         timeRow('Evening','The reminder, limits','evening',at.evening)+
+       '</div>';
+    h+='<div class="sect" style="margin-top:18px"><span>What they tell you</span></div>';
+    h+='<div class="glass" style="padding:4px 0">'+
+         swRow('Payments due today','Around '+at.morning+' · from the Calendar',n.due!==false,"toggleNotify('due')")+
+         swRow('Evening reminder','Around '+at.evening+' · only if nothing is written down',n.evening!==false,"toggleNotify('evening')")+
          swRow('Over a monthly limit','Once per category a month',n.limits!==false,"toggleNotify('limits')")+
          swRow('Credit card payments','Three days before a card\u2019s \u201cpay debt by\u201d date',n.cards!==false,"toggleNotify('cards')")+
          swRow('Cancel before it renews','Three days before, and the day before',n.cancel!==false,"toggleNotify('cancel')")+
@@ -9928,6 +10118,434 @@ function goTabFromUrl(){
 function landTab(){ var t=S.wantTab; S.wantTab=null; return (t&&TABS.indexOf(t)>=0)?t:(tabOrder()[0]||S.tab); }
 try{ document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='visible') clearBadge(); }); }catch(e){}
 
+
+/* ══════ this round ════════════════════════════════════════════════════════ */
+/* an amount in its own currency - hryvnias the usual way */
+function curMoney(v,cur){ cur=cur||'UAH'; return cur==='UAH'?money(v):(PRIV.all?DOTS:numStr(v)+' '+cur); }
+IC.flag='<path d="M5 21V4"/><path d="M5 4.5h11.6a.6.6 0 0 1 .5.92L15 8.8l2.1 3.38a.6.6 0 0 1-.5.92H5"/>';
+
+/* ---- keep adding: a whole day in one go ------------------------------- */
+function saveAndNext(){
+  var s=S.sheet; if(!s||s.edit) return;
+  var dEl=document.getElementById('f_date');
+  var keep={kind:s.kind, date:(dEl&&dEl.value)||s.date, account:s.account};
+  saveSheet();
+  /* still open: something was missing, and the sheet says what */
+  if(S.sheet) return;
+  openSheet(keep.kind);
+  var n=S.sheet; if(!n) return;
+  n.date=keep.date;
+  if(keep.account&&D.accMap&&D.accMap[keep.account]) n.account=keep.account;
+  drawSheet();
+  toast('Saved — the next one, same day and account');
+}
+
+/* ---- the rest of a receipt, in one tap -------------------------------- */
+function rlRest(v){
+  var s=S.sheet; if(!s||!v) return;
+  var d=decOfAcc(s.account), p=Math.pow(10,d), total=amtOf(s.amount,d);
+  if(!total){ toast('Type the receipt total first'); return; }
+  var left=Math.round((total-splitSum(s))*p)/p;
+  if(!(left>0)){ toast('Nothing is left to split'); return; }
+  var L=sheetLines(), l=null;
+  /* an empty line waiting is used rather than adding one more */
+  for(var i=0;i<L.length;i++) if(!amtOf(L[i].amount,d)&&!L[i].sub&&!L[i].flag){ l=L[i]; break; }
+  if(!l){ l=newLine(); L.push(l); }
+  l.amount=numStr(left);
+  if(v.charAt(0)==='~'){ l.flag=v.slice(1); l.sub=''; } else { l.sub=v; l.flag=''; }
+  drawSheet();
+  toast('The rest → '+(v.charAt(0)==='~'?'marked':strip(v)));
+}
+function lineRest(v){
+  var d=S.line; if(!d||!v) return;
+  d.amount=numStr(Math.round(d.left*1e8)/1e8); d.sub=v;
+  saveLine();
+}
+
+/* ---- an amount changed where it is ------------------------------------ */
+/* Tap the number on a row: only the amount opens, with the same keys as the
+   add sheet. Everything else about the record stays as it is. A transfer
+   between two currencies, a balance edit and the money that came back for a
+   refund are more than one number, so those open the whole record. */
+function amtEditable(t,picking){
+  if(picking||!t||t.pending||!t.row||isCorr(t)||isReceipt(t)) return false;
+  if(t.k==='i'&&isLinkedInc(t)) return false;
+  return true;
+}
+function openAmt(ev,k,row){
+  if(ev){ ev.stopPropagation(); ev.preventDefault(); }
+  if(selOn()) return;
+  var t=findTx(k,row); if(!t||t.pending) return;
+  if(isXfer(t)){
+    var m=xferMate(t);
+    if(!m||(m.currency||'UAH')!==(t.currency||'UAH')){ editTx(k,row); return; }
+  }
+  S.amtEd={k:k,row:row,amount:numStr(Math.abs(Number(t.amount)||0)),fresh:true};
+  drawAmt();
+}
+function amtEdTx(){ var d=S.amtEd; return d?findTx(d.k,d.row):null; }
+function drawAmt(){
+  var d=S.amtEd, t=amtEdTx(); if(!t){ closeModal(); return; }
+  var e=t.k==='e';
+  var what=isXfer(t)?(strip(t.account)+' → '+strip(t.shop)):(e?(t.shop||strip(t.sub)||'Expense'):strip(t.source||'Income'));
+  var grad=e?'linear-gradient(160deg,'+ok(.74,.15,27)+','+ok(.62,.17,27)+')':'linear-gradient(160deg,'+ok(.72,.14,155)+','+ok(.60,.14,155)+')';
+  var h='<div class="scrim" onclick="closeModal()"></div><div class="sheet">'+
+    '<div class="sheet-head"><button class="xbtn" onclick="closeModal()">✕</button>'+
+      '<span class="sheet-title">Change the amount</span>'+
+      '<button class="savebtn" style="background:'+grad+'" onclick="saveAmt()">Save</button></div>'+
+    '<div class="sheet-body"><div class="amt" id="amtednode"></div>'+
+      '<p class="tiny" style="margin:0 4px;text-align:center">'+esc([what,fmtShort(t.date)].concat(isXfer(t)?[]:[strip(t.account)]).join(' · '))+'</p>'+
+      '<button class="kvmore amtopen" onclick="amtOpenWhole()">Open the whole record</button>'+
+      '<div style="height:6px"></div></div>'+
+    padKeys('pressAmt')+'</div>';
+  document.getElementById('modal').innerHTML=h;
+  updateAmtEd();
+}
+function amtOpenWhole(){ var d=S.amtEd; S.amtEd=null; closeModal(); if(d) editTx(d.k,d.row); }
+function amtEdDec(){ var t=amtEdTx(); return t?decOf(t.currency||currencyOf(t.account)||'UAH'):2; }
+function updateAmtEd(){
+  var d=S.amtEd, t=amtEdTx(), node=document.getElementById('amtednode'); if(!d||!t||!node) return;
+  var e=t.k==='e', cur=t.currency||currencyOf(t.account)||'UAH';
+  node.innerHTML=amtHtml(d.amount,isXfer(t)?'':(e?'−':'+'),cur);
+  node.style.color=d.amount?(e?'#191713':GREEN):'rgba(25,23,19,.22)';
+}
+/* the first key types a new number; the delete key edits the old one */
+function pressAmt(k){
+  var d=S.amtEd; if(!d) return;
+  if(d.fresh&&/^[0-9.(]$/.test(k)) d.amount='';
+  d.fresh=false;
+  pressInto(d,k,updateAmtEd,amtEdDec());
+}
+function saveAmt(){
+  var d=S.amtEd, t=amtEdTx(); if(!d||!t){ closeModal(); return; }
+  var cur=t.currency||currencyOf(t.account)||'UAH', dec=decOf(cur);
+  if(isSum(d.amount)&&isNaN(calcValue(d.amount,dec))){ toast('That sum is not finished'); return; }
+  var amt=amtOf(d.amount,dec);
+  if(!amt){ toast('Enter an amount'); return; }
+  var old=Math.abs(Number(t.amount)||0);
+  if(Math.abs(amt-old)<1e-9){ S.amtEd=null; closeModal(); return; }
+  var payload={kind:t.k, id:t.id||'', row:t.srow||t.row, was:{date:t.date,amount:t.amount,account:t.account},
+    date:t.date, amount:amt, currency:cur, account:t.account, main:t.main||'', sub:t.sub||'', source:t.source||'',
+    shop:t.shop||'', note:t.note||'', flags:allFlags(t), allFlags:true, trip:t.trip||''};
+  if(t.k==='e') payload.sched=t.sched||'';
+  var mate=isXfer(t)?xferMate(t):null;
+  if(isXfer(t)){ payload.to=t.shop; payload.toCurrency=cur; payload.toAmount=amt; if(mate&&mate.source) payload.inSource=mate.source; }
+  /* on screen at once: the record, a transfer's other half, and the receipt
+     a split line belongs to (it holds whatever the lines do not) */
+  var head=isLine(t)?receiptHead(t.receipt):null;
+  var bk={t:{amount:t.amount,uah:t.uah}, m:mate?{amount:mate.amount,uah:mate.uah}:null, h:head?{amount:head.amount,uah:head.uah}:null};
+  var rate=old?Math.abs(Number(t.uah)||0)/old:rateOf(cur);
+  t.amount=amt; t.uah=amt*rate;
+  if(mate){ mate.amount=amt; mate.uah=amt*rate; }
+  if(head){ head.amount=Math.round((Number(head.amount)-(amt-old))*1e8)/1e8; head.uah=head.amount*rate; }
+  t.pending=true;
+  S.amtEd=null; closeModal(); prep(); render(true); toast('Amount changed');
+  bg('updateTx',payload,function(){ t.pending=false; },function(){
+    t.pending=false; t.amount=bk.t.amount; t.uah=bk.t.uah;
+    if(mate&&bk.m){ mate.amount=bk.m.amount; mate.uah=bk.m.uah; }
+    if(head&&bk.h){ head.amount=bk.h.amount; head.uah=bk.h.uah; }
+  });
+}
+
+/* ---- check later ------------------------------------------------------- */
+/* A mark on the record, "check", like the others in its Marks cell. It puts
+   the record in the "!" list until you switch it off - a refund you are
+   waiting for, a charge you do not recognise. Switched right here, it is
+   written at once, without Save. */
+function checkRow(s){
+  if(!s.edit||s.kind!=='e') return '';
+  var on=(s.flags||[]).indexOf('check')>-1;
+  return '<button class="chkrow glass'+(on?' on':'')+'" onclick="toggleCheck()">'+
+    '<span class="ci">'+svgIc('flag',18,2.2)+'</span>'+
+    '<span class="ct"><b>Check later</b><span>'+(on?'Waits in the “!” list until you switch this off':'A refund you are waiting for, a charge you do not recognise')+'</span></span>'+
+    '<span class="sw'+(on?' on':'')+'" style="'+(on?'background:'+GREEN_L:'')+'"><i></i></span></button>';
+}
+function toggleCheck(){
+  var s=S.sheet; if(!s||!s.edit) return;
+  if(apiV()<5){ toast(NEED_V5,6000); return; }
+  var t=findTx('e',s.row); if(!t||t.pending){ toast('Still saving — try again in a moment'); return; }
+  s.flags=s.flags||[];
+  var on=s.flags.indexOf('check')<0;
+  s.flags=on?s.flags.concat(['check']):s.flags.filter(function(k){ return k!=='check'; });
+  var was=t.flags||'';
+  var list=allFlags(t).filter(function(k){ return k!=='check'; });
+  if(on) list.push('check');
+  t.flags=list.join(',');
+  var w=document.getElementById('chkwrap'); if(w) w.innerHTML=checkRow(s);
+  toast(on?'Marked to check later':'Check mark taken off');
+  var p={items:[txRef(t)]};
+  if(on) p.flagAdd=['check']; else p.flagDel=['check'];
+  bg('editMany',p,null,function(){ t.flags=was; });
+}
+
+/* ---- notification times ------------------------------------------------ */
+function notifyAt(){
+  var a=pref('notifyAt',{})||{};
+  function ok_(v,d){ return /^\d{2}:\d{2}$/.test(String(v||''))?v:d; }
+  return {morning:ok_(a.morning,'10:00'), evening:ok_(a.evening,'21:00')};
+}
+function timeSteps(from,to){
+  var out=[];
+  for(var m=from*60;m<=to*60;m+=30) out.push(('0'+Math.floor(m/60)).slice(-2)+':'+('0'+(m%60)).slice(-2));
+  return out;
+}
+function timeRow(title,sub,k,cur){
+  var steps=k==='morning'?timeSteps(6,12):timeSteps(16,23.5);
+  if(steps.indexOf(cur)<0) steps.push(cur);
+  return '<div class="timerow"><span class="tl"><b>'+esc(title)+'</b><span>'+esc(sub)+'</span></span>'+
+    '<div class="selwrap"><select class="tinput sel" onchange="setNotifyTime('+q(k)+',this.value)">'+
+      steps.map(function(v){ return opt(v,v,v===cur); }).join('')+'</select><span class="chev">▼</span></div></div>';
+}
+function setNotifyTime(k,v){
+  if(apiV()<5){ toast(NEED_V5,6000); drawNotify(); return; }
+  var cur=pref('notifyAt',{})||{}, n={};
+  for(var x in cur) if(cur.hasOwnProperty(x)) n[x]=cur[x];
+  n[k]=v;
+  setPref('notifyAt',n);
+  drawNotify();
+  toast((k==='morning'?'Morning':'Evening')+' notifications around '+v);
+}
+
+/* ══════ shops: one name each ══════════════════════════════════════════════
+   Every shop you have written, most used first. Renaming one rewrites it in
+   every record that has it - the sheet does it in one go, older history
+   included, and the quick actions and shop rules that name it follow. The
+   same goes for spellings that are one shop: ATB and АТБ, Silpo and
+   Сільпо. What you merge is remembered, so the next time one of those
+   spellings is typed it is saved under the name you kept. How alike two
+   names must be, and whether new entries are fixed, is yours to set. */
+function tidyCfg(){
+  var c=pref('shopTidy',{})||{};
+  return {level:c.level==='close'?'close':'letters', auto:c.auto!==false, ignore:(c.ignore instanceof Array)?c.ignore:[]};
+}
+function setTidyCfg(patch){
+  var c=tidyCfg(), n={level:c.level, auto:c.auto, ignore:c.ignore.slice()};
+  for(var k in patch) if(patch.hasOwnProperty(k)) n[k]=patch[k];
+  setPref('shopTidy',n);
+}
+function shopAliases(){ var m=pref('shopAlias',{}); return (m&&typeof m==='object'&&!(m instanceof Array))?m:{}; }
+/* the name a typed shop is saved under */
+function shopCanon(name){
+  var v=String(name==null?'':name).replace(/\s+/g,' ').trim();
+  if(!v||!tidyCfg().auto) return v;
+  var k=shopStrict(v), m=shopAliases();
+  return (k&&m.hasOwnProperty(k)&&m[k])?m[k]:v;
+}
+function shopStats(){
+  var by={};
+  txAll().forEach(function(t){
+    if(t.k!=='e'||!t.shop||isLine(t)||isXferSub(t.sub)||isCorrName(t.sub)) return;
+    var n=String(t.shop).trim(); if(!n) return;
+    var b=by[n]||(by[n]={name:n,n:0,last:''});
+    b.n++; if(t.date>b.last) b.last=t.date;
+  });
+  return Object.keys(by).map(function(k){ return by[k]; })
+    .sort(function(a,b){ return b.n-a.n||a.name.localeCompare(b.name); });
+}
+function groupId(names){ return names.slice().sort().join('|'); }
+/* spellings that are one shop, by the matching you picked */
+function shopGroups(){
+  if(!D) return [];
+  var st=shopStats(), cfg=tidyCfg(), ign={}, keyOf=cfg.level==='close'?shopLoose:shopStrict;
+  cfg.ignore.forEach(function(k){ ign[k]=1; });
+  var byKey={}, keys=[];
+  st.forEach(function(x){
+    var k=keyOf(x.name); if(!k) return;
+    if(!byKey[k]){ byKey[k]=[]; keys.push(k); }
+    byKey[k].push(x);
+  });
+  if(cfg.level==='close'){
+    /* one letter apart counts too, once a name is long enough to be sure */
+    var par={};
+    function f(k){ while(par[k]&&par[k]!==k) k=par[k]; return k; }
+    keys.forEach(function(k){ par[k]=k; });
+    for(var i=0;i<keys.length;i++) for(var j=i+1;j<keys.length;j++){
+      var a=keys[i], b=keys[j];
+      if(Math.min(a.length,b.length)>=5&&Math.abs(a.length-b.length)<=1&&shopLev(a,b)<=1){ par[f(b)]=f(a); }
+    }
+    var merged={}, order=[];
+    keys.forEach(function(k){ var r=f(k); if(!merged[r]){ merged[r]=[]; order.push(r); } merged[r]=merged[r].concat(byKey[k]); });
+    byKey=merged; keys=order;
+  }
+  return keys.map(function(k){
+    var items=byKey[k].slice().sort(function(a,b){ return b.n-a.n||a.name.localeCompare(b.name); });
+    return {id:groupId(items.map(function(x){ return x.name; })), items:items};
+  }).filter(function(g){ return g.items.length>1&&!ign[g.id]; });
+}
+function openShops(){ S.shopQ=''; S.tidyKeep={}; drawShops(); }
+function drawShops(){
+  var st=shopStats(), g=shopGroups(), qv=String(S.shopQ||'').trim(), qk=shopStrict(qv);
+  var list=qv?st.filter(function(x){ return shopStrict(x.name).indexOf(qk)>-1||x.name.toLowerCase().indexOf(qv.toLowerCase())>-1; }):st;
+  var h=sheetTop('Shops','','backToSettings()');
+  h+='<div class="glass" style="padding:4px 0">'+
+    navRow('Tidy up spellings',g.length?(g.length+' shop'+(g.length===1?' is':'s are')+' written more than one way'):'Every shop has one spelling','drawTidy()')+'</div>';
+  h+='<div class="fieldlabel">Rename a shop <span class="opt">'+st.length+' in your records</span></div>'+
+    '<input class="tinput" id="shopq" type="search" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Find a shop" value="'+esc(qv)+'" oninput="S.shopQ=this.value;drawShopList()">';
+  h+='<div class="glass" id="shoplist" style="margin-top:10px;padding:0">'+shopListHtml(list)+'</div>';
+  h+='<p class="tiny" style="margin:12px 4px 0;line-height:1.45">Renaming rewrites the shop in every record, older ones included, and in your quick actions and shop rules.</p>';
+  h+=sheetEnd();
+  document.getElementById('modal').innerHTML=h;
+}
+function shopListHtml(list){
+  if(!list.length) return '<div class="empty" style="padding:16px">No shop like that.</div>';
+  return list.slice(0,200).map(function(x){
+    return '<button class="shoprow" onclick="openShopEdit('+q(x.name)+')"><span class="sn">'+esc(x.name)+'</span>'+
+      '<span class="sc">'+x.n+'</span><span class="chevr">›</span></button>';
+  }).join('');
+}
+function drawShopList(){
+  var el=document.getElementById('shoplist'); if(!el){ drawShops(); return; }
+  var st=shopStats(), qv=String(S.shopQ||'').trim(), qk=shopStrict(qv);
+  el.innerHTML=shopListHtml(qv?st.filter(function(x){ return shopStrict(x.name).indexOf(qk)>-1||x.name.toLowerCase().indexOf(qv.toLowerCase())>-1; }):st);
+}
+function shopCount(name){ var n=0; shopStats().forEach(function(x){ if(x.name===name) n=x.n; }); return n; }
+function openShopEdit(name){ S.shopEd={orig:name,name:name}; drawShopEdit(); }
+function drawShopEdit(){
+  var d=S.shopEd; if(!d) return;
+  var n=shopCount(d.orig), to=String(d.name||'').replace(/\s+/g,' ').trim();
+  var other=to&&to!==d.orig?shopStats().filter(function(x){ return x.name!==d.orig&&(x.name===to||shopStrict(x.name)===shopStrict(to)); })[0]:null;
+  var h=sheetTop('Rename shop','','drawShops()');
+  h+='<div class="fieldlabel">Name</div><input class="tinput" id="shopname" autocomplete="off" autocorrect="off" value="'+esc(d.name)+'" oninput="S.shopEd.name=this.value;shopEdNote()">';
+  h+='<p class="tiny" id="shopednote" style="margin:8px 4px 0;line-height:1.45">'+shopEdNoteText(d,n,to,other)+'</p>';
+  h+='<button class="paybtn" onclick="saveShopEdit()">'+(n===1?'Rename in 1 record':'Rename in '+n+' records')+'</button>';
+  h+=sheetEnd();
+  document.getElementById('modal').innerHTML=h;
+}
+function shopEdNoteText(d,n,to,other){
+  if(!to) return 'Type the new name.';
+  if(to===d.orig) return 'Written '+n+' time'+(n===1?'':'s')+'.';
+  if(other) return 'Merges with “'+esc(other.name)+'” ('+other.n+' record'+(other.n===1?'':'s')+'): both will be “'+esc(to)+'”.';
+  return '“'+esc(d.orig)+'” becomes “'+esc(to)+'” everywhere.';
+}
+function shopEdNote(){
+  var d=S.shopEd, el=document.getElementById('shopednote'); if(!d||!el) return;
+  var to=String(d.name||'').replace(/\s+/g,' ').trim();
+  var other=to&&to!==d.orig?shopStats().filter(function(x){ return x.name!==d.orig&&(x.name===to||shopStrict(x.name)===shopStrict(to)); })[0]:null;
+  el.innerHTML=shopEdNoteText(d,shopCount(d.orig),to,other);
+}
+function saveShopEdit(){
+  var d=S.shopEd; if(!d) return;
+  var to=String(d.name||'').replace(/\s+/g,' ').trim().slice(0,120);
+  if(!to){ toast('Type the new name'); return; }
+  if(to===d.orig){ drawShops(); return; }
+  var from=[d.orig];
+  /* the same shop written differently is taken along to the new name */
+  shopStats().forEach(function(x){ if(x.name!==d.orig&&x.name!==to&&shopStrict(x.name)===shopStrict(to)&&shopStrict(to)===shopStrict(d.orig)) from.push(x.name); });
+  if(renameShopsNow([{from:from,to:to}],'Renamed to “'+to+'”')){ S.shopEd=null; drawShops(); }
+}
+function drawTidy(){
+  var cfg=tidyCfg(), g=shopGroups(), keep=S.tidyKeep||(S.tidyKeep={});
+  var h=sheetTop('Tidy up spellings','','drawShops()');
+  h+='<div class="glass" style="padding:4px 0">'+
+    '<div class="fieldlabel" style="margin:12px 16px 0">How alike</div>'+
+    '<div class="segrow"><button class="'+(cfg.level==='letters'?'on':'')+'" onclick="setTidyLevel(\'letters\')">Same letters</button>'+
+      '<button class="'+(cfg.level==='close'?'on':'')+'" onclick="setTidyLevel(\'close\')">Close spellings too</button></div>'+
+    '<p class="tiny" style="margin:0 16px 10px;line-height:1.4">'+(cfg.level==='close'
+      ?'Also one letter off, and и/і, doubled letters — check each group before merging.'
+      :'The same name in Latin or Cyrillic, any capitals or punctuation: ATB and АТБ, Silpo and Сільпо.')+'</p>'+
+    swRow('Fix new entries','A merged spelling typed again is saved under the name you kept',cfg.auto,'toggleTidyAuto()')+
+    '</div>';
+  if(!g.length){
+    h+='<div class="glass" style="margin-top:14px"><div class="empty">Every shop has one spelling.</div></div>';
+  }else{
+    h+='<div class="sect" style="margin-top:18px"><span>'+g.length+' shop'+(g.length===1?'':'s')+' written more than one way</span>'+
+      (g.length>1?'<button class="sectadd" onclick="mergeAllTidy()">Merge all</button>':'')+'</div>';
+    h+='<p class="tiny" style="margin:0 6px 4px">Tap the spelling to keep.</p>';
+    g.forEach(function(grp,gi){
+      var k=keep[grp.id]||grp.items[0].name;
+      h+='<div class="glass tidygrp">'+grp.items.map(function(x){
+          var on=x.name===k;
+          return '<button class="tidyopt'+(on?' on':'')+'" onclick="tidyPick('+gi+','+q(x.name)+')"><span class="rad"></span>'+
+            '<span class="sn">'+esc(x.name)+'</span><span class="sc">'+x.n+'</span>'+(on?'<span class="keep">Keep</span>':'')+'</button>';
+        }).join('')+
+        '<div class="tidybtns"><button onclick="tidyIgnore('+gi+')">Not the same</button>'+
+          '<button class="go" onclick="tidyMerge('+gi+')">Merge</button></div></div>';
+    });
+  }
+  var al=Object.keys(shopAliases()).length, ig=cfg.ignore.length;
+  if(al||ig){
+    h+='<div class="sect" style="margin-top:18px"><span>Remembered</span></div><div class="glass" style="padding:4px 0">'+
+      (al?navRow('Spellings fixed as you type',al+' remembered','drawAliases()'):'')+
+      (ig?navRow('Marked as different shops',ig+' group'+(ig===1?'':'s'),'drawIgnored()'):'')+'</div>';
+  }
+  h+=sheetEnd();
+  document.getElementById('modal').innerHTML=h;
+}
+function setTidyLevel(v){ setTidyCfg({level:v}); S.tidyKeep={}; drawTidy(); }
+function toggleTidyAuto(){ setTidyCfg({auto:!tidyCfg().auto}); drawTidy(); }
+function tidyPick(gi,name){ var g=shopGroups()[gi]; if(!g) return; S.tidyKeep[g.id]=name; drawTidy(); }
+function tidyPair(g){
+  var k=(S.tidyKeep||{})[g.id]||g.items[0].name;
+  return {from:g.items.map(function(x){ return x.name; }).filter(function(n){ return n!==k; }), to:k};
+}
+function tidyMerge(gi){
+  var g=shopGroups()[gi]; if(!g) return;
+  var pr=tidyPair(g);
+  if(renameShopsNow([pr],'Merged into “'+pr.to+'”')) drawTidy();
+}
+function mergeAllTidy(){
+  var pairs=shopGroups().map(tidyPair);
+  if(!pairs.length) return;
+  if(renameShopsNow(pairs,pairs.length+' shops merged')) drawTidy();
+}
+function tidyIgnore(gi){
+  var g=shopGroups()[gi]; if(!g) return;
+  var c=tidyCfg(); setTidyCfg({ignore:c.ignore.concat([g.id]).slice(-200)});
+  toast('Kept apart'); drawTidy();
+}
+function drawAliases(){
+  var m=shopAliases(), keys=Object.keys(m).sort();
+  var h=sheetTop('Fixed as you type','','drawTidy()');
+  h+='<p class="tiny" style="margin:0 4px 12px;line-height:1.45">Typed like this, a shop is saved under the name on the right. Take one off to stop it.</p>';
+  h+='<div class="glass" style="padding:4px 0">'+(keys.length?keys.map(function(k){
+      return '<div class="setrow"><span class="setmain"><b>'+esc(k)+'</b><i>→ '+esc(m[k])+'</i></span>'+
+        '<button class="unlinkb" onclick="dropAlias('+q(k)+')">Remove</button></div>';
+    }).join(''):'<div class="empty">Nothing remembered.</div>')+'</div>';
+  h+=sheetEnd();
+  document.getElementById('modal').innerHTML=h;
+}
+function dropAlias(k){ var m=shopAliases(), n={}; for(var x in m) if(m.hasOwnProperty(x)&&x!==k) n[x]=m[x]; setPref('shopAlias',n); drawAliases(); }
+function drawIgnored(){
+  var c=tidyCfg();
+  var h=sheetTop('Different shops','','drawTidy()');
+  h+='<div class="glass" style="padding:4px 0">'+(c.ignore.length?c.ignore.map(function(id,i){
+      return '<div class="setrow"><span class="setmain"><b>'+esc(id.split('|').join(' · '))+'</b></span>'+
+        '<button class="unlinkb" onclick="unIgnore('+i+')">Show again</button></div>';
+    }).join(''):'<div class="empty">None.</div>')+'</div>';
+  h+=sheetEnd();
+  document.getElementById('modal').innerHTML=h;
+}
+function unIgnore(i){ var c=tidyCfg(), l=c.ignore.slice(); l.splice(i,1); setTidyCfg({ignore:l}); drawIgnored(); }
+/* the rename itself: on screen at once, then the sheet - every row, the
+   quick actions and the shop rules. Remembered for new entries too. */
+function renameShopsNow(pairs,msg){
+  if(apiV()<5){ toast(NEED_V5,6000); return false; }
+  pairs=(pairs||[]).filter(function(p){ return p&&p.to&&p.from&&p.from.length; });
+  if(!pairs.length) return false;
+  var map={};
+  pairs.forEach(function(p){ p.from.forEach(function(f){ map[f]=p.to; }); });
+  var touched=[];
+  txAll().forEach(function(t){
+    var v=String(t.shop||'').trim();
+    if(t.k==='e'&&map.hasOwnProperty(v)&&!isXferSub(t.sub)){ touched.push({t:t,was:t.shop}); t.shop=map[v]; }
+  });
+  (D.quick||[]).forEach(function(a){ var v=String(a.shop||'').trim(); if(map.hasOwnProperty(v)) a.shop=map[v]; });
+  if(tidyCfg().auto){
+    var al=shopAliases(), n={};
+    for(var k in al) if(al.hasOwnProperty(k)) n[k]=al[k];
+    pairs.forEach(function(p){
+      p.from.forEach(function(f){ var fk=shopStrict(f); if(fk) n[fk]=p.to; });
+      /* the kept name itself is never turned into anything else */
+      var tk=shopStrict(p.to); if(tk&&n[tk]&&n[tk]!==p.to) delete n[tk];
+    });
+    /* an older alias pointing at a spelling that has just gone follows it */
+    for(var k2 in n) if(n.hasOwnProperty(k2)&&map.hasOwnProperty(n[k2])) n[k2]=map[n[k2]];
+    setPref('shopAlias',n);
+  }
+  TXV++; prep(); render(true); toast(msg);
+  bg('renameShops',{pairs:pairs},null,function(){ touched.forEach(function(x){ x.t.shop=x.was; }); TXV++; });
+  return true;
+}
 /* ================================================================ boot */
 loadPriv();
 loadUI();
