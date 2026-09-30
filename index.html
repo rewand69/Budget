@@ -1255,6 +1255,8 @@ body.stale .iconbtn.more::after,body.refreshing .iconbtn.more::after{opacity:1;a
 .actbtns{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap}
 .actbtns button{padding:8px 12px;border-radius:12px;font:600 13px/1 -apple-system,sans-serif;color:rgba(25,23,19,.65);background:rgba(25,23,19,.06)}
 .actbtns button.go{color:#fff;background:rgb(51,123,208)}
+.actcard.upcard{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.actcard.upcard:active{transform:scale(.99)}
 .actx{flex:none;width:28px;height:28px;margin:-6px -4px 0 0;padding:0;border:0;border-radius:50%;display:flex;align-items:center;justify-content:center;color:rgba(25,23,19,.35);background:none}
 .actx .ic{width:14px;height:14px}
 button.actcard{width:100%;text-align:left;align-items:center}
@@ -3138,7 +3140,8 @@ function ptrDone(){
   el.classList.add('go'); el.classList.remove('spin','ready');
   el.style.opacity='0'; el.style.transform='translateY(-40px)';
 }
-function toggle(k){ S.open[k]=!S.open[k]; render(); }
+/* opening a category in Summary: the page stays where it is */
+function toggle(k){ S.open[k]=!S.open[k]; render(true); }
 
 /* ================================================================ shared bits */
 /* ── transfers between your own accounts ────────────────────────────────
@@ -3376,8 +3379,9 @@ function narrowed(){ return !!(S.fCat.length||S.fSub.length||S.fSrc.length||S.fA
 function actBody(){
   var nBad=D.tx.filter(unbalanced).length;
   var h=findPanel()+attnRow(nBad);
-  /* the 1st of the month: time to pick this month's cashback categories */
-  if(!S.qOpen&&!S.fBad) h+=cbMonthCard();
+  /* the Calendar's payments for today and tomorrow, and on the 1st of the
+     month the cards' cashback categories */
+  if(!S.qOpen&&!S.fBad) h+=upcomingCard()+cbMonthCard();
   var tr=tripNow();
   if(tr){
     var ts=tripStats(tr.name);
@@ -4617,7 +4621,7 @@ function fmtShort(isoStr){
   var d=parseD(isoStr); if(isNaN(d.getTime())) return String(isoStr);
   return MONS[d.getMonth()]+' '+d.getDate();
 }
-function pickDay(d){ S.selDay=d; S.daySet=true; render(); }
+function pickDay(d){ S.selDay=d; S.daySet=true; render(true); }
 
 /* ================================================================ 6 · EXPECTATIONS */
 function pageExpectations(){
@@ -7849,10 +7853,42 @@ function accOptions(sel){
   return l.map(function(n){ return opt(n,strip(n),n===sel); }).join('');
 }
 /* the panel: how much came back, to which account, on which day */
-function openMoneyBack(kind,row,fromSheet){
+/* The money that comes back is tied to the purchase by the purchase's id
+   (the income's id is that id plus -r or -b). A record that is saved but
+   has no id yet - typed into the sheet by hand, say - gets one the next
+   time the app reads the sheet, so it reads it once, right now, and then
+   carries on by itself. Only when the sheet has no ID column at all is
+   there nothing to wait for, and then it says what to do instead. */
+var NO_ID_MSG='This record has no ID in the spreadsheet yet, so the money cannot be tied to it. In the sheet run Budget \u2192 Upgrade data for the new app (run once), then pull down here to refresh.';
+function withRecordId(row,go){
   var t=findTx('e',row); if(!t) return;
+  /* on its way up: the sheet has not got it yet */
+  if(t.pending||!t.row){ toast('Wait a moment \u2014 it is still saving'); return; }
+  if(t.id){ go(t); return; }
+  if(D.v2===false){ toast(NO_ID_MSG,9000); return; }
+  if(S.idWait) return;
+  var was={date:t.date,amount:t.amount,account:t.account,sub:t.sub||'',shop:t.shop||''};
+  S.idWait=true; toast('One moment\u2026');
+  var gaveUp=false, guard=setTimeout(function(){ gaveUp=true; S.idWait=false; toast('The sheet did not answer. Try again in a moment'); },45000);
+  API.call('bootstrap',{fresh:true},function(err,res){
+    clearTimeout(guard);
+    if(gaveUp) return;
+    S.idWait=false;
+    if(err){ toast(err); return; }
+    applyData(res,++S.seq);
+    /* rows may have moved in the meantime: find it again by what it is */
+    function same(x){ return x&&x.k==='e'&&x.date===was.date&&Number(x.amount)===Number(was.amount)&&x.account===was.account; }
+    var t2=findTx('e',row);
+    if(!same(t2)) t2=txAll().filter(function(x){ return same(x)&&(x.sub||'')===was.sub&&(x.shop||'')===was.shop; })[0]||null;
+    if(t2&&t2.id) go(t2); else toast(NO_ID_MSG,9000);
+  });
+}
+function openMoneyBack(kind,row,fromSheet){
   if(apiV()<3){ toast(NEED_V3,7000); return; }
-  if(!t.id||t.pending||!t.row){ toast('Wait a moment \u2014 it is still saving'); return; }
+  withRecordId(row,function(t){ openMoneyBackFor(kind,t,fromSheet); });
+}
+function openMoneyBackFor(kind,t,fromSheet){
+  var row=t.row;
   if(!backSource(kind)){ toast('Add a \u201c'+(kind==='r'?'Refund':'Debt return')+'\u201d income source in Settings first',6000); return; }
   var amt=paidOf(t);
   S.sheet=null; renderFab();
@@ -7943,9 +7979,11 @@ function undoMoneyBack(kind,row){
 /* one tap from the list: the whole amount, to the card it was paid with -
    and a few seconds to change either */
 function quickBack(row){
-  var t=findTx('e',row); if(!t) return;
   if(apiV()<3){ toast(NEED_V3,7000); return; }
-  if(!t.id||t.pending||!t.row){ toast('Wait a moment \u2014 it is still saving'); return; }
+  withRecordId(row,quickBackFor);
+}
+function quickBackFor(t){
+  var row=t.row;
   if(!backSource('b')){ toast('Add a \u201cDebt return\u201d income source in Settings first',6000); return; }
   commitUndo();
   var go=moneyBackApply('b',t,{amount:Math.abs(Number(t.amount)||0),currency:t.currency||'UAH',account:t.account,date:D.today});
@@ -8342,6 +8380,71 @@ function cbMonthCard(){
     '<button class="actx" onclick="cbSame()" aria-label="Close">✕</button></div>';
 }
 function cbSame(){ setPref('cbMonth',D.thisMonth); render(true); }
+
+/* ══════ what the Calendar has for today and tomorrow ══════════════════════
+   The payments due today and tomorrow that are not written down yet, as one
+   card at the top of Activity. Tapping it lists them, each with the tick
+   the Calendar has; the cross puts the card away until the next day. When
+   the sheet cannot say what was paid (no Schedule column yet), a record
+   with the payment's name from the last few days counts as paid. */
+function upcomingDue(){
+  var items=(D.calendar&&D.calendar.items)||[], out={today:[],tomorrow:[]};
+  if(!items.length) return out;
+  var pm=paidMap(), from=trackFrom(), tom=addDaysIso(D.today,1);
+  items.forEach(function(it){
+    occList(it,D.today,tom).forEach(function(o){
+      if(from?pm[schedKey(it,o)]:upcPaidGuess(it,o)) return;
+      (o===D.today?out.today:out.tomorrow).push({it:it,o:o});
+    });
+  });
+  return out;
+}
+function upcPaidGuess(it,o){
+  var name=shopStrict(it.service||''), lo=addDaysIso(o,-3);
+  if(name.length<3) return false;
+  return txAll().some(function(t){
+    if(t.k!=='e'||t.date<lo||t.date>D.today) return false;
+    var fs=t.shop?shopStrict(t.shop):'';
+    return fs.length>=3&&(fs.indexOf(name)>=0||name.indexOf(fs)>=0);
+  });
+}
+function upcTotal(list){ return sum(list,function(e){ return Number(e.it.uah||e.it.cost)||0; }); }
+function upcomingCard(){
+  if(pref('upcOff','')===D.today) return '';
+  var u=upcomingDue(), n=u.today.length, m=u.tomorrow.length;
+  if(!n&&!m) return '';
+  var list=n?u.today:u.tomorrow, cnt=list.length;
+  var names=list.map(function(e){ return e.it.service; });
+  var sub=esc(names.slice(0,3).join(', ')+(names.length>3?' +'+(names.length-3):''))+' \u00b7 '+money(upcTotal(list),0)+
+    (n&&m?' \u00b7 '+m+' more tomorrow':'');
+  return '<div class="glass actcard upcard" role="button" tabindex="0" style="'+icStyle(n?27:255)+'" onclick="drawUpcoming()">'+
+    '<span class="ai">'+svgIc('calendar',18,2)+'</span>'+
+    '<div class="at"><b>'+cnt+' upcoming expense'+(cnt===1?'':'s')+(n?' today':' tomorrow')+'</b><span>'+sub+'</span></div>'+
+    '<button class="actx" onclick="event.stopPropagation();upcomingOff()" aria-label="Close">\u2715</button></div>';
+}
+function upcomingOff(){ setPref('upcOff',D.today); render(true); }
+/* the list behind the card: the Calendar's own rows, today first */
+function drawUpcoming(){
+  var u=upcomingDue(), pm=paidMap();
+  var h=sheetTop('Upcoming expenses','')+'<i id="upcsheet" hidden></i>';
+  function sect(label,list){
+    if(!list.length) return '';
+    return '<div class="sect"><span>'+label+'</span><span class="r">'+money(upcTotal(list),0)+'</span></div>'+
+      '<div class="glass list">'+list.map(function(e){
+        return planRow(e.it,e.o,pm).replace('onclick="calPay(','onclick="upcPay(');
+      }).join('')+'</div>';
+  }
+  h+=sect('Today',u.today)+sect('Tomorrow',u.tomorrow);
+  if(!u.today.length&&!u.tomorrow.length) h+='<div class="glass" style="margin-top:12px"><div class="empty">Nothing left to pay today or tomorrow.</div></div>';
+  else h+='<p class="tiny" style="margin:12px 6px 0;line-height:1.45">Tap the circle once it is paid. Tap the name to change the payment in the Calendar.</p>';
+  h+=sheetEnd();
+  document.getElementById('modal').innerHTML=h;
+}
+/* a tick from the list works as it does in the Calendar, and the list keeps up */
+function upcPay(row,occ){
+  calPay(row,occ);
+  setTimeout(function(){ if(document.getElementById('upcsheet')) drawUpcoming(); },60);
+}
 function openCbEdit(){
   S.cbEd={accs:cbAccounts().map(function(a){
     return {row:a.row||0,name:a.name,orig:String(a.cashback||''),
@@ -10030,7 +10133,7 @@ window.__S=S;
    As a website, a small service worker keeps these files on the phone, so
    the app opens instantly and with no signal. A new version is fetched in
    the background; when it arrives, a note offers to switch to it. */
-var APP_VERSION='2026.09.30.6';
+var APP_VERSION='2026.09.30.7';
 (function(){
   try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persist(); }catch(e){}
   if(inGas()||!('serviceWorker' in navigator)) return;
