@@ -807,6 +807,27 @@ select.expname{padding:9px 10px;font-size:14px;border-radius:13px}
 .segrow{display:flex;gap:8px;padding:12px 16px}
 .segrow button{flex:1;padding:11px 8px;border-radius:13px;font:600 13.5px/1.2 -apple-system,sans-serif;background:rgba(25,23,19,.06);color:rgba(25,23,19,.7)}
 .segrow button.on{background:#191713;color:#fff}
+/* Settings: grouped cards under small headings, one line per row */
+.sethd{font:600 12px/1 -apple-system,sans-serif;letter-spacing:.5px;text-transform:uppercase;
+  color:rgba(25,23,19,.42);margin:24px 14px 8px}
+.sheet-body>.sethd:first-child{margin-top:10px}
+.setcard{overflow:hidden}
+.srow{display:flex;align-items:center;gap:12px;width:100%;min-height:52px;padding:0 14px 0 12px;
+  border:0;background:none;text-align:left;position:relative;-webkit-tap-highlight-color:transparent}
+.srow+.srow::before{content:'';position:absolute;top:0;left:54px;right:0;height:.5px;background:rgba(25,23,19,.09)}
+.srow:active{background:rgba(25,23,19,.04)}
+.sico{flex:none;width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;
+  color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.28)}
+.stl{flex:1;min-width:0;padding:15px 0;font:500 15.5px/1.2 -apple-system,system-ui;letter-spacing:-.2px;
+  color:#191713;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sval{flex:none;max-width:46%;font:400 15px/1.2 -apple-system,system-ui;color:rgba(25,23,19,.45);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.srow .chevr{margin-left:-2px}
+.srow.danger{justify-content:center}
+.srow.danger .stl{flex:none;text-align:center;color:#c73e2d;font-weight:600}
+.setfoot{margin:8px 14px 0;font:400 12.5px/1.4 -apple-system,system-ui;color:rgba(25,23,19,.45)}
+.setfoot.bad{color:#c73e2d}
+.setver{margin:22px 0 2px;text-align:center;font:400 12px/1 -apple-system,system-ui;color:rgba(25,23,19,.34)}
 /* a record still on its way up is faded - but not the Delete swiped out of it */
 .pendrow>*:not(.swdel):not(.swrep){opacity:.5}
 /* keep adding: at the end of the form, where it scrolls with everything else */
@@ -7480,37 +7501,54 @@ function openSettings(){
   });
   drawSettings();
 }
+/* Settings, grouped the way the phone's own Settings are: what records are
+   filed under, shops, how the app looks, what it hides, what it can do -
+   each row a coloured icon, its name and where it stands. The explanations
+   live on the screens the rows open. */
+function sIcon(k,h,c){
+  var ch=c===undefined?.15:c;
+  return '<span class="sico" style="background:linear-gradient(160deg,'+ok(.69,ch,h)+','+ok(.56,ch+.01,h)+')">'+svgIc(k,17,2.2)+'</span>';
+}
+function sRow(k,h,title,val,go){
+  return '<button class="srow" onclick="'+go+'">'+sIcon(k,h)+'<span class="stl">'+esc(title)+'</span>'+
+    (val?'<span class="sval">'+esc(val)+'</span>':'')+'<span class="chevr">›</span></button>';
+}
+function sSw(k,h,title,on,go,c){
+  return '<button class="srow" role="switch" aria-checked="'+(on?'true':'false')+'" onclick="'+go+'">'+sIcon(k,h,c)+
+    '<span class="stl">'+esc(title)+'</span><span class="sw'+(on?' on':'')+'"><i></i></span></button>';
+}
+function sGroup(head,rows,foot){
+  return (head?'<div class="sethd">'+esc(head)+'</div>':'')+'<div class="glass setcard">'+rows+'</div>'+(foot||'');
+}
 function drawSettings(){
   var h=sheetTop('Settings','');
-  h+='<div class="glass" style="padding:4px 0">'+
-    navRow('Main categories',S.catM.length+' in the list','openMains()')+
-    navRow('Subcategories',S.catS.length+' in the list','drawSubs()')+
-    navRow('Income sources',S.catI.length+' in the list','drawSrcs()')+
-    '</div>';
-  h+='<p class="tiny" style="margin:12px 4px 0">Renaming anything here rewrites it in every record that uses it, so nothing is left orphaned.</p>';
-  var ord=tabOrder();
-  h+='<div class="sect" style="margin-top:18px"><span>This app</span></div>';
-  h+='<div class="glass" style="padding:4px 0">'+
-    navRow('Bottom menu',strip(TAB_LABEL[ord[0]]||ord[0])+' first \u00b7 '+ord.length+' shown'+
-      (tabsOff().length?' \u00b7 '+tabsOff().length+' hidden':''),'drawTabsOrder()')+
-    swRow('Receipts open by default',
-      pref('rcpOpen',true)!==false?'Their lines show straight away':'They start folded up',
-      pref('rcpOpen',true)!==false,'toggleRcpOpen()')+
-    navRow('Trip mode',tripNow()?(tripNow().name+' · day '+tripDay(tripNow())):'Off','drawTrip()')+
-    navRow('Shops',(function(){ var g=shopGroups().length; return g?g+' shop'+(g===1?' is':'s are')+' written more than one way':'Rename a shop everywhere, tidy up spellings'; })(),'openShops()')+
-    navRow('Shop rules',(function(){ var n=Object.keys(shopRules()).length; return n?n+' shop'+(n===1?'':'s')+' fill in their category and card':'A shop fills in its category and card'; })(),'drawShopRules()')+
-    swRow('Show days with nothing',
-      pref('emptyDays',true)!==false?'Every day is in Activity, with room to drop a record':'Only days with records',
-      pref('emptyDays',true)!==false,'toggleEmptyDays()')+
-    (inGas()?'':navRow('Notifications',pushIsOn()?'On':'Off','openNotify()'))+
-    '</div>';
-  var orph=orphanCount();
-  if(orph) h+='<p class="tiny" style="margin:10px 4px 0;color:#c73e2d">'+orph+' record'+(orph>1?'s':'')+' still name a category that is no longer in these lists. They are counted as usual — renaming the surviving one is how you fold them back in.</p>';
+  var ord=tabOrder(), off=tabsOff().length, orph=orphanCount(), tr=tripNow();
+  var tidy=shopGroups().length, rules=Object.keys(shopRules()).length;
+  h+=sGroup('Categories',
+    sRow('grid',45,'Main categories',String(S.catM.length),'openMains()')+
+    sRow('list',255,'Subcategories',String(S.catS.length),'drawSubs()')+
+    sRow('in',150,'Income sources',String(S.catI.length),'drawSrcs()'),
+    '<p class="setfoot">Renaming updates every record that uses it.</p>'+
+    (orph?'<p class="setfoot bad">'+orph+' record'+(orph>1?'s':'')+' still name'+(orph>1?'':'s')+' a category that is no longer here. '+
+      'They are counted as usual — renaming the one that stayed folds them back in.</p>':''));
+  h+=sGroup('Shops',
+    sRow('bag',330,'Shop names',tidy?(tidy+' to tidy'):'','openShops()')+
+    sRow('sparkles',290,'Shop rules',rules?String(rules):'None','drawShopRules()'));
+  h+=sGroup('Display',
+    sRow('tabbar',230,'Bottom menu',off?(ord.length+' of '+(ord.length+off)+' tabs'):(ord.length+' tabs'),'drawTabsOrder()')+
+    sSw('calendar',25,'Show empty days',pref('emptyDays',true)!==false,'toggleEmptyDays()')+
+    sSw('receipt',65,'Receipts start open',pref('rcpOpen',true)!==false,'toggleRcpOpen()'));
+  h+=sGroup('Privacy',
+    sSw('eye',260,'Hide balances',!!PRIV.balance,'setPriv(\'balance\');drawSettings()',.03)+
+    sSw('eyeoff',260,'Hide all amounts',!!PRIV.all,'setPriv(\'all\');drawSettings()',.03));
+  var na=notifyAt();
+  h+=sGroup('Features',
+    (inGas()?'':sRow('bell',20,'Notifications',pushIsOn()?(na.morning+' · '+na.evening):'Off','openNotify()'))+
+    sRow('plane',235,'Trip mode',tr?strip(tr.name):'Off','drawTrip()'));
   if(!inGas()&&!window.MOCK||window.MOCK_SITE){
-    h+='<div class="sect" style="margin-top:18px"><span>This phone</span></div>';
-    h+='<button class="delbtn" id="discbtn" style="margin-top:0" onclick="disconnectPhone()">Disconnect this phone</button>';
+    h+=sGroup('This phone','<button class="srow danger" onclick="disconnectPhone()"><span class="stl" id="discbtn">Disconnect this phone</span></button>');
   }
-  h+='<p class="tiny" style="margin:14px 4px 0;opacity:.6">App version '+APP_VERSION+'</p>';
+  h+='<p class="setver">App version '+APP_VERSION+'</p>';
   h+=sheetEnd();
   document.getElementById('modal').innerHTML=h;
 }
@@ -9992,7 +10030,7 @@ window.__S=S;
    As a website, a small service worker keeps these files on the phone, so
    the app opens instantly and with no signal. A new version is fetched in
    the background; when it arrives, a note offers to switch to it. */
-var APP_VERSION='2026.09.30.5';
+var APP_VERSION='2026.09.30.6';
 (function(){
   try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persist(); }catch(e){}
   if(inGas()||!('serviceWorker' in navigator)) return;
@@ -10325,6 +10363,8 @@ try{ document.addEventListener('visibilitychange',function(){ if(document.visibi
 /* an amount in its own currency - hryvnias the usual way */
 function curMoney(v,cur){ cur=cur||'UAH'; return cur==='UAH'?money(v):(PRIV.all?DOTS:numStr(v)+' '+cur); }
 IC.plus='<path d="M12 5v14"/><path d="M5 12h14"/>';
+IC.bell='<path d="M6 8.5a6 6 0 0 1 12 0c0 6.5 2.6 8.5 2.6 8.5H3.4S6 15 6 8.5"/><path d="M10.2 20.5a2 2 0 0 0 3.6 0"/>';
+IC.tabbar='<rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M3.5 15.5h17"/><path d="M8 18h.01M12 18h.01M16 18h.01"/>';
 IC.flag='<path d="M5 21V4"/><path d="M5 4.5h11.6a.6.6 0 0 1 .5.92L15 8.8l2.1 3.38a.6.6 0 0 1-.5.92H5"/>';
 
 /* ---- keep adding: a whole day in one go ------------------------------- */
