@@ -1256,6 +1256,20 @@ body.stale .iconbtn.more::after,body.refreshing .iconbtn.more::after{opacity:1;a
 .actbtns button{padding:8px 12px;border-radius:12px;font:600 13px/1 -apple-system,sans-serif;color:rgba(25,23,19,.65);background:rgba(25,23,19,.06)}
 .actbtns button.go{color:#fff;background:rgb(51,123,208)}
 .actcard.upcard{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.mrgpair{padding:6px 0}
+.mrgside{display:flex;align-items:center;gap:12px;padding:10px 16px}
+.mrgn{display:flex;flex-direction:column;gap:4px;min-width:0}
+.mrgn b{font:600 15px/1.25 -apple-system,system-ui;letter-spacing:-.2px;color:#191713;overflow-wrap:anywhere}
+.mrgn i{font:400 12.5px/1.3 -apple-system,system-ui;font-style:normal;color:rgba(25,23,19,.5)}
+.mrgarrow{display:flex;align-items:center;height:12px;padding-left:29px;color:rgba(25,23,19,.28)}
+.mrgswap{display:block;margin:8px auto 0;padding:8px 12px;border:0;background:none;
+  font:600 13px/1 -apple-system,system-ui;color:rgb(51,123,208);-webkit-tap-highlight-color:transparent}
+.mrgsum{margin-top:12px;padding:2px 0}
+.mrgline{padding:11px 16px;font:400 13.5px/1.42 -apple-system,system-ui;color:rgba(25,23,19,.78);
+  border-bottom:.5px solid rgba(25,23,19,.06)}
+.mrgline:last-child{border-bottom:0}
+.mrgline b{font-weight:600;color:#191713}
+.paybtn.mrggo{border:0;box-shadow:0 4px 14px -4px rgba(51,123,208,.5)}
 .actcard.upcard:active{transform:scale(.99)}
 .actx{flex:none;width:28px;height:28px;margin:-6px -4px 0 0;padding:0;border:0;border-radius:50%;display:flex;align-items:center;justify-content:center;color:rgba(25,23,19,.35);background:none}
 .actx .ic{width:14px;height:14px}
@@ -1628,7 +1642,8 @@ var IC={"cart":"<circle cx=\"8\" cy=\"21\" r=\"1\"/><circle cx=\"19\" cy=\"21\" 
  "x":"<path d=\"M18 6 6 18\"/><path d=\"m6 6 12 12\"/>",
  "list":"<path d=\"M3 12h.01\"/><path d=\"M3 18h.01\"/><path d=\"M3 6h.01\"/><path d=\"M8 12h13\"/><path d=\"M8 18h13\"/><path d=\"M8 6h13\"/>",
  "in":"<path d=\"M17 7 7 17\"/><path d=\"M17 17H7V7\"/>",
- "out":"<path d=\"M7 7h10v10\"/><path d=\"M7 17 17 7\"/>"};
+ "out":"<path d=\"M7 7h10v10\"/><path d=\"M7 17 17 7\"/>",
+ "merge":"<path d=\"m8 6 4-4 4 4\"/><path d=\"M12 2v10.3a4 4 0 0 1-1.172 2.872L4 22\"/><path d=\"m20 22-5-5\"/>"};
 function svgIc(k,sz,sw){
   var s=sz||20;
   return '<svg class="ic" viewBox="0 0 24 24" width="'+s+'" height="'+s+'" fill="none" stroke="currentColor"'+
@@ -3068,17 +3083,19 @@ function agoWords(t){
 }
 function refresh(){
   if(S.refreshing) return;
+  if(catBusyNow()){ ptrDone(); toast('A category change is still saving. One moment.'); return; }
   S.refreshing=true;
   document.body.classList.add('refreshing');
   commitUndo();
   /* fresh:true reads Setup, the Calendar and the plan again instead of the
      ten-minute copy - for when the sheet was edited by hand */
+  var seq=++S.seq;
   API.call('bootstrap',{fresh:true},function(err,res){
     S.refreshing=false;
     document.body.classList.remove('refreshing');
     ptrDone();
     if(err){ toast(err); return; }
-    applyData(res,++S.seq); toast('Up to date');
+    applyData(res,seq); toast('Up to date');
   });
 }
 /* ---- pull to refresh -------------------------------------------------------
@@ -4002,10 +4019,13 @@ function pageSummary(){
      '</div>';
 
   // biggest
-  var bigs=m.tx.filter(realExp).slice().sort(function(a,b){return Math.abs(txAmount(b))-Math.abs(txAmount(a));}).slice(0,5);
+  var bigAll=m.tx.filter(realExp).slice().sort(function(a,b){return Math.abs(txAmount(b))-Math.abs(txAmount(a));});
+  var bigs=bigAll.slice(0,S.bigAll?30:5);
   if(bigs.length){
     h+='<div class="sect"><span>Biggest</span></div><div class="glass list">'+
-       bigs.map(function(t){ return txRow(t,'editTx(\''+t.k+'\','+t.row+')'); }).join('')+'</div>';
+       bigs.map(function(t){ return txRow(t,'editTx(\''+t.k+'\','+t.row+')'); }).join('')+
+       (bigAll.length>5?'<button class="kvmore" onclick="moreBig()">'+
+         (S.bigAll?'Show the top 5 only':(bigAll.length>30?'Show the top 30':'Show all '+bigAll.length))+'</button>':'')+'</div>';
   }
   return h;
 }
@@ -4109,10 +4129,14 @@ function pageAnalytics(){
 
   // top shops
   var shops={};
-  exps.forEach(function(t){ if(t.shop) shops[t.shop]=(shops[t.shop]||0)+Math.abs(txAmount(t)); });
+  exps.forEach(function(t){
+    var parts=shopParts(t.shop); if(!parts.length) return;
+    var share=Math.abs(txAmount(t))/parts.length;
+    parts.forEach(function(n){ shops[n]=(shops[n]||0)+share; });
+  });
   var all=Object.keys(shops).map(function(k){return {name:k,v:shops[k]};})
     .sort(function(a,b){return b.v-a.v;});
-  var shopList=S.shopsAll?all:all.slice(0,8);
+  var shopList=all.slice(0,S.shopsAll?30:8);
   if(shopList.length){
     h+='<div class="sect"><span>Top shops</span><span class="r">'+all.length+'</span></div>'+
       '<div class="glass" style="padding:4px 0">'+
@@ -4123,7 +4147,7 @@ function pageAnalytics(){
           '<span class="chevr">\u203a</span></button>';
       }).join('')+
       (all.length>8?'<button class="kvmore" onclick="moreShops()">'+
-        (S.shopsAll?'Show the top 8 only':'Show all '+all.length+' shops')+'</button>':'')+
+        (S.shopsAll?'Show the top 8 only':(all.length>30?'Show the top 30':'Show all '+all.length+' shops'))+'</button>':'')+
       '</div>';
   }
 
@@ -4335,6 +4359,7 @@ var TICK_BURST=(function(){
 /* Every expense at one shop, inside whatever window Analytics is showing.
    The list is the point, so a row opens the record itself. */
 function moreShops(){ S.shopsAll=!S.shopsAll; render(true); }
+function moreBig(){ S.bigAll=!S.bigAll; render(true); }
 function openShop(name){
   S.shop=name;
   drawShop();
@@ -4351,7 +4376,7 @@ function drawShop(){
   if(!name) return;
   var by=S.shopSort||'new';
   var list=(rangeDef().all?txAll():(D.tx||[])).filter(function(t){
-    return t.k==='e'&&t.shop===name&&realExp(t)&&inRange(t);
+    return t.k==='e'&&realExp(t)&&inRange(t)&&shopParts(t.shop).indexOf(name)>-1;
   });
   list.sort(function(a,b){
     if(by==='big'||by==='small'){
@@ -4363,11 +4388,15 @@ function drawShop(){
     if(a.date!==b.date) return (a.date<b.date)===(by==='old')?-1:1;
     return (by==='old')?(orderKey(a)-orderKey(b)):(orderKey(b)-orderKey(a));
   });
-  var tot=sum(list,function(t){ return Math.abs(txAmount(t)); });
+  /* a record paid across several shops counts its share here, as in Top shops */
+  var shared=0;
+  var tot=sum(list,function(t){ var n=shopParts(t.shop).length; if(n>1) shared++; return Math.abs(txAmount(t))/Math.max(1,n); });
   var h=sheetTop(strip(name),'');
   h+='<div class="glass" style="padding:14px 18px;display:flex;align-items:baseline;justify-content:space-between">'+
     '<span class="tiny">'+list.length+(list.length===1?' record':' records')+' \u00b7 '+esc(rangeWords())+'</span>'+
     '<span style="font:600 17px/1 -apple-system;letter-spacing:-.3px">'+money(tot,0)+'</span></div>';
+  if(shared) h+='<p class="tiny" style="margin:8px 6px 0;line-height:1.4">'+(shared===1?'1 record was':shared+' records were')+
+    ' paid across several shops, so '+(shared===1?'it counts':'they count')+' an equal share here.</p>';
   h+='<div class="fbar" style="margin:10px 0 0">'+SHOP_SORTS.map(function(s){
     return '<button class="fpill'+(by===s.key?' set':'')+'"'+
       (by===s.key?' style="background:rgba(51,123,208,.14);color:rgb(38,92,156)"':'')+
@@ -6226,9 +6255,11 @@ function recentShops(n){
   });
   var seen={}, out=[];
   for(var i=0;i<list.length&&out.length<(n||5);i++){
-    var v=String(list[i].shop).trim(), key=v.toLowerCase();
-    if(seen[key]) continue;
-    seen[key]=1; out.push(v);
+    shopParts(list[i].shop).forEach(function(v){
+      var key=v.toLowerCase();
+      if(seen[key]||out.length>=(n||5)) return;
+      seen[key]=1; out.push(v);
+    });
   }
   return out;
 }
@@ -6288,10 +6319,8 @@ function shopIndex(){
   if (SHOP_IX_ && SHOP_IX_N_ === tx.length) return SHOP_IX_;
   var c = {};
   tx.forEach(function(t){
-    if (t.k !== 'e') return;
-    var v = String(t.shop || '').trim();
-    if (!v || isXferSub(t.sub) || isCorrName(t.sub)) return;
-    c[v] = (c[v] || 0) + 1;
+    if (t.k !== 'e' || !t.shop || isXferSub(t.sub) || isCorrName(t.sub)) return;
+    shopParts(t.shop).forEach(function(v){ c[v] = (c[v] || 0) + 1; });
   });
   SHOP_IX_ = Object.keys(c).map(function(n){
     return { n: n, c: c[n], L: shopLoose(n), K: shopSkel(n) };
@@ -6316,10 +6345,15 @@ function shopMatches(qs, n){
   return out.slice(0, n || 6);
 }
 function shopChipsInner(cur){
-  var typed = String(cur || '').trim();
+  /* with several shops, the one being typed is the part after the last
+     semicolon, and the ones before it are not offered again */
+  var parts = String(cur || '').split(';'), typed = parts.pop().trim();
+  var before = parts.map(function(x){ return shopStrict(x); });
   /* nothing typed yet: the five you used last. Typing turns the same row
      into search results over every shop in the ledger. */
-  var list = typed ? shopMatches(typed, 6) : recentShops(5);
+  var list = (typed ? shopMatches(typed, 10) : recentShops(10)).filter(function(x){
+    return before.indexOf(shopStrict(x)) < 0;
+  }).slice(0, typed ? 6 : 5);
   if (!list.length) return '';
   var c = shopStrict(typed);
   return list.map(function(x){
@@ -6339,8 +6373,12 @@ function shopChips(cur){
    the chip that is already on clears the field, so it is undoable. */
 function pickShop(v){
   var s=S.sheet; if(!s) return;
-  var same=String(s.shop||'').trim().toLowerCase()===String(v).trim().toLowerCase();
-  s.shop=same?'':v; s.autoShop='';
+  /* it takes the place of the shop being typed - the one after the last
+     semicolon - and the shops before it stay */
+  var parts=String(s.shop||'').split(';'), last=parts.pop();
+  var keep=parts.map(function(x){ return x.trim(); }).filter(Boolean);
+  var same=shopStrict(last)!==''&&shopStrict(last)===shopStrict(v);
+  s.shop=shopJoin(same?keep:keep.concat([v])); s.autoShop='';
   var el=document.getElementById('f_shop'); if(el) el.value=s.shop;
   markShopChips();
   applyShopRule();
@@ -6580,7 +6618,7 @@ function saveSheet(){
   if(words&&words.sub){ s.sub=words.sub; var wsm=D.subMap[words.sub]; if(wsm&&wsm.main) s.main=wsm.main; }
   var feeNote=(words?words.atm:isAtmName(s.sub))?'ATM fee':'Transfer fee';
   /* a spelling merged away before is saved under the name you kept */
-  if(s.kind==='e'&&!xfer) s.shop=shopCanon(s.shop);
+  if(s.kind==='e'&&!xfer) s.shop=shopNorm(s.shop);
   var payload={
     kind:s.kind, id:s.id||'', row:s.row||0, was:s.was||{date:'',amount:0,account:''},
     date:s.date, amount:amt, currency:cur,
@@ -7491,8 +7529,11 @@ function toggleRcpOpen(){
 }
 function tog(on,fn){ return '<button class="togbtn'+(on?' on':'')+'" onclick="'+fn+'">'+(on?'Yes':'No')+'</button>'; }
 
-function openSettings(){
-  /* orig: the name as saved - an icon picked for it follows a rename */
+function openSettings(){ catInit(); drawSettings(); }
+/* the lists Settings edits, as the sheet has them now (orig: the name as
+   saved - an icon picked for it follows a rename) */
+function catInit(){
+  S.catSetup=D.setup;
   S.catM=(D.setup.mainCategories||[]).map(function(n,i){
     return {row:(D.setup.mainRows||[])[i]||0,name:n,orig:n};
   });
@@ -7503,7 +7544,9 @@ function openSettings(){
   S.catI=(D.setup.incomeSources||[]).map(function(x){
     return {row:x.row||0,name:x.name,real:x.real!==false,orig:x.name};
   });
-  drawSettings();
+  /* opened again while a merge is on its way: when it lands, these lists
+     are simply made again, unless something was changed in them by hand */
+  if(S.catBusy) S.catPost=catSig();
 }
 /* Settings, grouped the way the phone's own Settings are: what records are
    filed under, shops, how the app looks, what it hides, what it can do -
@@ -7525,14 +7568,14 @@ function sGroup(head,rows,foot){
   return (head?'<div class="sethd">'+esc(head)+'</div>':'')+'<div class="glass setcard">'+rows+'</div>'+(foot||'');
 }
 function drawSettings(){
-  var h=sheetTop('Settings','');
+  var h=sheetTop('Settings','')+'<i id="setscr" hidden></i>';
   var ord=tabOrder(), off=tabsOff().length, orph=orphanCount(), tr=tripNow();
   var tidy=shopGroups().length, rules=Object.keys(shopRules()).length;
   h+=sGroup('Categories',
     sRow('grid',45,'Main categories',String(S.catM.length),'openMains()')+
     sRow('list',255,'Subcategories',String(S.catS.length),'drawSubs()')+
     sRow('in',150,'Income sources',String(S.catI.length),'drawSrcs()'),
-    '<p class="setfoot">Renaming updates every record that uses it.</p>'+
+    '<p class="setfoot">Renaming or merging updates every record that uses it.</p>'+
     (orph?'<p class="setfoot bad">'+orph+' record'+(orph>1?'s':'')+' still name'+(orph>1?'':'s')+' a category that is no longer here. '+
       'They are counted as usual — renaming the one that stayed folds them back in.</p>':''));
   h+=sGroup('Shops',
@@ -7596,7 +7639,7 @@ function catDrop(k,i){
 }
 function openMains(){ drawMains(); }
 function drawMains(){
-  var h=sheetTop('Main categories','saveCats()','drawSettings()','Save');
+  var h=sheetTop('Main categories','saveCats()','drawSettings()','Save')+'<i id="catscr" data-k="m" hidden></i>';
   h+='<div class="glass" style="padding:4px 0">';
   h+=S.catM.map(function(x,i){
     return '<div class="exprow">'+icPickBtn('m',i,x)+
@@ -7604,12 +7647,13 @@ function drawMains(){
       '<button class="exprm" onclick="catDrop(\'m\','+i+')">\u2715</button></div>';
   }).join('');
   h+='<button class="expadd" style="color:'+ACCENT+'" onclick="catAdd(\'m\')">+ Add category</button></div>';
+  h+=mergeBtn('m');
   h+='<p class="tiny" style="margin:12px 4px 0">Tap an icon to choose another one. Left on Automatic, the app picks it from the name \u2014 an emoji at the front can stay, the sheet still shows it.</p>';
   h+=sheetEnd();
   document.getElementById('modal').innerHTML=h;
 }
 function drawSrcs(){
-  var h=sheetTop('Income sources','saveCats()','drawSettings()','Save');
+  var h=sheetTop('Income sources','saveCats()','drawSettings()','Save')+'<i id="catscr" data-k="i" hidden></i>';
   h+='<div class="glass" style="padding:4px 0">';
   h+=S.catI.map(function(x,i){
     return '<div class="exprow">'+icPickBtn('i',i,x)+
@@ -7618,12 +7662,13 @@ function drawSrcs(){
       '<button class="exprm" onclick="catDrop(\'i\','+i+')">\u2715</button></div>';
   }).join('');
   h+='<button class="expadd" style="color:'+ACCENT+'" onclick="catAdd(\'i\')">+ Add source</button></div>';
+  h+=mergeBtn('i');
   h+='<p class="tiny" style="margin:12px 4px 0">\u201cYes\u201d means it counts as real income in Summary and Analytics. Transfers and corrections are No.</p>';
   h+=sheetEnd();
   document.getElementById('modal').innerHTML=h;
 }
 function drawSubs(){
-  var h=sheetTop('Subcategories','saveCats()','drawSettings()','Save');
+  var h=sheetTop('Subcategories','saveCats()','drawSettings()','Save')+'<i id="catscr" data-k="s" hidden></i>';
   var byMain={};
   S.catS.forEach(function(x,i){ (byMain[x.main]=byMain[x.main]||[]).push(i); });
   var order=S.catM.map(function(m){ return m.name; });
@@ -7642,6 +7687,7 @@ function drawSubs(){
       }).join('')+'</div>';
   });
   h+='<button class="expadd" style="color:'+ACCENT+';margin-top:10px" onclick="openSubEdit(-1)">+ Add subcategory</button>';
+  h+=mergeBtn('s');
   h+=sheetEnd();
   document.getElementById('modal').innerHTML=h;
 }
@@ -7654,7 +7700,7 @@ function openSubEdit(i){
 }
 function drawSubEdit(){
   var d=S.subD;
-  var h=sheetTop(S.subI<0?'New subcategory':'Subcategory','subApply()','drawSubs()');
+  var h=sheetTop(S.subI<0?'New subcategory':'Subcategory','subApply()','drawSubs()')+'<i id="subedscr" hidden></i>';
   h+='<div class="glass" style="padding:2px 0">'+
     fRow('Icon','<span class="tiny" style="flex:1">'+(edPicked(d)?'Chosen by you':'From the name')+'</span>'+icPickBtn('s',0,d))+
     fRow('Name','<input class="tinput fin" value="'+esc(d.name)+'" oninput="S.subD.name=this.value">')+
@@ -7664,7 +7710,8 @@ function drawSubEdit(){
     fRow('Monthly limit','<input class="tinput fin" inputmode="decimal" placeholder="none" value="'+esc(String(d.limit))+'" oninput="S.subD.limit=this.value">')+
     fRow('Default shop','<input class="tinput fin" placeholder="none" value="'+esc(d.shop)+'" oninput="S.subD.shop=this.value">')+
     '</div>';
-  if(S.subI>=0) h+='<button class="delbtn" onclick="subRemove()">Delete subcategory</button>';
+  if(S.subI>=0) h+='<button class="refbtn" onclick="mergeFrom(\'s\','+q(S.catS[S.subI].name)+',1)">'+svgIc('merge',17,2)+'Merge into another subcategory</button>'+
+    '<button class="delbtn" onclick="subRemove()">Delete subcategory</button>';
   h+=sheetEnd();
   document.getElementById('modal').innerHTML=h;
 }
@@ -7681,6 +7728,11 @@ function subRemove(){
   drawSubs();
 }
 function saveCats(){
+  /* the rows these lists came from move each time a list is written back,
+     so one save waits for the last one, and lists made before the sheet
+     was last read take its rows first */
+  if(catBusyNow()){ toast('The last change is still saving. One moment.'); return; }
+  catRows();
   /* a main category that was renamed here has to be renamed inside the
      subcategories too, or they would point at a name that no longer exists */
   var ren={};
@@ -7694,7 +7746,482 @@ function saveCats(){
   saveIcons();
   closeModal();
   toast('Saving\u2026');
-  bg('saveCategories',{mains:keep(S.catM),subs:keep(S.catS),sources:keep(S.catI)});
+  S.catBusy=true;
+  bg('saveCategories',{mains:keep(S.catM),subs:keep(S.catS),sources:keep(S.catI)},function(){ S.catBusy=false; });
+}
+
+/* ══════ merging ═══════════════════════════════════════════════════════════
+   Two categories, subcategories or income sources that are really one: the
+   one merged away hands everything over to the one that stays, then comes
+   off its list. Its records go across - every year of them, the sheet
+   renames them in one go - and so do its monthly limit and its planned
+   amount (added to the other's), and the quick actions, shop rules and
+   Calendar payments that name it. A subcategory merged into one under
+   another category takes its records across to that category as well.
+
+   The sheet script needs nothing new for this: to it, a merge is the rename
+   Settings already does, to the name of the one that stays. */
+var KIND_WORD={m:['category','categories'],s:['subcategory','subcategories'],i:['source','sources']};
+/* the names the app itself files things under, and what it files there */
+var ROLE_WORD={corr:'balance corrections',xfer:'transfers',flag:'marks',fee:'fees',save:'savings transfers',
+               refund:'refunds',debt:'debts paid back'};
+var ROLE_FIXED={corr:1,xfer:1,flag:1,refund:1,debt:1};
+var MERGE_CHUNK=400;
+function catRole(kind,n){
+  n=String(n||'');
+  if(kind==='m') return '';
+  if(isCorrName(n)) return 'corr';
+  if(kind==='s'){
+    if(isXferSub(n)) return 'xfer';
+    if(isFlagName(n)) return 'flag';
+    if(FEE_RE.test(n)) return 'fee';
+    if(isSavingsSub(n)) return 'save';
+    return '';
+  }
+  if(isXferSrc(n)) return 'xfer';
+  if(BACK_RE.r.test(n)) return 'refund';
+  if(BACK_RE.b.test(n)) return 'debt';
+  return '';
+}
+/* why a cannot go into b - or, without b, why a cannot go anywhere; '' when it can */
+function mergeWhy(kind,a,b){
+  var ra=catRole(kind,a.name), rb=b?catRole(kind,b.name):'';
+  if(ROLE_FIXED[ra]) return 'The app keeps '+ROLE_WORD[ra]+' under “'+strip(a.name)+'”, so that one stays as it is.';
+  if(b&&ROLE_FIXED[rb]) return 'The app keeps '+ROLE_WORD[rb]+' under “'+strip(b.name)+'”, so nothing can be merged into it.';
+  if(b&&ra&&ra!==rb) return 'The app keeps '+ROLE_WORD[ra]+' under “'+strip(a.name)+'”, so it can only go into another one for '+ROLE_WORD[ra]+'.';
+  return '';
+}
+/* Changes typed on these screens and not saved yet. A merge sends the lists
+   whole, so it would save them too, unseen - they get saved first. */
+function catDirty(){
+  var st=S.catSetup;
+  if(!S.catM||!st) return false;
+  function t(v){ return String(v==null?'':v).trim(); }
+  var sm=st.mainCategories||[], mr=st.mainRows||[], i;
+  if(S.catM.length!==sm.length) return true;
+  for(i=0;i<sm.length;i++){ var m=S.catM[i]; if(m.row!==(mr[i]||0)||t(m.name)!==sm[i]||m.icon) return true; }
+  var ss=st.subcategories||[];
+  if(S.catS.length!==ss.length) return true;
+  for(i=0;i<ss.length;i++){
+    var a=S.catS[i], b=ss[i];
+    if(a.row!==(b.row||0)||t(a.name)!==b.name||a.main!==b.main||(a.real!==false)!==(b.real!==false)||
+       t(a.limit)!==t(b.limit)||t(a.shop)!==t(b.shop)||a.icon) return true;
+  }
+  var si=st.incomeSources||[];
+  if(S.catI.length!==si.length) return true;
+  for(i=0;i<si.length;i++){
+    var c=S.catI[i], d=si[i];
+    if(c.row!==(d.row||0)||t(c.name)!==d.name||(c.real!==false)!==(d.real!==false)||c.icon) return true;
+  }
+  return false;
+}
+function mergeReady(){
+  if(catBusyNow()){ toast('The last change is still saving. One moment.'); return false; }
+  if(catDirty()){ toast('Save the changes on this screen first, then merge.',5000); return false; }
+  /* nothing typed here, so the lists can be made again from the sheet as
+     it was last read - with its rows */
+  catInit();
+  return true;
+}
+/* a category change on its way up, here or waiting in the outbox from
+   before the page was last opened: rows in Setup move when it lands */
+function catBusyNow(){
+  if(S.catBusy) return true;
+  return qAll().some(function(e){ return e&&(e.fn==='saveCategories'||e.fn==='saveExpectations'||(e.fn==='editMany'&&e.payload&&e.payload.sub)); });
+}
+function catByName(kind,name){
+  var l=catList(kind)||[];
+  for(var i=0;i<l.length;i++) if(l[i].name===name) return l[i];
+  return null;
+}
+/* the records that name it, everything loaded counted */
+function catCount(kind,name){
+  var n=0;
+  txAll().forEach(function(t){
+    if(kind==='m'){ if(t.k==='e'&&t.main===name) n++; }
+    else if(kind==='s'){ if(t.k==='e'&&t.sub===name) n++; }
+    else if(t.k==='i'&&t.source===name) n++;
+  });
+  return n;
+}
+function recWord(n){ return n===1?'1 record':n+' records'; }
+function kidsWord(n){ return n===1?'1 subcategory':n+' subcategories'; }
+function numOr0(v){ var n=Number(String(v==null?'':v).replace(',','.')); return isFinite(n)?n:0; }
+function listWords(l,max){
+  if(l.length>max) return l.slice(0,max).join(', ')+' and '+(l.length-max)+' more';
+  if(l.length<2) return l.join('');
+  return l.slice(0,-1).join(', ')+' and '+l[l.length-1];
+}
+function kidsOf(name){ return S.catS.filter(function(x){ return x.main===name; }); }
+function mergeItem(kind,x){
+  var n=catCount(kind,x.name), bits=[];
+  if(kind==='s') bits.push(strip(x.main));
+  if(kind==='m') bits.push(kidsWord(kidsOf(x.name).length));
+  bits.push(recWord(n));
+  return {value:x.name,label:strip(x.name),meta:bits.join(' · '),icon:edIcon(x,kind),hue:edHue(x,kind)};
+}
+/* what the pickers offer: the ones that can go (from left out), or the ones
+   the from one can go into */
+function mergeGroups(kind,from){
+  var L=catList(kind), a=from?catByName(kind,from):null;
+  function fits(x){
+    if(!x.row||!String(x.name).trim()||x===a) return false;
+    return a?!mergeWhy(kind,a,x):!mergeWhy(kind,x);
+  }
+  if(kind!=='s') return [{label:'',items:L.filter(fits).map(function(x){ return mergeItem(kind,x); })}];
+  var by={}, order=S.catM.map(function(m){ return m.name; }), out=[];
+  L.forEach(function(x){ if(fits(x)) (by[x.main]=by[x.main]||[]).push(x); });
+  Object.keys(by).forEach(function(m){ if(order.indexOf(m)<0) order.push(m); });
+  order.forEach(function(m){
+    if(by[m]) out.push({label:strip(m)||'No category',icon:icKey(m),items:by[m].map(function(x){ return mergeItem(kind,x); })});
+  });
+  return out;
+}
+function groupCount(g){ var n=0; g.forEach(function(x){ n+=x.items.length; }); return n; }
+function mergeBtn(kind){
+  return '<button class="refbtn" onclick="mergeStart(\''+kind+'\')">'+svgIc('merge',17,2)+'Merge two '+KIND_WORD[kind][1]+'</button>';
+}
+function mergeStart(kind){
+  if(!mergeReady()) return;
+  var g=mergeGroups(kind,'');
+  if(groupCount(g)<2){ toast('There is nothing here to merge'); return; }
+  openPicker({title:'Merge which '+KIND_WORD[kind][0]+'?',groups:g,
+    apply:function(v){ mergeFrom(kind,v); }});
+}
+function mergeFrom(kind,name,fromEdit){
+  if(!mergeReady()) return;
+  var a=catByName(kind,name); if(!a) return;
+  var why=mergeWhy(kind,a); if(why){ toast(why,6000); return; }
+  var g=mergeGroups(kind,name);
+  if(!groupCount(g)){ toast('There is no other '+KIND_WORD[kind][0]+' it can go into',5000); return; }
+  S.mrg={kind:kind,from:name,into:'',back:fromEdit?'edit':''};
+  openPicker({title:'Merge “'+strip(name)+'” into',groups:g,
+    apply:function(v){ if(!S.mrg) return; S.mrg.into=v; drawMerge(); }});
+}
+function drawCatList(k){ if(k==='m') drawMains(); else if(k==='i') drawSrcs(); else drawSubs(); }
+function mergeBack(){
+  var M=S.mrg; S.mrg=null;
+  if(M&&M.back==='edit'&&S.subD){ drawSubEdit(); return; }
+  drawCatList(M?M.kind:'s');
+}
+function mergeSwap(){ var M=S.mrg; if(!M) return; var t=M.from; M.from=M.into; M.into=t; drawMerge(); }
+function mrgSide(kind,x){
+  var bits=[];
+  if(kind==='s') bits.push(strip(x.main));
+  if(kind==='m') bits.push(kidsWord(kidsOf(x.name).length));
+  bits.push(recWord(catCount(kind,x.name)));
+  return '<div class="mrgside">'+icBadge(edIcon(x,kind),edHue(x,kind))+
+    '<span class="mrgn"><b>'+esc(strip(x.name))+'</b><i>'+esc(bits.join(' · '))+'</i></span></div>';
+}
+/* the planned amount of one line (or lines) by name */
+function expOf(kind,name){
+  var e=D.expectations||{}, l=(kind==='i'?e.income:e.expenses)||[], v=0;
+  l.forEach(function(x){ if(x.name===name) v+=Number(x.expected)||0; });
+  return v;
+}
+/* the quick actions, shop rules and Calendar payments that name it */
+function mergeUses(kind,name){
+  var u={quick:0,rules:0,cal:0};
+  (D.quick||[]).forEach(function(a){
+    if((kind==='s'&&a.sub===name)||(kind==='m'&&a.main===name)||(kind==='i'&&a.source===name)) u.quick++;
+  });
+  if(kind==='s'){
+    var r=shopRules(), c=pref('calCat',{})||{}, k;
+    for(k in r) if(r.hasOwnProperty(k)&&ruleParts(r[k]).sub===name) u.rules++;
+    for(k in c) if(c.hasOwnProperty(k)&&c[k]===name) u.cal++;
+  }
+  return u;
+}
+/* an amount that never breaks from its currency sign inside a sentence */
+function nbMoney(v){ return String(money(v,0)).replace(/ /g,'\u00a0'); }
+/* what the merge will do, a line each, before it is done */
+function mergeLines(kind,a,b){
+  var A='“'+esc(strip(a.name))+'”', B='“'+esc(strip(b.name))+'”', out=[];
+  var n=catCount(kind,a.name);
+  if(kind==='m'){
+    var kids=kidsOf(a.name).map(function(x){ return strip(x.name); });
+    if(kids.length) out.push('Its '+(kids.length===1?'subcategory moves':kids.length+' subcategories move')+' under '+B+': '+esc(listWords(kids,4))+'.');
+    out.push(n?('<b>'+recWord(n)+'</b> go with '+(kids.length===1?'it':'them')+'.'):'It has no records to move.');
+  }else{
+    out.push(n?('<b>'+recWord(n)+'</b> move to '+B+'.'):'It has no records to move.');
+  }
+  if(kind==='s'&&a.main!==b.main)
+    out.push(B+' is under “'+esc(strip(b.main))+'”, so they leave “'+esc(strip(a.main))+'”.');
+  if(kind!=='m'&&(a.real!==false)!==(b.real!==false)){
+    var what=kind==='i'?'income':'spending';
+    out.push((b.real!==false?'They start counting as ':'They stop counting as ')+what+', like '+B+'.');
+  }
+  if(kind==='s'){
+    var la=numOr0(a.limit), lb=numOr0(b.limit);
+    if(la&&lb) out.push('Monthly limits add up: '+nbMoney(la)+' + '+nbMoney(lb)+' = <b>'+nbMoney(la+lb)+'</b>.');
+    else if(la) out.push('Its monthly limit of '+nbMoney(la)+' goes to '+B+'.');
+  }
+  if(kind!=='m'){
+    var ea=expOf(kind,a.name), eb=expOf(kind,b.name);
+    if(ea&&eb) out.push('Planned amounts add up: '+nbMoney(ea)+' + '+nbMoney(eb)+' = <b>'+nbMoney(ea+eb)+'</b>.');
+    else if(ea) out.push('Its planned '+nbMoney(ea)+' goes to '+B+'.');
+  }
+  var u=mergeUses(kind,a.name), bits=[];
+  if(u.quick) bits.push(u.quick===1?'1 quick action':u.quick+' quick actions');
+  if(u.rules) bits.push(u.rules===1?'1 shop rule':u.rules+' shop rules');
+  if(u.cal) bits.push(u.cal===1?'1 Calendar payment':u.cal+' Calendar payments');
+  if(bits.length) out.push(esc(listWords(bits,9))+(bits.length===1&&/^1 /.test(bits[0])?' switches':' switch')+' to '+B+'.');
+  out.push(A+' comes off the list.');
+  return out;
+}
+function drawMerge(){
+  var M=S.mrg; if(!M) return;
+  var kind=M.kind, a=catByName(kind,M.from), b=catByName(kind,M.into);
+  if(!a||!b||a===b){ S.mrg=null; drawCatList(kind); return; }
+  var why=mergeWhy(kind,a,b);
+  var h=sheetTop('Merge','','mergeBack()')+'<i id="mrgscr" hidden></i>';
+  h+='<div class="glass mrgpair">'+mrgSide(kind,a)+'<div class="mrgarrow">'+svgIc('chevdown',16,2.4)+'</div>'+mrgSide(kind,b)+'</div>';
+  if(!mergeWhy(kind,b,a)) h+='<button class="mrgswap" onclick="mergeSwap()">Keep “'+esc(strip(a.name))+'” instead</button>';
+  h+='<div class="glass mrgsum">'+mergeLines(kind,a,b).map(function(l){ return '<div class="mrgline">'+l+'</div>'; }).join('')+'</div>';
+  if(why) h+='<p class="setfoot bad">'+esc(why)+'</p>';
+  else h+='<button class="paybtn mrggo" style="background:linear-gradient(160deg,'+ok(.66,.13,255)+','+ok(.55,.15,255)+')" onclick="doMerge()">'+
+    'Merge into “'+esc(strip(b.name))+'”</button>'+
+    '<p class="tiny" style="margin:10px 6px 0;text-align:center">This cannot be undone.</p>';
+  h+=sheetEnd();
+  document.getElementById('modal').innerHTML=h;
+}
+function doMerge(){
+  var M=S.mrg; if(!M||!mergeReady()) return;
+  var kind=M.kind, from=M.from, into=M.into;
+  var a=catByName(kind,from), b=catByName(kind,into);
+  if(!a||!b||a===b) return;
+  var why=mergeWhy(kind,a,b); if(why){ toast(why,6000); return; }
+  if(offline()){ toast('Merging needs a connection.'); return; }
+  if(UNDO||Object.keys(S.pending||{}).length||qCount()){ toast('Something is still saving. Try again in a moment.'); return; }
+  var cross=kind==='s'&&a.main!==b.main;
+  S.catBusy=true;
+  toast('Merging…',8000);
+  /* a subcategory that crosses into another category takes its records
+     along one by one (below), so the history older than the two years on
+     the phone has to be here first */
+  if(cross) loadOlderThen(go,function(){
+    S.catBusy=false;
+    toast('The older records did not load, so nothing was merged. Try again in a moment.',6000);
+  });
+  else go();
+  function go(){
+    S.mrg=null;
+    a=catByName(kind,from); b=catByName(kind,into);
+    if(!a||!b){ S.catBusy=false; return; }
+    var L=catList(kind), la=numOr0(a.limit), lb=numOr0(b.limit), kept={}, k;
+    for(k in b) if(b.hasOwnProperty(k)) kept[k]=b[k];
+    /* the row of the one that goes, with the name of the one that stays:
+       the sheet script reads that as a rename and rewrites every record */
+    kept.row=a.row;
+    if(kind==='s'){ kept.limit=(la||lb)?la+lb:''; kept.shop=b.shop||a.shop||''; }
+    var next=[];
+    L.forEach(function(x){ if(x!==a) next.push(x===b?kept:x); });
+    var nm=S.catM, ns=S.catS, ni=S.catI;
+    if(kind==='m'){
+      nm=next;
+      ns=S.catS.map(function(x){
+        if(x.main!==from) return x;
+        var c={}; for(var j in x) if(x.hasOwnProperty(j)) c[j]=x[j];
+        c.main=into; return c;
+      });
+    }else if(kind==='s') ns=next; else ni=next;
+    function keep(l){ return l.filter(function(x){ return String(x.name).trim(); }); }
+    var steps=[];
+    if(cross){
+      /* Across a category line the rename is not enough: every record's
+         category changes too. Those go up first, so that if anything stops
+         half way nothing is left naming something that is gone. */
+      var refs=txAll().filter(function(t){
+        return t.k==='e'&&t.sub===from&&!t.pending&&!isReceipt(t)&&(t.row>0||t.srow>0);
+      }).map(txRef);
+      for(var i=0;i<refs.length;i+=MERGE_CHUNK) steps.push({fn:'editMany',payload:{items:refs.slice(i,i+MERGE_CHUNK),sub:into}});
+    }
+    /* a copy: it may go up only after the records, and the lists on screen
+       can be typed into meanwhile */
+    steps.push({fn:'saveCategories',payload:JSON.parse(JSON.stringify({mains:keep(nm),subs:keep(ns),sources:keep(ni)}))});
+    /* both had a planned amount: the rename leaves two lines with one name,
+       so the first takes the sum and the other goes */
+    if(kind!=='m') steps.push(function(){ return expJoin(kind,into); });
+    mergeLocal(kind,from,into,b,kept);
+    S.catM=nm; S.catS=ns; S.catI=ni; S.catPost=catSig();
+    drawCatList(kind);
+    var M2={kind:kind,from:from,into:into,bMain:kind==='s'?b.main:''};
+    bgChain(steps,function(ok){ mergeDone(M2,ok); });
+  }
+}
+/* on screen at once, the way the sheet will have it */
+function mergeLocal(kind,from,into,b,kept){
+  var bMain=kind==='s'?b.main:'', real=b.real!==false;
+  txAll().forEach(function(t){
+    if(kind==='i'){ if(t.k==='i'&&t.source===from){ t.source=into; if(!outOfStats(t)) t.real=real; } return; }
+    if(t.k!=='e') return;
+    if(kind==='m'){ if(t.main===from) t.main=into; return; }
+    if(t.sub===from){ t.sub=into; if(bMain) t.main=bMain; if(!outOfStats(t)) t.real=real; }
+  });
+  var st=D.setup;
+  if(kind==='m'){
+    var mi=(st.mainCategories||[]).indexOf(from);
+    if(mi>=0){ st.mainCategories.splice(mi,1); if(st.mainRows) st.mainRows.splice(mi,1); }
+    (st.subcategories||[]).forEach(function(x){ if(x.main===from) x.main=into; });
+    if(S.open&&S.open['cat:'+from]){ S.open['cat:'+into]=true; delete S.open['cat:'+from]; }
+  }else if(kind==='s'){
+    st.subcategories=(st.subcategories||[]).filter(function(x){ return x.name!==from; });
+    st.subcategories.forEach(function(x){
+      if(x.name===into){ x.limit=kept.limit===''?null:Number(kept.limit); x.shop=kept.shop; }
+    });
+  }else{
+    st.incomeSources=(st.incomeSources||[]).filter(function(x){ return x.name!==from; });
+  }
+  if(kind!=='m'&&D.expectations){
+    var key=kind==='i'?'income':'expenses', list=D.expectations[key]||[], fa=null, fb=null;
+    list.forEach(function(x){ if(x.name===from&&!fa) fa=x; else if(x.name===into&&!fb) fb=x; });
+    if(fa&&fb){
+      fb.expected=(Number(fb.expected)||0)+(Number(fa.expected)||0);
+      D.expectations[key]=list.filter(function(x){ return x!==fa; });
+    }else if(fa) fa.name=into;
+  }
+  function sw(l){
+    if(!l||l.indexOf(from)<0) return l;
+    var o=l.filter(function(x){ return x!==from; });
+    if(o.indexOf(into)<0) o.push(into);
+    return o;
+  }
+  if(kind==='m') S.fCat=sw(S.fCat); else if(kind==='s') S.fSub=sw(S.fSub); else S.fSrc=sw(S.fSrc);
+  TXV++; prep(); render(true);
+}
+/* the quick actions, shop rules, Calendar payments and picked icon that
+   name the one that goes */
+function mergePrefs(kind,from,into,bMain){
+  var changed=false;
+  var nq=(D.quick||[]).map(function(a){
+    var hit=(kind==='s'&&a.sub===from)||(kind==='m'&&a.main===from)||(kind==='i'&&a.source===from);
+    if(!hit) return a;
+    var c={}; for(var k in a) if(a.hasOwnProperty(k)) c[k]=a[k];
+    if(kind==='s'){ c.sub=into; if(bMain) c.main=bMain; }
+    else if(kind==='m') c.main=into; else c.source=into;
+    changed=true; return c;
+  });
+  if(changed){
+    var backup=D.quick; D.quick=nq;
+    bg('saveQuick',{list:nq,light:true},null,function(){ D.quick=backup; });
+  }
+  if(kind==='s'){
+    var r=shopRules(), nr={}, rc=false, n;
+    for(n in r) if(r.hasOwnProperty(n)){
+      var p=ruleParts(r[n]);
+      if(p.sub===from){ nr[n]=p.acc?{sub:into,acc:p.acc}:into; rc=true; } else nr[n]=r[n];
+    }
+    if(rc) setPref('shopCat',nr);
+    var cc=pref('calCat',{})||{}, nc={}, cch=false;
+    for(n in cc) if(cc.hasOwnProperty(n)){ if(cc[n]===from){ nc[n]=into; cch=true; } else nc[n]=cc[n]; }
+    if(cch) setPref('calCat',nc);
+  }
+  var ov=iconOverrides();
+  if(ov.hasOwnProperty(from)){
+    var ni={};
+    for(var x in ov) if(ov.hasOwnProperty(x)&&x!==from) ni[x]=ov[x];
+    setPref('icons',ni);
+  }
+}
+/* two planned lines that now carry one name: one line, the sum */
+function expJoin(kind,name){
+  var e=D.expectations||{};
+  var l=((kind==='i'?e.income:e.expenses)||[]).filter(function(x){ return x.name===name; });
+  if(l.length<2) return null;
+  l.sort(function(x,y){ return x.row-y.row; });
+  var total=0; l.forEach(function(x){ total+=Number(x.expected)||0; });
+  return {fn:'saveExpectations',payload:{edits:[{row:l[0].row,col:l[0].col,value:total}],
+    deletes:l.slice(1).map(function(x){ return {row:x.row,col:x.col}; }),adds:[]}};
+}
+/* Writes that have to land in order: each goes up once the one before it
+   has come back, a step given as a function is worked out only then, and a
+   refusal stops the rest. */
+function bgChain(steps,done){
+  var i=0;
+  (function next(){
+    var st=steps[i++];
+    if(st===undefined){ if(done) done(true); return; }
+    if(typeof st==='function') st=st();
+    if(!st){ next(); return; }
+    var bad=false, fired=false;
+    bg(st.fn,st.payload,
+      /* a step sent again after a slow answer can come back twice */
+      function(){ if(fired) return; fired=true; setTimeout(function(){ if(bad){ if(done) done(false); } else next(); },0); },
+      function(){ bad=true; });
+  })();
+}
+function mergeDone(M,ok){
+  if(ok) toast('Merged into \u201c'+strip(M.into)+'\u201d');
+  /* Read once more, now that everything has landed: an answer that crossed
+     one of these on the way may have been read before a write. Refused
+     somewhere on the way, this is also the truth about how far it got. */
+  var seq=++S.seq;
+  API.call('bootstrap',{fresh:true},function(err,res){
+    if(!err&&res) applyData(res,seq);
+    if(ok) mergePrefs(M.kind,M.from,M.into,M.bMain);
+    S.catBusy=false;
+    catRefresh(M);
+  });
+}
+/* The Settings lists again, from what the sheet has now: a list moves its
+   rows when it is written back, and a save must never go out with the old
+   ones. Whatever part of Settings is open is drawn again. */
+function catRefresh(M){
+  if(!S.catM) return;
+  var sd=S.subD, onEdit=!!document.getElementById('subedscr');
+  /* changed by hand while the merge was on its way: those changes stay,
+     the one merged away goes, and the rows are brought up to date */
+  var edited=!!S.catPost&&catSig()!==S.catPost;
+  S.catPost=null;
+  if(edited){
+    if(M){
+      var L=catList(M.kind);
+      for(var j=L.length-1;j>=0;j--) if(L[j].orig===M.from&&L[j].name===M.from) L.splice(j,1);
+      if(M.kind==='m') S.catS.forEach(function(x){ if(x.main===M.from) x.main=M.into; });
+    }
+    catRows();
+    return;
+  }
+  catInit();
+  var el=document.getElementById('catscr');
+  if(el){ drawCatList(el.getAttribute('data-k')); return; }
+  if(document.getElementById('setscr')){ drawSettings(); return; }
+  if(onEdit&&sd){
+    var i=-1;
+    S.catS.forEach(function(x,j){ if(sd.orig&&x.name===sd.orig) i=j; });
+    if(sd.row&&i<0){ drawSubs(); return; }
+    S.subI=i; if(i>=0) sd.row=S.catS[i].row;
+  }
+}
+/* the lists, reduced to what a save would send */
+function catSig(){
+  function one(x){ return [x.row,x.name,x.main||'',x.real!==false,String(x.limit==null?'':x.limit),x.shop||'',x.icon||''].join('\u0001'); }
+  return [S.catM,S.catS,S.catI].map(function(l){ return (l||[]).map(one).join('\u0002'); }).join('\u0003');
+}
+/* the rows the sheet has now, found by the name each entry had when saved */
+function catRows(){
+  var st=D.setup, mr={}, sr={}, ir={};
+  (st.mainCategories||[]).forEach(function(n,i){ mr[n]=(st.mainRows||[])[i]||0; });
+  (st.subcategories||[]).forEach(function(x){ sr[x.name]=x.row||0; });
+  (st.incomeSources||[]).forEach(function(x){ ir[x.name]=x.row||0; });
+  function fix(map){ return function(x){ if(x.orig) x.row=map.hasOwnProperty(x.orig)?map[x.orig]:0; }; }
+  (S.catM||[]).forEach(fix(mr)); (S.catS||[]).forEach(fix(sr)); (S.catI||[]).forEach(fix(ir));
+  if(S.subD) fix(sr)(S.subD);
+  S.catSetup=st;
+}
+/* the history older than the two years the phone keeps, then cb */
+function loadOlderThen(cb,fail){
+  if(S.older){ cb(); return; }
+  API.call('olderTx',null,function(err,res){
+    if(err){ if(fail) fail(err); else cb(); return; }
+    if(!S.older){
+      var pd=S.pendingDel||{};
+      S.older=((res&&res.older)||[]).map(function(t,i){ t.srow=t.row; t.row=-(i+1); return t; })
+        .filter(function(t){ return !pd[delKey(t)]; });
+      S.olderAsked=true;
+    }
+    cb();
+  });
 }
 
 /* ====================================================== ACCOUNT EDITOR
@@ -8547,6 +9074,7 @@ function subCandidates(){
   var from=addDaysIso(D.today,-130), by={};
   txAll().forEach(function(t){
     if(t.k!=='e'||t.pending||t.date<from||t.date>D.today||!t.shop||isXfer(t)||isCorr(t)||isReceipt(t)||isLine(t)||outOfStats(t)) return;
+    if(shopParts(t.shop).length>1) return;
     var k=shopStrict(t.shop); if(k.length<2) return;
     (by[k]=by[k]||[]).push(t);
   });
@@ -8658,7 +9186,7 @@ function cancelDelCal(){
    Every name still gets an icon by itself (icKey). One picked in Settings
    wins over that: it is kept with the app's settings, by name, and follows
    the name when it is renamed there. */
-var IC_UI=['eye','eyeoff','more','refresh','settings','chevdown','check','grid','search','x','list','in','out'];
+var IC_UI=['eye','eyeoff','more','refresh','settings','chevdown','check','grid','search','x','list','in','out','merge'];
 function iconChoices(){ return Object.keys(IC).filter(function(k){ return IC_UI.indexOf(k)<0; }); }
 var IC_OV=null;
 function iconOverrides(){
@@ -8736,9 +9264,11 @@ function ruleParts(v){
   return {sub:String(v||''),acc:''};
 }
 function ruleFor(shop){
-  var k=shopStrict(shop); if(!k) return null;
-  var m=shopRules();
-  for(var n in m) if(m.hasOwnProperty(n)&&shopStrict(n)===k) return ruleParts(m[n]);
+  var m=shopRules(), parts=shopParts(shop);
+  for(var i=0;i<parts.length;i++){
+    var k=shopStrict(parts[i]); if(!k) continue;
+    for(var n in m) if(m.hasOwnProperty(n)&&shopStrict(n)===k) return ruleParts(m[n]);
+  }
   return null;
 }
 function applyShopRule(){
@@ -8799,9 +9329,11 @@ function ruleSuggestions(){
   var by={}, from=addDaysIso(D.today,-365);
   (D.tx||[]).forEach(function(t){
     if(t.k!=='e'||!t.shop||!t.sub||t.date<from||isXferSub(t.sub)||isCorrName(t.sub)||isLine(t)||t.sched) return;
-    var k=shopStrict(t.shop); if(!k||have[k]) return;
-    var b=by[k]||(by[k]={shop:String(t.shop).trim(),subs:{},accs:{},n:0});
-    b.n++; b.subs[t.sub]=(b.subs[t.sub]||0)+1; b.accs[t.account]=1;
+    shopParts(t.shop).forEach(function(nm){
+      var k=shopStrict(nm); if(!k||have[k]) return;
+      var b=by[k]||(by[k]={shop:nm,subs:{},accs:{},n:0});
+      b.n++; b.subs[t.sub]=(b.subs[t.sub]||0)+1; b.accs[t.account]=1;
+    });
   });
   var out=[];
   /* one category every time - and the card too, when it was always the same one */
@@ -9556,7 +10088,7 @@ function saveMulti(){
   if(d.date) p.date=d.date;
   if(d.sub) p.sub=d.sub;
   if(d.account){ p.account=d.account; p.currency=currencyOf(d.account); }
-  if(d.shop&&String(d.shop).trim()) p.shop=String(d.shop).trim();
+  if(shopNorm(d.shop)) p.shop=shopNorm(d.shop);
   if(d.trip&&d.trip!=='__keep') p.trip=d.trip==='__none'?'':d.trip;
   if(!p.date&&!p.sub&&!p.account&&!p.shop&&p.trip===undefined){ toast('Nothing to change'); return; }
   var n=p.items.length;
@@ -9835,7 +10367,7 @@ function saveQuickEdit(){
      for at the moment you tap the action, which is the point of leaving it */
   var a={id:d.id||newQuickId(), name:String(d.name||'').trim(), kind:d.kind, amount:amt||'',
          account:d.account||'', main:(D.subMap[d.sub]||{}).main||'', sub:d.sub||'',
-         source:d.source||'', shop:xf?'':String(d.shop||'').trim(), note:String(d.note||'').trim()};
+         source:d.source||'', shop:xf?'':shopNorm(d.shop), note:String(d.note||'').trim()};
   if(xf){ a.to=d.to||''; if(fee>0) a.fee=fee; }
   if(!xf&&d.kind!=='i'&&isSavingsSub(d.sub)&&d.goal) a.goal=d.goal;
   var list=quickList(), found=false;
@@ -10017,6 +10549,7 @@ function closeModal(){
   document.getElementById('modal').innerHTML='';
 }
 function saveLimits(){
+  if(catBusyNow()){ toast('The last category change is still saving. One moment.'); return; }
   var list=[];
   D.setup.subcategories.forEach(function(s){
     var raw=S.limitDraft[s.name];
@@ -10106,6 +10639,7 @@ function drawExpect(){
   document.getElementById('modal').innerHTML=h;
 }
 function saveExpect(){
+  if(catBusyNow()){ toast('The last category change is still saving. One moment.'); return; }
   var edits=[], dels=[], adds=[];
   D.expectations.expenses.concat(D.expectations.income).forEach(function(x){
     var k=x.row+':'+x.col;
@@ -10133,7 +10667,7 @@ window.__S=S;
    As a website, a small service worker keeps these files on the phone, so
    the app opens instantly and with no signal. A new version is fetched in
    the background; when it arrives, a note offers to switch to it. */
-var APP_VERSION='2026.09.30.7';
+var APP_VERSION='2026.09.30.8';
 (function(){
   try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persist(); }catch(e){}
   if(inGas()||!('serviceWorker' in navigator)) return;
@@ -10677,13 +11211,32 @@ function shopCanon(name){
   var k=shopStrict(v), m=shopAliases();
   return (k&&m.hasOwnProperty(k)&&m[k])?m[k]:v;
 }
+/* ── several shops on one record ─────────────────────────────────────────
+   "Silpo; ATB" is one expense paid across two shops. Whatever counts,
+   suggests or renames shops works on the names one by one; in the totals
+   each shop gets an equal share of the amount. */
+function shopParts(v){
+  var out=[], seen={};
+  String(v==null?'':v).split(';').forEach(function(x){
+    x=x.trim(); if(!x) return;
+    var k=shopStrict(x)||x.toLowerCase();
+    if(seen[k]) return;
+    seen[k]=1; out.push(x);
+  });
+  return out;
+}
+function shopJoin(list){ return list.join('; '); }
+/* how a typed shop field is saved: each name under the spelling you kept,
+   no empty or repeated ones */
+function shopNorm(v){ return shopJoin(shopParts(shopParts(v).map(shopCanon).join(';'))); }
 function shopStats(){
   var by={};
   txAll().forEach(function(t){
     if(t.k!=='e'||!t.shop||isLine(t)||isXferSub(t.sub)||isCorrName(t.sub)) return;
-    var n=String(t.shop).trim(); if(!n) return;
-    var b=by[n]||(by[n]={name:n,n:0,last:''});
-    b.n++; if(t.date>b.last) b.last=t.date;
+    shopParts(t.shop).forEach(function(n){
+      var b=by[n]||(by[n]={name:n,n:0,last:''});
+      b.n++; if(t.date>b.last) b.last=t.date;
+    });
   });
   return Object.keys(by).map(function(k){ return by[k]; })
     .sort(function(a,b){ return b.n-a.n||a.name.localeCompare(b.name); });
@@ -10870,12 +11423,28 @@ function renameShopsNow(pairs,msg){
   if(!pairs.length) return false;
   var map={};
   pairs.forEach(function(p){ p.from.forEach(function(f){ map[f]=p.to; }); });
+  /* a record with several shops has the name changed inside it, and the
+     sheet is sent that whole cell as it was and as it becomes */
+  var whole={};
+  function swap(v){
+    if(map.hasOwnProperty(v)) return map[v];
+    var parts=shopParts(v), hit=false;
+    if(parts.length<2) return null;
+    parts=parts.map(function(x){ if(map.hasOwnProperty(x)){ hit=true; return map[x]; } return x; });
+    if(!hit) return null;
+    var nv=shopJoin(shopParts(parts.join(';')));
+    whole[v]=nv;
+    return nv;
+  }
   var touched=[];
   txAll().forEach(function(t){
-    var v=String(t.shop||'').trim();
-    if(t.k==='e'&&map.hasOwnProperty(v)&&!isXferSub(t.sub)){ touched.push({t:t,was:t.shop}); t.shop=map[v]; }
+    if(t.k!=='e'||isXferSub(t.sub)) return;
+    var v=String(t.shop||'').trim(), nv=v?swap(v):null;
+    if(nv!==null&&nv!==v){ touched.push({t:t,was:t.shop}); t.shop=nv; }
   });
-  (D.quick||[]).forEach(function(a){ var v=String(a.shop||'').trim(); if(map.hasOwnProperty(v)) a.shop=map[v]; });
+  (D.quick||[]).forEach(function(a){ var v=String(a.shop||'').trim(), nv=v?swap(v):null; if(nv!==null) a.shop=nv; });
+  var sent=pairs.slice();
+  Object.keys(whole).forEach(function(v){ if(whole[v]!==v) sent.push({from:[v],to:whole[v]}); });
   if(tidyCfg().auto){
     var al=shopAliases(), n={};
     for(var k in al) if(al.hasOwnProperty(k)) n[k]=al[k];
@@ -10889,7 +11458,7 @@ function renameShopsNow(pairs,msg){
     setPref('shopAlias',n);
   }
   TXV++; prep(); render(true); toast(msg);
-  bg('renameShops',{pairs:pairs},null,function(){ touched.forEach(function(x){ x.t.shop=x.was; }); TXV++; });
+  bg('renameShops',{pairs:sent},null,function(){ touched.forEach(function(x){ x.t.shop=x.was; }); TXV++; });
   return true;
 }
 /* ================================================================ boot */
