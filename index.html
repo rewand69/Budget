@@ -206,6 +206,9 @@ h1.page{margin:6px 4px 14px;font:700 34px/1.05 -apple-system,sans-serif;letter-s
 .accbtn .b img{width:100%;height:100%;object-fit:cover}
 .accbtn .n{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font:500 15px/1.2 -apple-system,sans-serif}
 .accbtn .c{flex:none;font:500 12px/1 ui-monospace,Menlo,monospace;color:rgba(25,23,19,.4)}
+/* the category field: its icon, its name, and the family it is in */
+.catbtn .cf{flex:none;max-width:42%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font:500 12px/1.2 -apple-system,sans-serif;color:rgba(25,23,19,.4)}
+.catbtn .cfph{color:rgba(25,23,19,.4)}
 .sheet-body{overflow-x:hidden}
 .sheet,.sheet *{max-width:100%}
 .tick{flex:none;font:600 15px/1 -apple-system,sans-serif}
@@ -1090,6 +1093,11 @@ body.stale .iconbtn.more::after,body.refreshing .iconbtn.more::after{opacity:1;a
 .refbtn .ic{width:17px;height:17px;color:rgba(25,23,19,.55)}
 .refbtn:active{transform:scale(.985)}
 .refbtn+.delbtn,.stbox+.delbtn,.refbtn+.refbtn{margin-top:10px}
+/* Refund and Owed to me side by side on a purchase's own page */
+.stacts{display:flex;gap:10px;margin-top:16px}
+.stacts .refbtn{flex:1;min-width:0;margin-top:0}
+#stwrap:empty{display:none}
+.stbox button.stno{color:rgba(25,23,19,.6);background:rgba(25,23,19,.06)}
 .mchip.proj{padding-right:10px}
 .mchip .mx{margin-left:2px;opacity:.55;font-size:12px}
 
@@ -1104,10 +1112,18 @@ body.stale .iconbtn.more::after,body.refreshing .iconbtn.more::after{opacity:1;a
 .dropline{position:absolute;left:12px;right:12px;height:3px;margin-top:-1.5px;border-radius:2px;z-index:6;pointer-events:none;
   background:rgb(51,123,208);box-shadow:0 0 0 3px rgba(51,123,208,.16)}
 .list[data-day]{position:relative}
-/* a day with nothing written down: room to drop something, and nothing to read */
-.dayempty{height:46px}
-.dayempty.droptgt{background:rgba(51,123,208,.07)}
-.sect.emptyday .r{opacity:.5}
+/* a day with nothing written down: its date on a thin dashed line. Dragged
+   over, the line turns solid blue - that is where the record will land. */
+.daydiv{display:flex;align-items:center;gap:10px;margin:14px 0 0;padding:0 8px;min-height:28px;border-radius:10px;
+  transition:background .15s}
+.daydiv+.daydiv{margin-top:2px}
+.daydiv .dl{flex:none;font:600 12px/1 -apple-system,sans-serif;color:rgba(25,23,19,.38);transition:color .15s}
+.daydiv .dline{flex:1;min-width:16px;height:0;border-top:1px dashed rgba(25,23,19,.2);transition:border-color .15s}
+.daydiv .dayb{width:20px;height:20px;font-size:14px;background:none;color:rgba(25,23,19,.28)}
+.daydiv .dayb:active{background:rgba(25,23,19,.1)}
+.daydiv.droptgt{background:rgba(51,123,208,.09)}
+.daydiv.droptgt .dl{color:rgb(51,123,208)}
+.daydiv.droptgt .dline{border-top:2px solid rgb(51,123,208)}
 
 /* ══════════════════════ swipe right: the same again, today ══════════════════════ */
 .swrep{position:absolute;top:0;left:0;bottom:0;width:96px;z-index:2;
@@ -1151,14 +1167,14 @@ button.actcard .chevr{flex:none;color:rgba(25,23,19,.28);font-size:19px}
 .backb:active{transform:scale(.95)}
 
 /* ══════════════════════ which card to pay with ══════════════════════ */
-.cbhint{display:flex;align-items:center;gap:8px;margin:8px 2px 0;padding:8px 8px 8px 11px;border-radius:13px;
-  background:rgba(40,160,90,.10);color:#1d6b3f;font:500 12.5px/1.3 -apple-system,sans-serif}
+/* a tip under the card: small, and nothing to press */
+.cbhint{display:flex;align-items:center;gap:6px;margin:7px 4px 0;padding:6px 10px;border-radius:10px;
+  background:rgba(40,160,90,.08);color:#2b7a4c;font:500 11.5px/1.3 -apple-system,sans-serif}
 .cbhint:empty{display:none}
-.cbhint .ic{flex:none;width:15px;height:15px}
+.cbhint .ic{flex:none;width:13px;height:13px}
 .cbhint span{flex:1;min-width:0}
 .cbhint b{font-weight:650}
-.cbhint button{flex:none;padding:7px 11px;border-radius:10px;font:600 12.5px/1 -apple-system,sans-serif;color:#fff;background:#2f8a47}
-.cbhint.have{background:rgba(25,23,19,.05);color:rgba(25,23,19,.55)}
+.cbhint.have{background:rgba(25,23,19,.045);color:rgba(25,23,19,.5)}
 .cbed{padding:6px 0}
 .cbline{display:flex;gap:7px;align-items:center;padding:4px 12px}
 .cbline .tinput{margin:0}
@@ -1180,6 +1196,11 @@ button.actcard .chevr{flex:none;color:rgba(25,23,19,.28);font-size:19px}
 /* the finger is still down on it, so it is :active - which must not make a
    row in the air see-through while it passes over other days */
 .dragrow,.dragrow:active,.row.dragrow:active{background:linear-gradient(160deg,#fdfcfb,#f3efe9)!important}
+/* the day it lands on, riding on the row's top edge while it is carried */
+.dragrow{overflow:visible!important}
+.dragpill{position:absolute;top:-13px;right:16px;z-index:8;padding:6px 11px;border-radius:999px;
+  background:rgb(51,123,208);color:#fff;font:600 12px/1 -apple-system,sans-serif;font-style:normal;white-space:nowrap;
+  box-shadow:0 6px 14px -6px rgba(20,60,120,.55);pointer-events:none;opacity:0;transition:opacity .12s}
 .dragrow .rcphead,.dragrow .rcphead:active{background:none}
 .grip{color:rgba(25,23,19,.27)}
 .txout .ramt{color:rgba(25,23,19,.5)}
@@ -1195,6 +1216,19 @@ button.actcard .chevr{flex:none;color:rgba(25,23,19,.28);font-size:19px}
 .goal .gmeta{display:flex;justify-content:space-between;gap:10px;margin-top:9px;font:400 11.5px/1.35 -apple-system,sans-serif;color:rgba(25,23,19,.5)}
 .goal .gmeta span:last-child{text-align:right}
 .goalnew{display:block;width:100%;padding:15px 16px;text-align:left;font:500 13.5px/1.3 -apple-system,sans-serif;color:rgba(25,23,19,.55)}
+.cbq{display:flex;justify-content:flex-end;padding:0 14px 11px}
+/* ══════ the category list: small tiles with their icons ══════ */
+.catq{width:100%;padding:11px 14px;font-size:15px;border-radius:14px}
+.catsect{margin-top:16px;padding-bottom:8px}
+.catgrid{display:flex;flex-wrap:wrap;gap:7px}
+.catchip{display:inline-flex;align-items:center;gap:8px;max-width:100%;min-width:0;padding:5px 12px 5px 5px;border:0;border-radius:15px;
+  background:rgba(255,255,255,.78);box-shadow:inset 0 0 0 .5px rgba(25,23,19,.12);font:500 14px/1.2 -apple-system,sans-serif;color:#191713}
+.catchip .cg{flex:none;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--ib);background:var(--ibt)}
+.catchip .cg svg{width:16px;height:16px}
+.catchip .cn{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.catchip.on{background:rgba(51,123,208,.10);box-shadow:inset 0 0 0 1.5px rgb(51,123,208)}
+.catchip:active{transform:scale(.97)}
+.goalnone{padding:4px 4px 2px;font:400 12.5px/1.4 -apple-system,sans-serif;color:rgba(25,23,19,.5)}
 .newproj button+button{margin-left:0}
 </style>
 </head>
@@ -2826,18 +2860,43 @@ function toggle(k){ S.open[k]=!S.open[k]; render(); }
 /* ── transfers between your own accounts ────────────────────────────────
    Recognised by the subcategory the Setup sheet already defines, and paired
    by the receiving account name the app stores in the expense's Shop cell. */
-function isXferSub(n){ return /transfer\s+to\s+my\s+other/i.test(String(n||"")); }
-function isXferSrc(n){ return /transfer\s+from\s+my\s+other/i.test(String(n||"")); }
-function xferSubName(){
-  var l=(D.setup&&D.setup.subcategories)||[];
-  for(var i=0;i<l.length;i++) if(isXferSub(l[i].name)) return l[i].name;
+/* Taking cash out is the same thing: money moving to your own cash. It
+   keeps its own words in the sheet - "Cash withdrawal" on the card, "Cash
+   withdrawal received" on the cash - and everything else about it, the
+   form, the pair of rows, the fee, is a transfer's. */
+var XFER_SUB_RE=/transfer\s+to\s+my\s+other/i, XFER_SRC_RE=/transfer\s+from\s+my\s+other/i;
+var ATM_RE=/cash withdrawal|банкомат|(^|\s)atm\b|зняття готів|снятие налич/i;
+var FEE_RE=/\bfees?\b|комісі|комисси/i;
+function isAtmName(n){ var v=strip(n||'').toLowerCase(); return ATM_RE.test(v)&&!FEE_RE.test(v); }
+function isXferSub(n){ return XFER_SUB_RE.test(String(n||""))||isAtmName(n); }
+function isXferSrc(n){ return XFER_SRC_RE.test(String(n||""))||isAtmName(n); }
+function firstNamed(list,test){
+  for(var i=0;i<list.length;i++) if(test(list[i].name)) return list[i].name;
   return "";
 }
-function xferSrcName(){
-  var l=(D.setup&&D.setup.incomeSources)||[];
-  for(var i=0;i<l.length;i++) if(isXferSrc(l[i].name)) return l[i].name;
-  return "";
+function xferSubName(){ return firstNamed((D.setup&&D.setup.subcategories)||[],function(n){ return XFER_SUB_RE.test(String(n||"")); }); }
+function xferSrcName(){ return firstNamed((D.setup&&D.setup.incomeSources)||[],function(n){ return XFER_SRC_RE.test(String(n||"")); }); }
+function atmSubName(){ return firstNamed((D.setup&&D.setup.subcategories)||[],isAtmName); }
+function atmSrcName(){ return firstNamed((D.setup&&D.setup.incomeSources)||[],isAtmName); }
+function isCashAcc(name){ var a=D.accMap&&D.accMap[name]; return !!a&&isCash(a); }
+/* the words a transfer is written with: into your cash from anything that
+   is not cash it is a withdrawal, and says so */
+function xferWords(from,to){
+  var cash=!!to&&isCashAcc(to)&&!isCashAcc(from);
+  /* a sheet script from before this version pairs only the transfer words,
+     so until it is updated a withdrawal is written as a transfer */
+  var atm=apiV()>=4?atmSubName():'', xs=xferSubName(), useAtm=!!atm&&(cash||!xs);
+  return {sub:useAtm?atm:xs, src:(useAtm?atmSrcName():'')||xferSrcName()||atmSrcName(), atm:cash};
 }
+/* a cash account to take money out into: one in the card's own currency
+   first, then any */
+function cashAccountFor(from){
+  var fc=currencyOf(from)||'UAH', list=(D.accounts||[]).filter(function(a){ return isCash(a)&&a.name!==from; });
+  var same=list.filter(function(a){ return (a.currency||'UAH')===fc; });
+  return (same[0]||list[0]||{}).name||'';
+}
+/* the sheet shows the transfer form: money going to one of your accounts */
+function xferForm(s){ return !!s&&s.kind==='e'&&!s.receipt&&isXferSub(s.sub); }
 /* The income half of a transfer never appears in the list. Anything that
    reasons about positions has to leave it out too — if the rows on screen and
    the records in memory are not the same list, a drop lands at the wrong index
@@ -2921,6 +2980,7 @@ function txRow(t,onclick,drag,sel){
   /* a mark or a trip is a small icon in front of the second line */
   var marks=(t.trip&&!cr?'<span class="mk">'+svgIc('plane',13,2)+'</span>':'')+
     (e&&projectsOf(t).length?'<span class="mk">'+svgIc('folder',13,2)+'</span>':'')+
+    (e&&goalsOf(t).length?'<span class="mk">'+svgIc('piggy',13,2)+'</span>':'')+
     ((fl.length&&(t.sub||t.main))?fl.map(function(f){ return '<span class="mk">'+svgIc(icKey(f.name),13,2)+'</span>'; }).join(''):'');
   /* refunded, owed, paid back - or the money that came back for one of
      those: said in a word, and greyed out because it is not counted */
@@ -2938,7 +2998,7 @@ function txRow(t,onclick,drag,sel){
     title='<span class="xfr"><b>'+esc(strip(t.account))+'</b>'+
       '<i class="xarrow">'+XFER_ICON+'</i>'+
       '<b>'+esc(strip(t.shop))+'</b></span>';
-    if(!meta) meta='Between your accounts';
+    if(!meta) meta=isAtmName(t.sub)?strip(t.sub):'Between your accounts';
   }
   /* a transfer gains and loses nothing, so it carries no sign at all */
   var amt=xf?bmoney(Math.abs(txAmount(t))):((e?'−':'+')+((e&&!cr)?money:bmoney)(Math.abs(txAmount(t))));
@@ -3029,6 +3089,8 @@ function narrowed(){ return !!(S.fCat.length||S.fSub.length||S.fSrc.length||S.fA
 function actBody(){
   var nBad=D.tx.filter(unbalanced).length;
   var h=findPanel()+attnRow(nBad);
+  /* the 1st of the month: time to pick this month's cashback categories */
+  if(!S.qOpen&&!S.fBad) h+=cbMonthCard();
   var tr=tripNow();
   if(tr){
     var ts=tripStats(tr.name);
@@ -3179,11 +3241,13 @@ function activityList(){
     var lab=diff===0?'Today':diff===1?'Yesterday':(DAYS[d.getDay()]+', '+MONS[d.getMonth()]+' '+d.getDate()+(dstr.slice(0,4)!==D.thisYear?', '+dstr.slice(0,4):''));
     var items=map[dstr];
     if(!items){
-      /* nothing written down: the day, its two add buttons, and room */
-      h+='<div class="sect emptyday"><span>'+lab+'</span><span class="dayr">'+
-        (pickMode?'':'<button class="dayb" onclick="addOn(\'e\','+q(dstr)+')" aria-label="Add an expense on this day">−</button>')+
-        (pickMode?'':'<button class="dayb" onclick="addOn(\'i\','+q(dstr)+')" aria-label="Add income on this day">+</button>')+
-        '</span></div><div class="glass list dayempty" data-day="'+esc(dstr)+'"></div>';
+      /* nothing written down: only the date on a thin line - a day between
+         the others to drop a record onto, not something that reads like one */
+      h+='<div class="daydiv" data-day="'+esc(dstr)+'"><span class="dl">'+lab+'</span><i class="dline"></i>'+
+        (pickMode?'':'<span class="dayr">'+
+          '<button class="dayb" onclick="addOn(\'e\','+q(dstr)+')" aria-label="Add an expense on this day">−</button>'+
+          '<button class="dayb" onclick="addOn(\'i\','+q(dstr)+')" aria-label="Add income on this day">+</button></span>')+
+        '</div>';
       return;
     }
     var dayNet=sum(items,function(t){
@@ -3389,6 +3453,7 @@ function txText(t){
   var bits=[t.shop,t.note,t.sub,t.main,t.source,t.account,t.trip];
   flagList(t).forEach(function(f){ bits.push(f.name); });
   projectsOf(t).forEach(function(n){ bits.push(n); });
+  if(t.k==='e') goalsOf(t).forEach(function(n){ bits.push(n); });
   var st=stateOf(t);
   if(st) bits.push(st==='refund'?'refunded':(st==='owed'?'owed':'paid back'));
   if(isLinkedInc(t)) bits.push(/-r$/.test(t.id)?'refund':'paid back');
@@ -4405,7 +4470,7 @@ function pageAccounts(){
      '</div>';
 
   /* what wants doing: this month's cashback categories, money owed to you */
-  h+=cbMonthCard()+owedCard();
+  h+=owedCard();
   h+='<div class="grid2">'+
      tile('Available to spend',bmoney(available,0),'#191713')+
      tile('In debt',bmoney(debt,0),anyHidden()?'#191713':RED)+'</div>';
@@ -4524,7 +4589,7 @@ function openAccount(name){
      (a.payBy
         ?'<div class="tiny" style="margin-top:7px">'+
           (cardDebt(a)>0.005
-            ?'Pay '+accMoney(a,cardDebt(a))+' by '+esc(fmtLong(a.payBy))+' to avoid fees \u00b7 '+esc(daysLeftWords(a.payBy))+
+            ?'Pay '+accMoney(a,cardDebt(a))+' by '+esc(fmtLong(a.payBy))+' \u00b7 '+esc(daysLeftWords(a.payBy))+
               (Number(a.minPay)>0?' \u00b7 minimum '+accMoney(a,Number(a.minPay)):'')
             :(Number(a.minPay)>0
               ?'Pay '+accMoney(a,Number(a.minPay))+' by '+esc(fmtLong(a.payBy))
@@ -4725,7 +4790,10 @@ function openSheet(kind,existing){
      above still carries the remainder, because that is what sits in the cell. */
     receipt:isReceipt(existing),
     amount:numStr((isReceipt(existing)?existing.rtotal:existing.amount)||0), account:acc,
-    toAccount:(isXferSub(existing.sub)&&existing.shop)?existing.shop:'',
+    toAccount:isXfer(existing)?existing.shop:'',
+    /* a transfer or a withdrawal that never had an account to go to - one
+       written before the two were paired - may stay that way when edited */
+    wasPair:!!isXfer(existing), loose:isXferSub(existing.sub)&&!isXfer(existing),
     main:existing.main||'', sub:existing.sub||'', source:existing.source||'',
     shop:existing.shop||'', note:existing.note||'', date:existing.date,
     flags:allFlags(existing), id:existing.id||'', sched:existing.sched||'',
@@ -4746,6 +4814,9 @@ function openSheet(kind,existing){
       S.sheet.toRate=(got&&sent)?got/sent:0;
     }
   }
+  /* the fee paid with it, to change or to clear */
+  var fr=existing&&existing.k==='e'?feeOf(existing):null;
+  if(fr){ S.sheet.fee=numStr(Math.abs(Number(fr.amount)||0)); S.sheet.feeWas=S.sheet.fee; }
   drawSheet(); renderFab();
 }
 /* A receipt is a payment whose categories are not known yet. Turning the
@@ -4757,7 +4828,7 @@ function openSheet(kind,existing){
 function convertible(s){
   if(s.kind!=='e'||!s.edit) return false;
   var t=findTx('e',s.row); if(!t) return false;
-  if(isXfer(t)||isCorr(t)) return false;
+  if(isXfer(t)||isCorr(t)||isXferSub(t.sub)) return false;
   if(isLine(t)) return false;
   return true;
 }
@@ -4947,7 +5018,7 @@ function drawPicker(){
   h+='<div style="height:10px"></div></div></div>';
   document.getElementById('modal2').innerHTML=h;
 }
-function closePicker(){ S.pick=null; S.projPick=null; S.icPick=null; document.getElementById('modal2').innerHTML=''; }
+function closePicker(){ S.pick=null; S.projPick=null; S.icPick=null; S.catPick=null; document.getElementById('modal2').innerHTML=''; }
 function pickerPick(v){
   var cfg=S.pick; if(!cfg) return;
   if(cfg.multi){ if(cfg.apply) cfg.apply(v); drawPicker(); return; }
@@ -5113,11 +5184,15 @@ function pickAccount(name){
       if(to) to.innerHTML=accFieldInner(name);
     }else{
       S.sheet.account=name;
+      /* picked by hand: a shop rule never replaces it again */
+      S.sheet.accPicked=true; S.sheet.autoAcc='';
       var el=document.getElementById('f_acc');
       if(el) el.innerHTML=accFieldInner(name);
       updateAmt();
       updateCbHint();
     }
+    /* into your cash it is an ATM's fee, anywhere else a transfer's */
+    feeRelabel();
     /* another currency on either side: a figure typed for the old pair no
        longer means anything */
     var after=xferCurs(S.sheet);
@@ -5517,7 +5592,9 @@ function flagRow(s,onlyProjects){
      is set is said by the colour of the chip and nothing else. The projects
      the record is in are chips too, and one tap takes it out of one. */
   if(onlyProjects&&apiV()<3) return '';
-  return '<div class="fieldlabel">'+(onlyProjects?'Projects':'Marks')+'</div><div class="mrow" id="mrow">'+markChips(s,onlyProjects)+'</div>';
+  var chips=markChips(s,onlyProjects);
+  if(!chips) return '';
+  return '<div class="fieldlabel">'+(onlyProjects?'Projects':'Marks')+'</div><div class="mrow" id="mrow">'+chips+'</div>';
 }
 function markChips(s,onlyProjects){
   var f=s.flags||[], h='';
@@ -5528,29 +5605,30 @@ function markChips(s,onlyProjects){
       esc(strip(fl.name))+'</button>';
   }).join('');
   if(apiV()<3) return h;
-  if(!onlyProjects&&!isCorrName(s.sub)){
-    var back=f.indexOf('owedback')>-1, owed=back||f.indexOf('owed')>-1;
-    h+='<button class="mchip'+(owed?' on':'')+'" onclick="toggleOwed()"><span class="mglyph">'+svgIc('handcoins',16,2)+'</span>'+
-      (back?'Paid back':'Owed to me')+'</button>';
-  }
+  /* A project is given with the Project button in Activity, so here only
+     the ones it is already in show - one tap takes it out. Owed to me is
+     on the record's own page, next to Refund. */
   projectsOfFlags(f).forEach(function(n){
     h+='<button class="mchip proj on" onclick="dropSheetProject('+q(n)+')" aria-label="Take it out of '+esc(n)+'">'+
       '<span class="mglyph">'+svgIc(projIcon(n),16,2)+'</span>'+esc(n)+'<span class="mx">\u2715</span></button>';
   });
-  h+='<button class="mchip" onclick="sheetProject()"><span class="mglyph">'+svgIc('folder',16,2)+'</span>Project</button>';
   return h;
 }
 function redrawMarks(){
   var s=S.sheet, el=document.getElementById('mrow');
   if(!s||!el){ drawSheet(); return; }
-  el.innerHTML=markChips(s,!!s.receipt);
+  var c=markChips(s,!!s.receipt);
+  /* the last chip gone: the row and its label go too */
+  if(!c){ drawSheet(); return; }
+  el.innerHTML=c;
 }
 function toggleOwed(){
   var s=S.sheet; if(!s) return;
   var f=s.flags||[];
   if(f.indexOf('owedback')>-1){ toast('It is paid back already \u2014 undo that below first'); return; }
   s.flags=f.indexOf('owed')>-1?f.filter(function(k){ return k!=='owed'; }):f.concat(['owed']);
-  redrawMarks();
+  var w=document.getElementById('stwrap');
+  if(w) w.innerHTML=stateBox(s); else drawSheet();
 }
 function toggleFlag(k){
   var s=S.sheet; if(!s) return;
@@ -5563,12 +5641,17 @@ function toggleFlag(k){
   el.className='mchip'+(on?' on':'');
 }
 function subOptions(main,value){
-  /* a correction is never offered as a choice, but a row that already is one
-     keeps its name so opening it for a tweak cannot blank the category */
+  function keep(x){
+    /* a correction is never offered as a choice, but a row that already is
+       one keeps its name so opening it for a tweak cannot blank the category */
+    return (!isCorrName(x.name)||x.name===value)&&(!isFlagName(x.name)||x.name===value);
+  }
+  /* A native list cannot draw the app's icons, so it shows the emoji the
+     Setup sheet gives each name. (The add sheet has its own list, with the
+     icons.) */
   function items(m){
-    return D.setup.subcategories.filter(function(x){
-      return x.main===m&&(!isCorrName(x.name)||x.name===value)&&(!isFlagName(x.name)||x.name===value); })
-      .map(function(x){ return opt(x.name,strip(x.name),x.name===value); }).join('');
+    return D.setup.subcategories.filter(function(x){ return x.main===m&&keep(x); })
+      .map(function(x){ return opt(x.name,x.name,x.name===value); }).join('');
   }
   var head=opt('','Choose subcategory\u2026',!value);
   if(main) return head+items(main);
@@ -5577,13 +5660,103 @@ function subOptions(main,value){
   var seen=D.setup.mainCategories;
   var h=head+seen.map(function(m){
     var body=items(m);
-    return body?'<optgroup label="'+esc(strip(m))+'">'+body+'</optgroup>':'';
+    return body?'<optgroup label="'+esc(m)+'">'+body+'</optgroup>':'';
   }).join('');
   /* anything whose family is no longer in the setup still has to be pickable */
-  var rest=D.setup.subcategories.filter(function(x){
-    return seen.indexOf(x.main)<0&&(!isCorrName(x.name)||x.name===value)&&(!isFlagName(x.name)||x.name===value); })
-    .map(function(x){ return opt(x.name,strip(x.name),x.name===value); }).join('');
+  var rest=D.setup.subcategories.filter(function(x){ return seen.indexOf(x.main)<0&&keep(x); })
+    .map(function(x){ return opt(x.name,x.name,x.name===value); }).join('');
   return h+rest;
+}
+/* what the sheet's subcategory list shows: a withdrawal as the entry it
+   shares with transfers */
+function dispSub(s){
+  var xs=xferSubName();
+  return (xferForm(s)&&xs&&isAtmName(s.sub))?xs:s.sub;
+}
+
+/* ══════ the category, picked from a list with its icons ═════════════════
+   One field instead of two: the families are the headings, every category
+   wears the icon it has in Activity, and the ones used most lately sit on
+   top. A withdrawal is the entry it shares with transfers. */
+function subLabel(n){
+  var xs=xferSubName();
+  return (xs&&n===xs&&atmSubName())?'Transfer or cash withdrawal':strip(n);
+}
+function catPickable(x,value){
+  var fold=!!(xferSubName()&&atmSubName());
+  return (!isCorrName(x.name)||x.name===value)&&(!isFlagName(x.name)||x.name===value)&&
+    !(fold&&isAtmName(x.name)&&x.name!==value);
+}
+function recentSubs(n){
+  var from=addDaysIso(D.today,-60), cnt={}, xs=xferSubName(), fold=!!(xs&&atmSubName());
+  (D.tx||[]).forEach(function(t){
+    if(t.k!=='e'||!t.sub||t.pending||t.date<from||!D.subMap[t.sub]||isCorrName(t.sub)||isFlagName(t.sub)) return;
+    var k=(fold&&isAtmName(t.sub))?xs:t.sub;
+    cnt[k]=(cnt[k]||0)+1;
+  });
+  return Object.keys(cnt).sort(function(a,b){ return cnt[b]-cnt[a]; }).slice(0,n||6);
+}
+function catFieldInner(s){
+  var inc=s.kind==='i', v=inc?s.source:dispSub(s);
+  if(!v) return '<span class="b ib" style="'+icStyle(255)+'">'+svgIc('grid',20)+'</span>'+
+    '<span class="n cfph">'+(inc?'Choose source\u2026':'Choose category\u2026')+'</span>';
+  var fam=inc?'':((D.subMap[v]||{}).main||s.main||'');
+  return '<span class="b ib" style="'+icStyle(inc?HUE_IN:hueOf(fam||v))+'">'+svgIc(icKey(v,fam),20)+'</span>'+
+    '<span class="n">'+esc(inc?strip(v):subLabel(v))+'</span>'+(fam?'<span class="cf">'+esc(strip(fam))+'</span>':'');
+}
+function refreshCatFields(){
+  var s=S.sheet, el=document.getElementById('f_cat');
+  if(s&&el) el.innerHTML=catFieldInner(s);
+}
+/* The list the field opens: every category as a small tile with its icon,
+   under its family, so most of them fit on one screen - and a search on top
+   for the rest. */
+function openCatPicker(){
+  if(!S.sheet) return;
+  S.catPick={q:''};
+  var h='<div class="scrim" style="z-index:60" onclick="closePicker()"></div><div class="sheet" style="z-index:61">'+
+    '<div class="sheet-head"><button class="xbtn" onclick="closePicker()">\u2715</button>'+
+    '<span class="sheet-title">'+(S.sheet.kind==='i'?'Source':'Category')+'</span><span style="width:32px"></span></div>'+
+    '<div class="sheet-body" style="margin-top:12px">'+
+    '<input class="tinput catq" id="catq" type="search" autocomplete="off" autocorrect="off" placeholder="Search" oninput="catSearch(this.value)">'+
+    '<div id="catbody">'+catBody()+'</div><div style="height:12px"></div></div></div>';
+  document.getElementById('modal2').innerHTML=h;
+}
+function catSearch(v){ if(!S.catPick) return; S.catPick.q=v; var el=document.getElementById('catbody'); if(el) el.innerHTML=catBody(); }
+function catChip(v,label,icon,hue,cur){
+  return '<button class="catchip'+(v===cur?' on':'')+'" onclick="catPickGo('+q(v)+')">'+
+    '<span class="cg" style="'+icStyle(hue)+'">'+svgIc(icon,16,2)+'</span><span class="cn">'+esc(label)+'</span></button>';
+}
+function catBody(){
+  var s=S.sheet; if(!s||!S.catPick) return '';
+  var want=String(S.catPick.q||'').trim().toLowerCase();
+  function hit(label,fam){ return !want||String(label).toLowerCase().indexOf(want)>-1||String(fam||'').toLowerCase().indexOf(want)>-1; }
+  if(s.kind==='i'){
+    var srcs=(D.setup.incomeSources||[]).filter(function(x){ return (!isCorrName(x.name)||x.name===s.source)&&hit(strip(x.name)); });
+    return srcs.length?'<div class="catgrid" style="margin-top:12px">'+srcs.map(function(x){ return catChip(x.name,strip(x.name),icKey(x.name),HUE_IN,s.source); }).join('')+'</div>'
+                      :'<div class="empty" style="padding:18px 6px">Nothing called that.</div>';
+  }
+  var cur=dispSub(s), subs=D.setup.subcategories||[], h='';
+  function chips(list){ return '<div class="catgrid">'+list.map(function(x){ return catChip(x.name,subLabel(x.name),icKey(x.name,x.main),hueOf(x.main||x.name),cur); }).join('')+'</div>'; }
+  function head(label,icon){ return '<div class="sect catsect"><span>'+(icon?'<span class="inic">'+svgIc(icon,16,2)+'</span>':'')+esc(label)+'</span></div>'; }
+  if(!want){
+    var rec=recentSubs(6).map(function(n){ return D.subMap[n]; }).filter(Boolean);
+    if(rec.length>=3) h+=head('Used most lately','repeat')+chips(rec);
+  }
+  var fams=D.setup.mainCategories.slice(), any=false;
+  fams.forEach(function(m){
+    var l=subs.filter(function(x){ return x.main===m&&catPickable(x,cur)&&hit(subLabel(x.name),strip(m)); });
+    if(l.length){ any=true; h+=head(strip(m),icKey(m))+chips(l); }
+  });
+  var rest=subs.filter(function(x){ return fams.indexOf(x.main)<0&&catPickable(x,cur)&&hit(subLabel(x.name)); });
+  if(rest.length){ any=true; h+=head('Other','tag')+chips(rest); }
+  if(!any) h+='<div class="empty" style="padding:18px 6px">Nothing called that.</div>';
+  return h;
+}
+function catPickGo(v){
+  var s=S.sheet; closePicker(); if(!s) return;
+  if(s.kind==='i'){ s.source=v; refreshCatFields(); return; }
+  onSubChange(v);
 }
 
 function drawSheet(){
@@ -5617,10 +5790,7 @@ function drawSheet(){
   if(!inc) h+=cbHintHtml(s)||'<div class="cbhint" id="cbhint"></div>';
 
   if(inc){
-    h+=field('Source','<select class="tinput sel" id="f_src" onchange="shq(\'source\',this.value)">'+
-        opt('','Choose source\u2026',!s.source)+
-        D.setup.incomeSources.filter(function(x){ return !isCorrName(x.name)||x.name===s.source; }).map(function(x){ return opt(x.name,strip(x.name),x.name===s.source); }).join('')+
-      '</select>');
+    h+=field('Source','<button class="tinput accbtn catbtn" id="f_cat" onclick="openCatPicker()">'+catFieldInner(s)+'</button>');
   }else{
     /* A receipt is one payment you will split later, so it asks for no category
        at all - the categories arrive one line at a time, afterwards. */
@@ -5630,22 +5800,21 @@ function drawSheet(){
       /* a receipt goes into a project as a whole - its lines with it */
       h+=flagRow(s,true);
     } else {
-    h+=field('Category','<select class="tinput sel" id="f_main" onchange="onMainChange(this.value)">'+
-        opt('','All categories',!s.main)+
-        D.setup.mainCategories.map(function(m){ return opt(m,strip(m),m===s.main); }).join('')+
-      '</select>');
-    h+=field('Subcategory','<select class="tinput sel" id="f_sub" onchange="onSubChange(this.value)">'+
-        subOptions(s.main,s.sub)+'</select>');
-    if(isXferSub(s.sub)){
+    /* one field: the list it opens has the families as headings and every
+       category with the icon it wears in Activity */
+    h+=field('Category','<button class="tinput accbtn catbtn" id="f_cat" onclick="openCatPicker()">'+catFieldInner(s)+'</button>');
+    /* a Savings transfer can go towards a goal, picked right here */
+    h+='<div id="goalwrap">'+goalField(s)+'</div>';
+    if(xferForm(s)){
       /* moving your own money: the destination account replaces the shop, and
-         it is what gets written into the Shop cell so the pair is traceable */
-      h+=field('Transfer to','<button class="tinput accbtn" id="f_to" onclick="openAccPicker(\'to\')">'+
+         it is what gets written into the Shop cell so the pair is traceable.
+         Your cash is one of the places it can go - that is a withdrawal. */
+      h+=field('Transfer to'+(s.edit&&s.loose?' <span class="opt">optional</span>':''),
+          '<button class="tinput accbtn" id="f_to" onclick="openAccPicker(\'to\')">'+
           accFieldInner(s.toAccount||'')+'</button>');
       h+='<div id="f_toamt_wrap">'+toAmtField(s)+'</div>';
       h+=feeField(s);
     }else{
-      /* a cash withdrawal's fee comes first: it is the one thing left to say */
-      h+=feeField(s);
       h+='<div class="fieldlabel">Shop</div><input class="tinput" id="f_shop" placeholder="Where was it?" value="'+esc(s.shop)+'" oninput="shopTyped(this.value)">'+shopChips(s.shop);
       h+=flagRow(s);
     }
@@ -5663,10 +5832,10 @@ function drawSheet(){
       '<button class="unlinkb" onclick="unlinkSched()">Unlink</button></div></div>';
   }
   /* trip mode: in the trip or out of it, one switch */
-  if((s.trip||s.tripAlt)&&!(isXferSub(s.sub)&&!s.trip)) h+='<div class="glass" id="f_trip" style="padding:0;margin-top:14px">'+tripSwitch(s)+'</div>';
+  if((s.trip||s.tripAlt)&&!(xferForm(s)&&!s.trip)) h+='<div class="glass" id="f_trip" style="padding:0;margin-top:14px">'+tripSwitch(s)+'</div>';
   if(s.edit){
     /* refunded, owed, paid back - or the button that starts a refund */
-    h+=stateBox(s);
+    h+='<div id="stwrap">'+stateBox(s)+'</div>';
     /* deleting a receipt takes its split lines with it, so say how many */
     var nl=s.receipt?linesOf((findTx('e',s.row)||{}).receipt).length:0;
     h+='<button class="delbtn" id="delbtn" onclick="deleteSheet()">'+
@@ -5711,30 +5880,13 @@ function updateAmt(){
 }
 /* none of these redraw the sheet, so the scroll position never jumps */
 function onAccountChange(v){ S.sheet.account=v; updateAmt(); }
-function onMainChange(v){
-  var s=S.sheet; s.main=v; s.sub=''; s.autoSub='';
-  var m=document.getElementById('f_main'); if(m&&m.value!==v) m.value=v;
-  var el=document.getElementById('f_sub');
-  if(el) el.innerHTML=subOptions(v,'');
-  /* the subcategory is gone, so a shop it auto-filled should go with it */
-  if(s.autoShop&&s.shop===s.autoShop){
-    s.shop=''; s.autoShop='';
-    var sp=document.getElementById('f_shop');
-    if(sp) sp.value='';
-  }
-  updateCbHint();
-}
 function onSubChange(v){
-  var s=S.sheet; var wasX=isXferSub(s.sub), wasAtm=isAtmSub(s.sub); s.sub=v;
+  var s=S.sheet; var wasX=xferForm(s), wasSave=isSavingsSub(s.sub); s.sub=v;
   /* picked by hand: a shop rule never replaces it again */
   s.autoSub='';
-  var sel=document.getElementById('f_sub'); if(sel&&sel.value!==v) sel.value=v;
   var m=D.subMap[v];
-  if(m&&m.main&&s.main!==m.main){
-    s.main=m.main;
-    var el=document.getElementById('f_main');
-    if(el) el.value=m.main;
-  }
+  if(m&&m.main&&s.main!==m.main) s.main=m.main;
+  refreshCatFields();
   /* a subcategory can carry a default shop (Setup sheet, "Default shop" column).
      It is filled the way the date is filled: already there, still yours to change.
      Only a value this same mechanism put in is ever overwritten — never typing. */
@@ -5744,14 +5896,15 @@ function onSubChange(v){
     var sp=document.getElementById('f_shop');
     if(sp&&sp.value!==def) sp.value=def;
   }
-  if(isXferSub(v)!==wasX){
+  /* a goal belongs to a Savings transfer only */
+  var saveNow=isSavingsSub(v);
+  if(!saveNow) s.flags=dropGoalFlags(s.flags);
+  if(xferForm(s)!==wasX||saveNow!==wasSave){
     /* moving your own money is not trip spending */
-    if(!s.edit) s.trip=isXferSub(v)?'':(s.kind==='e'?tripName():'');
+    if(xferForm(s)!==wasX&&!s.edit) s.trip=xferForm(s)?'':(s.kind==='e'?tripName():'');
     drawSheet();
     return;
   }
-  /* a cash withdrawal asks for its ATM fee */
-  if(!s.edit&&isAtmSub(v)!==wasAtm){ drawSheet(); return; }
   updateCbHint();
 }
 
@@ -6094,7 +6247,10 @@ function saveSheet(){
   if(s.kind==='e'&&!s.sub&&!s.receipt){ toast('Pick a subcategory'); return; }
   if(s.kind==='i'&&!s.source){ toast('Pick a source'); return; }
   if(!s.account){ toast('Pick an account'); return; }
-  var xfer=s.kind==='e'&&isXferSub(s.sub);
+  /* money moving to one of your accounts - a transfer, or cash taken out.
+     One written before the two were paired may be saved as it was, with
+     nowhere to go; everything else says where it goes. */
+  var xfer=xferForm(s)&&!(s.edit&&s.loose&&!s.toAccount);
   var toCur='', toAmt=0;
   if(xfer){
     if(!s.toAccount){ toast('Choose where it goes'); return; }
@@ -6105,12 +6261,22 @@ function saveSheet(){
   }
   var dEl=document.getElementById('f_date'); if(dEl&&dEl.value) s.date=dEl.value;
   var cur=currencyOf(s.account);
-  /* an ATM's or a transfer's fee, typed in with it */
-  var fee=0;
-  if(!s.edit&&s.kind==='e'&&!s.receipt&&(xfer||isAtmSub(s.sub))&&String(s.fee||'').trim()&&feeSubName()){
-    fee=amtOf(s.fee,sdec);
-    if(!(fee>0)){ toast('That fee does not look like an amount'); return; }
+  /* an ATM's or a transfer's fee, typed in with it - or, on a saved one,
+     changed or cleared (sent only when it changed; 0 takes it away) */
+  var fee=0, feeSend=false, fraw=String(s.fee||'').trim();
+  if(feeShown(s)&&(xfer||s.edit)){
+    if(!s.edit) feeSend=!!fraw;
+    else feeSend=fraw!==String(s.feeWas||'').trim();
+    if(feeSend&&fraw){
+      fee=amtOf(fraw,sdec);
+      if(!(fee>0)){ toast('That fee does not look like an amount'); return; }
+    }
   }
+  /* into your cash it is written as a withdrawal, anywhere else as a
+     transfer - whichever of the two the sheet has */
+  var words=xfer?xferWords(s.account,s.toAccount):null;
+  if(words&&words.sub){ s.sub=words.sub; var wsm=D.subMap[words.sub]; if(wsm&&wsm.main) s.main=wsm.main; }
+  var feeNote=(words?words.atm:isAtmName(s.sub))?'ATM fee':'Transfer fee';
   var payload={
     kind:s.kind, id:s.id||'', row:s.row||0, was:s.was||{date:'',amount:0,account:''},
     date:s.date, amount:amt, currency:cur,
@@ -6119,11 +6285,21 @@ function saveSheet(){
     /* every mark is in the list - projects, owed - so the sheet can take it whole */
     allFlags:true
   };
-  if(fee>0){ payload.fee=fee; payload.feeSub=feeSubName(); payload.feeNote=xfer?'Transfer fee':'ATM fee'; }
+  if(feeSend){ payload.fee=fee; payload.feeSub=feeSubName(); payload.feeNote=feeNote; }
+  /* a saved one's fee keeps its word in step with where the money goes */
+  else if(s.edit&&xferForm(s)) payload.feeNote=feeNote;
+  /* the ATM's fee is spending, so a trip that is on has it, even though
+     the cash itself is not trip spending until it is spent */
+  if(feeSend&&!s.edit) payload.feeTrip=s.trip||tripName()||'';
   /* which Calendar payment this settles, if any - '' unlinks it */
   if(s.kind==='e') payload.sched=s.sched||'';
   payload.trip=s.trip||'';
-  if(xfer){ payload.shop=s.toAccount; payload.to=s.toAccount; payload.toCurrency=toCur; payload.toAmount=toAmt; }
+  if(xfer){
+    payload.shop=s.toAccount; payload.to=s.toAccount; payload.toCurrency=toCur; payload.toAmount=toAmt;
+    payload.inSource=words.src;
+    /* an expense becoming a transfer now: the money arrives on the other side */
+    if(s.edit&&!s.wasPair) payload.makePair=true;
+  }
   /* a scheduled payment keeps the category you gave it, so next month it
      is already filled in */
   if(s.calSvc&&s.sub){
@@ -6169,11 +6345,32 @@ function saveSheet(){
     if(mate&&xfer){
       mate.date=s.date; mate.amount=toAmt; mate.currency=toCur; mate.account=s.toAccount;
       mate.note=s.note; mate.uah=toAmt*rateOf(toCur);
+      if(words.src) mate.source=words.src;
+    }
+    /* the fee: changed where it is, added under it, or hidden until the
+       sheet has taken it away - and its word follows where the money went */
+    var feeRow=(t&&s.kind==='e')?feeOf(t):null, feeBackup=feeRow?JSON.parse(JSON.stringify(feeRow)):null;
+    var fcid2='', feeHid='';
+    if(feeRow&&payload.feeNote&&/^(ATM|Transfer) fee$/.test(feeRow.note||'')) feeRow.note=payload.feeNote;
+    if(feeSend){
+      if(fee>0&&feeRow){ feeRow.amount=fee; feeRow.uah=fee*rateOf(feeRow.currency||cur); feeRow.pending=true; }
+      else if(fee>0){
+        fcid2='p'+(++S.cid);
+        var nf=feeLocal(s,fee,cur,payload.id,fcid2,feeNote);
+        S.pending[fcid2]=nf; D.tx.push(nf);
+      }
+      else if(feeRow){ feeHid=delKey(feeRow); S.pendingDel[feeHid]=1; rebuildTx(); }
     }
     closeSheet(); prep(); render(true); toast('Saved');
-    bg('updateTx',payload,null,function(){
+    bg('updateTx',payload,function(){
+      if(fcid2) delete S.pending[fcid2];
+      if(feeHid) delete S.pendingDel[feeHid];
+    },function(){
       if(t&&backup) for(var k2 in backup) if(backup.hasOwnProperty(k2)) t[k2]=backup[k2];
       if(mate&&mateBackup) for(var k3 in mateBackup) if(mateBackup.hasOwnProperty(k3)) mate[k3]=mateBackup[k3];
+      if(feeRow&&feeBackup) for(var k4 in feeBackup) if(feeBackup.hasOwnProperty(k4)) feeRow[k4]=feeBackup[k4];
+      if(fcid2) D.tx=D.tx.filter(function(x){ return x.cid!==fcid2; });
+      if(feeHid) rebuildTx();
     });
     /* a payment from the Calendar whose amount was just changed */
     if(s.kind==='e'&&!xfer&&!wasReceipt&&s.sched&&backup&&Math.abs(Math.abs(Number(backup.amount)||0)-amt)>1e-9)
@@ -6185,14 +6382,15 @@ function saveSheet(){
   /* the record's id is made here, so a retry can never write it twice */
   payload.id=newId(); s.id=payload.id;
   var fcid=fee>0?'p'+(++S.cid):'';
-  if(fcid){ var frow=feeLocal(s,fee,cur,payload.id,fcid); S.pending[fcid]=frow; D.tx.push(frow); }
+  if(fcid){ var frow=feeLocal(s,fee,cur,payload.id,fcid,feeNote,payload.feeTrip); S.pending[fcid]=frow; D.tx.push(frow); }
   /* an old sheet script does not know fees: the fee goes up as an ordinary
      expense of its own, once the payment itself is in */
   var feeLater=null;
   if(fee>0&&apiV()<3){
     var fsm=D.subMap[feeSubName()]||{};
     feeLater={kind:'e',id:payload.id+'-f',row:0,was:{date:'',amount:0,account:''},date:s.date,amount:fee,currency:cur,
-              account:s.account,main:fsm.main||'',sub:feeSubName(),source:'',shop:'',note:payload.feeNote,flags:[],trip:s.trip||''};
+              account:s.account,main:fsm.main||'',sub:feeSubName(),source:'',shop:'',note:payload.feeNote,flags:[],
+              trip:payload.feeTrip||''};
     delete payload.fee;
   }
   function dropFee(){ if(fcid){ delete S.pending[fcid]; D.tx=D.tx.filter(function(x){ return x.cid!==fcid; }); } }
@@ -6202,12 +6400,12 @@ function saveSheet(){
     if(feeLater) bg('addTx',feeLater,function(){ delete S.pending[fcid]; },function(){ dropFee(); });
   }
   if(xfer){
-    payload.inSource=xferSrcName();
     s.shop=s.toAccount;
     var xrow=localTx(s,cur,cid);
     S.pending[cid]=xrow;
     D.tx.push(xrow);
-    closeSheet(); prep(); render(false); toast(fee>0?'Transferred, fee added':'Transferred');
+    closeSheet(); prep(); render(false);
+    toast((words.atm?'Cash taken out':'Transferred')+(fee>0?', fee added':''));
     bgThen('addTransfer',payload,sendFee,function(){
       D.tx=D.tx.filter(function(x){ return x.cid!==cid; }); dropFee();
     },cleanMain);
@@ -6448,13 +6646,13 @@ function repeatTx(t){
     var tc=mate?(mate.currency||'UAH'):(currencyOf(t.shop)||'UAH'), p=Math.pow(10,decOf(tc));
     payload.to=t.shop; payload.toCurrency=tc;
     payload.toAmount=mate?Math.abs(Number(mate.amount)||0):Math.round(amt*rateOf(cur)/(rateOf(tc)||1)*p)/p;
-    payload.inSource=xferSrcName();
+    payload.inSource=(mate&&mate.source)||xferWords(acc,t.shop).src;
   }
   var cid='p'+(++S.cid), row=localTx(s,cur,cid);
   S.pending[cid]=row; D.tx.push(row);
   prep(); render(true);
   function drop(){ delete S.pending[cid]; D.tx=D.tx.filter(function(x){ return x.cid!==cid; }); }
-  var name=xf?'Transfer':strip(t.k==='e'?(t.shop||t.sub||'expense'):(t.source||'income'));
+  var name=xf?(isAtmName(t.sub)?'Cash withdrawal':'Transfer'):strip(t.k==='e'?(t.shop||t.sub||'expense'):(t.source||'income'));
   holdAction('Added again today · '+name,{
     commit:function(leaving){
       var qid='';
@@ -6477,7 +6675,12 @@ function openCopy(t,date){
   s.main=rcp?'':(t.main||''); s.sub=rcp?'':(t.sub||''); s.source=t.source||'';
   s.shop=t.shop||''; s.note=t.note||'';
   s.receipt=rcp; s.flags=t.k==='e'?copyFlags(t):[];
-  if(isXferSub(s.sub)) s.toAccount=t.shop||'';
+  if(xferForm(s)){
+    /* where it went last time - or, for cash taken out before withdrawals
+       went anywhere, your cash */
+    s.toAccount=(D.accMap&&D.accMap[t.shop])?t.shop:(isAtmName(t.sub)?cashAccountFor(s.account):'');
+    s.trip='';
+  }
   if(rcp&&(!s.lines||!s.lines.length)) s.lines=[newLine(),newLine()];
   if(date) s.date=date;
   drawSheet();
@@ -6543,7 +6746,7 @@ function gripDown(e){
   /* every day on the page is somewhere it can land */
   var days=[], box=document.getElementById('actlist');
   if(box&&list.getAttribute('data-day')&&box.contains(list)){
-    [].slice.call(box.querySelectorAll('.list[data-day]')).forEach(function(l){
+    [].slice.call(box.querySelectorAll('.list[data-day],.daydiv[data-day]')).forEach(function(l){
       var lr=l.getBoundingClientRect(), mt=[];
       (l===list?mates:dragMates(l)).forEach(function(m){ var b=m.getBoundingClientRect(); mt.push({el:m,top:b.top+sy,h:b.height}); });
       days.push({el:l,day:l.getAttribute('data-day'),top:lr.top+sy,bottom:lr.bottom+sy,mates:mt,own:l===list});
@@ -6629,6 +6832,7 @@ function dropTarget(d,tgt,idx){
     d.line=null;
   }
   d.tgt=tgt; d.idx=idx||0;
+  dragPill(d,(tgt&&!tgt.own)?tgt.day:'');
   if(!tgt) return;
   tgt.el.classList.add('droptgt');
   if(!tgt.mates.length) return;          /* an empty day lights up as a whole */
@@ -6638,6 +6842,15 @@ function dropTarget(d,tgt,idx){
   d.line.style.top=Math.round(y-tgt.top)+'px';
 }
 
+/* The day it will land on, said on the row itself. The row covers what is
+   under the finger - a thin empty day most of all - so the words ride on
+   the row, just above its top edge. */
+function dragPill(d,day){
+  if(!day){ if(d.pill) d.pill.style.opacity='0'; return; }
+  if(!d.pill){ d.pill=document.createElement('i'); d.pill.className='dragpill'; d.row.appendChild(d.pill); }
+  if(d.pillDay!==day){ d.pill.textContent='Move to '+dayWords(day); d.pillDay=day; }
+  d.pill.style.opacity='1';
+}
 /** slide the others aside so the gap shows where it will land */
 function paintGap(d){
   var h=d.hs[d.from],i,shift;
@@ -6671,6 +6884,7 @@ function gripUp(){
   d.list.classList.remove('dragsrc');
   var tgt=d.tgt, idx=d.idx;
   dropTarget(d,null);
+  if(d.pill&&d.pill.parentNode) d.pill.parentNode.removeChild(d.pill);
   document.body.classList.remove('dragging');
   var rowNum=Number(d.row.getAttribute('data-row'));
   if(!d.cancelled&&tgt&&!tgt.own){
@@ -6995,7 +7209,7 @@ function drawSettings(){
       pref('rcpOpen',true)!==false?'Their lines show straight away':'They start folded up',
       pref('rcpOpen',true)!==false,'toggleRcpOpen()')+
     navRow('Trip mode',tripNow()?(tripNow().name+' · day '+tripDay(tripNow())):'Off','drawTrip()')+
-    navRow('Shop rules',(function(){ var n=Object.keys(shopRules()).length; return n?n+' shop'+(n===1?'':'s')+' fill in their category':'A shop fills in its category'; })(),'drawShopRules()')+
+    navRow('Shop rules',(function(){ var n=Object.keys(shopRules()).length; return n?n+' shop'+(n===1?'':'s')+' fill in their category and card':'A shop fills in its category and card'; })(),'drawShopRules()')+
     swRow('Show days with nothing',
       pref('emptyDays',true)!==false?'Every day is in Activity, with room to drop a record':'Only days with records',
       pref('emptyDays',true)!==false,'toggleEmptyDays()')+
@@ -7252,10 +7466,13 @@ function drawCalEdit(){
     fRow('Notes','<input class="tinput fin" placeholder="none" value="'+esc(d.notes)+'" oninput="S.calD.notes=this.value">')+
     '</div>';
   /* a trial or a subscription you mean to stop before it renews */
+  /* the date gets the whole row; the one-tap choice sits under it, so on a
+     phone neither is squeezed */
   h+='<div class="glass" style="padding:2px 0;margin-top:12px">'+
-    fRow('Cancel before','<input class="tinput fin" type="date" value="'+esc(d.cancelBy||'')+'" onchange="S.calD.cancelBy=this.value">'+
-      (d.cancelBy?'<button class="unlinkb" style="margin-left:8px" onclick="S.calD.cancelBy=\'\';drawCalEdit()">Off</button>':
-        (d.next?'<button class="unlinkb" style="margin-left:8px" onclick="S.calD.cancelBy=S.calD.next;drawCalEdit()">Next payment</button>':'')))+
+    '<div class="frow"'+((d.cancelBy||d.next)?' style="border-bottom:0"':'')+'><span class="flab">Cancel before</span>'+
+      '<input class="tinput fin" type="date" value="'+esc(d.cancelBy||'')+'" onchange="S.calD.cancelBy=this.value"></div>'+
+    (d.cancelBy?'<div class="cbq"><button class="unlinkb" onclick="S.calD.cancelBy=\'\';drawCalEdit()">No reminder</button></div>':
+      (d.next?'<div class="cbq"><button class="unlinkb" onclick="S.calD.cancelBy=S.calD.next;drawCalEdit()">Use the next payment, '+esc(fmtShort(d.next))+'</button></div>':''))+
     '</div><p class="tiny" style="margin:8px 4px 0;line-height:1.45">For a trial or a subscription you mean to stop: a reminder three days before and the day before, so it does not renew.</p>';
   if(d.row) h+='<button class="delbtn" onclick="calRemove()">Delete payment</button>';
   h+=sheetEnd();
@@ -7473,9 +7690,13 @@ function stateBox(s){
       'Counted nowhere \u2014 not as spending, not as income.</span>'+
       (inc&&owner?'<button onclick="undoMoneyBack(\''+kind+'\','+owner.row+')">Undo</button>':'')+'</div>';
   }
-  if(st==='owed') return '<div class="stbox"><span class="stt"><b>Owed to you</b>Not counted as your spending while you wait for it.</span>'+
-    '<button onclick="openMoneyBack(\'b\','+t.row+',true)">Paid back</button></div>';
-  return '<button class="refbtn" onclick="openMoneyBack(\'r\','+t.row+',true)">'+svgIc('refund',17,2)+'Refund</button>';
+  /* owed as the sheet has it now - toggled here, it is written on Save */
+  var owedNow=(s.flags||[]).indexOf('owed')>-1;
+  if(owedNow) return '<div class="stbox"><span class="stt"><b>Owed to you</b>Not counted as your spending while you wait for it.</span>'+
+    (st==='owed'?'<button onclick="openMoneyBack(\'b\','+t.row+',true)">Paid back</button>':'')+
+    '<button class="stno" onclick="toggleOwed()">Not owed</button></div>';
+  return '<div class="stacts"><button class="refbtn" onclick="openMoneyBack(\'r\','+t.row+',true)">'+svgIc('refund',17,2)+'Refund</button>'+
+    '<button class="refbtn" onclick="toggleOwed()">'+svgIc('handcoins',17,2)+'Owed to me</button></div>';
 }
 
 /* ══════ projects ════════════════════════════════════════════════════════
@@ -7507,7 +7728,13 @@ function drawProjectPicker(){
   var h='<div class="scrim" style="z-index:60" onclick="closePicker()"></div><div class="sheet" style="z-index:61">'+
     '<div class="sheet-head"><button class="xbtn" onclick="closePicker()">\u2715</button>'+
     '<span class="sheet-title">'+esc(P.title)+'</span><span style="width:32px"></span></div>'+
-    '<div class="sheet-body" style="margin-top:14px">'+
+    '<div class="sheet-body" style="margin-top:14px">';
+  /* Savings transfers go towards a goal instead */
+  if(P.goals){
+    document.getElementById('modal2').innerHTML=h+goalPickHtml(P)+'<div style="height:10px"></div></div></div>';
+    return;
+  }
+  h+=
     '<div class="glass"><div class="newproj"><input class="tinput" id="newproj" maxlength="40" autocomplete="off"'+
       ' placeholder="'+(names.length?'New project':'Name it \u2014 e.g. Renovation')+'" enterkeyhint="done"'+
       ' onkeydown="if(event.key===\'Enter\'){event.preventDefault();newProjectGo();}">'+
@@ -7550,6 +7777,8 @@ function selProject(){
   if(apiV()<3){ toast(NEED_V3,7000); return; }
   var why=selProjectWhy(); if(why){ toast(why); return; }
   var it=selItems().filter(function(t){ return t.k==='e'&&!isXfer(t)&&!isCorr(t); });
+  /* Savings transfers - and only they - go towards a savings goal */
+  if(allSavings(it)){ openGoalPicker(it); return; }
   var common=projectNames().filter(function(n){ return it.every(function(t){ return inProject(t,n); }); });
   openProjectPicker('Add to a project',function(n){ addToProject(it,n); },common);
 }
@@ -7567,17 +7796,7 @@ function addToProject(items,n){
   toast((items.length===1?'Added to ':'Added '+items.length+' to ')+n);
   bg('editMany',{items:items.map(txRef),flagAdd:[tag]},null,function(){ touched.forEach(function(x){ x.t.flags=x.was; }); });
 }
-/* the chips under Marks on a record's own page */
-function sheetProject(){
-  var s=S.sheet; if(!s) return;
-  if(apiV()<3){ toast(NEED_V3,7000); return; }
-  openProjectPicker('Add to a project',function(n){
-    var s2=S.sheet; if(!s2) return;
-    var tag='p:'+n;
-    if((s2.flags||[]).indexOf(tag)<0) s2.flags=(s2.flags||[]).concat([tag]);
-    redrawMarks();
-  },projectsOfFlags(s.flags));
-}
+/* the chips under Marks on a record's own page: one tap takes it out */
 function dropSheetProject(n){
   var s=S.sheet; if(!s) return;
   s.flags=(s.flags||[]).filter(function(k){ return k!=='p:'+n; });
@@ -7680,27 +7899,37 @@ function foldersSection(){
    withdrawal or the transfer and saved as an expense of its own, on the
    same card and day, just under it. Its id is the payment's id plus -f, so
    deleting or moving the payment takes the fee along. */
-var ATM_RE=/cash withdrawal|банкомат|(^|\s)atm\b|зняття готів|снятие налич/i;
-var FEE_RE=/\bfees?\b|комісі|комисси/i;
-function isAtmSub(n){ return ATM_RE.test(strip(n||'').toLowerCase()); }
 function feeSubName(){
   var l=(D.setup&&D.setup.subcategories)||[];
   for(var i=0;i<l.length;i++) if(FEE_RE.test(l[i].name)) return l[i].name;
   return '';
 }
+/* A transfer's form - a withdrawal is one - asks for the fee. On a saved
+   one it can be changed or cleared, once the sheet script knows how. */
+function feeShown(s){
+  return xferForm(s)&&!!feeSubName()&&(!s.edit||apiV()>=4);
+}
+/* what the fee is called follows where the money goes */
+function feeName(s){
+  if(!s.toAccount) return isAtmName(s.sub)?'ATM fee':'Fee';
+  return xferWords(s.account,s.toAccount).atm?'ATM fee':'Transfer fee';
+}
 function feeField(s){
-  if(s.edit||s.kind!=='e'||s.receipt||!feeSubName()) return '';
-  var x=isXferSub(s.sub);
-  if(!x&&!isAtmSub(s.sub)) return '';
-  return '<div class="fieldlabel">'+(x?'Transfer fee':'ATM fee')+' <span class="opt">optional · saved as its own expense</span></div>'+
+  if(!feeShown(s)) return '';
+  var hint=(s.edit&&s.feeWas)?'its own expense · clear it to remove':'optional · saved as its own expense';
+  return '<div class="fieldlabel"><span id="f_feelab">'+feeName(s)+'</span> <span class="opt">'+hint+'</span></div>'+
     '<input class="tinput" id="f_fee" inputmode="decimal" autocomplete="off" placeholder="0" value="'+esc(s.fee||'')+'" oninput="shq(\'fee\',this.value)">';
 }
+function feeRelabel(){
+  var s=S.sheet, el=document.getElementById('f_feelab');
+  if(s&&el) el.textContent=feeName(s);
+}
 /* the fee row shown straight away, before the sheet has it */
-function feeLocal(s,fee,cur,parentId,cid){
+function feeLocal(s,fee,cur,parentId,cid,note,trip){
   var sub=feeSubName(), sm=D.subMap[sub];
   return {k:'e',row:0,id:parentId+'-f',cid:cid,pending:true,date:s.date,amount:fee,currency:cur,account:s.account,
-          main:sm?sm.main:'',sub:sub,shop:'',note:isXferSub(s.sub)?'Transfer fee':'ATM fee',uah:fee*rateOf(cur),
-          real:sm?sm.real:true,flags:'',sched:'',trip:s.trip||''};
+          main:sm?sm.main:'',sub:sub,shop:'',note:note||'Transfer fee',uah:fee*rateOf(cur),
+          real:sm?sm.real:true,flags:'',sched:'',trip:trip===undefined?(s.trip||''):(trip||'')};
 }
 /* one write after another: the second only goes once the first is in.
    cleanup runs the moment the answer arrives, as bg's own does; next only
@@ -7759,36 +7988,32 @@ function cbHintHtml(s){
   if(!s||s.kind!=='e'||s.receipt||isXferSub(s.sub)||isCorrName(s.sub)||(!s.sub&&!s.main)) return '';
   var best=cbBest(s.sub,s.main); if(!best) return '';
   var cur=cbFor(D.accMap[s.account],s.sub,s.main);
-  if(cur&&cur.rate>=best.rate) return '<div class="cbhint have" id="cbhint">'+svgIc('percent',15,2)+
+  if(cur&&cur.rate>=best.rate) return '<div class="cbhint have" id="cbhint">'+svgIc('percent',13,2)+
     '<span><b>'+esc(numStr(cur.rate))+'% back</b> with this card · '+esc(cur.label)+'</span></div>';
-  return '<div class="cbhint" id="cbhint">'+svgIc('percent',15,2)+'<span><b>'+esc(strip(best.acc))+'</b> gives '+
-    esc(numStr(best.rate))+'% back here'+(cur?' — this one '+esc(numStr(cur.rate))+'%':'')+'</span>'+
-    '<button onclick="useCbCard('+q(best.acc)+')">Use it</button></div>';
+  /* a tip, not a question: the card stays the one you picked */
+  return '<div class="cbhint" id="cbhint">'+svgIc('percent',13,2)+'<span><b>'+esc(strip(best.acc))+'</b> gives '+
+    esc(numStr(best.rate))+'% back here'+(cur?' (this card '+esc(numStr(cur.rate))+'%)':'')+'</span></div>';
 }
 function updateCbHint(){
   var el=document.getElementById('cbhint'); if(!el||!S.sheet) return;
   el.outerHTML=cbHintHtml(S.sheet)||'<div class="cbhint" id="cbhint"></div>';
 }
-function useCbCard(name){
-  var s=S.sheet; if(!s) return;
-  s.account=name;
-  var el=document.getElementById('f_acc'); if(el) el.innerHTML=accFieldInner(name);
-  updateAmt(); updateCbHint();
-}
-/* the cards' categories change every month: a card asks for them on the
-   first days of one, until they are updated or kept as they were */
+/* The cards' categories change every month. From the 1st a card at the
+   top of Activity asks for them, until they are updated here or the card
+   is closed - either way it is done for that month. */
 function cbAccounts(){ return (D.accounts||[]).filter(function(a){ return cashbackList(a).length; }); }
 function cbMonthDue(){
-  return !!cbAccounts().length&&pref('cbMonth','')!==D.thisMonth&&Number(String(D.today).slice(8,10))<=10;
+  return pref('cbMonth','')!==D.thisMonth&&Number(String(D.today).slice(8,10))<=10;
 }
 function cbMonthCard(){
   if(!cbMonthDue()) return '';
   return '<div class="glass actcard" style="'+icStyle(155)+'"><span class="ai">'+svgIc('percent',18,2)+'</span><div class="at">'+
-    '<b>New month — new cashback categories?</b>'+
-    '<span>Pick them in your bank apps, then update them here, so the app can tell you which card to pay with.</span>'+
-    '<div class="actbtns"><button class="go" onclick="openCbEdit()">Update</button><button onclick="cbSame()">Same as last month</button></div></div></div>';
+    '<b>New month, new cashback categories</b>'+
+    '<span>Pick them in your bank apps, then put them here, so the app can tell you which card to pay with.</span>'+
+    '<div class="actbtns"><button class="go" onclick="openCbEdit()">Update categories</button></div></div>'+
+    '<button class="actx" onclick="cbSame()" aria-label="Close">✕</button></div>';
 }
-function cbSame(){ setPref('cbMonth',D.thisMonth); render(true); toast('Kept as they were'); }
+function cbSame(){ setPref('cbMonth',D.thisMonth); render(true); }
 function openCbEdit(){
   S.cbEd={accs:cbAccounts().map(function(a){
     return {row:a.row||0,name:a.name,orig:String(a.cashback||''),
@@ -7874,7 +8099,7 @@ function payLine(a){
   var due=parseD(a.payBy);
   var left=isNaN(due.getTime())?99:daysBetween(due,parseD(D.today));
   var main=debt>0.005
-    ?'Pay <b>'+accMoney(a,debt)+'</b> by '+esc(fmtShort(a.payBy))+' to avoid fees'
+    ?'Pay <b>'+accMoney(a,debt)+'</b> by '+esc(fmtShort(a.payBy))
     :'Pay <b>'+accMoney(a,min)+'</b> by '+esc(fmtShort(a.payBy));
   return '<div class="payrow'+(left<=3?' soon':'')+'"><span class="paychip">'+main+' · '+esc(daysLeftWords(a.payBy))+'</span></div>'+
     ((debt>0.005&&min>0&&min<debt-0.005)?'<div class="payrow"><span class="paymin">Minimum '+accMoney(a,min)+'</span></div>':'');
@@ -8069,43 +8294,70 @@ function saveIcons(){
 }
 
 /* ══════ shop rules ════════════════════════════════════════════════════════
-   "Silpo is Groceries": typing a shop that has a rule fills its category in,
-   the way a subcategory fills in its default shop. Only a category that the
-   rule itself put there is ever replaced - one you picked stays. */
+   "Silpo is Groceries, paid with Mono Black": typing a shop that has a rule
+   fills its category and its card in, the way a subcategory fills in its
+   default shop. Only what the rule itself put there is ever replaced - a
+   category or a card you picked stays. A rule is kept as the category's
+   name alone, or as {sub, acc} once it has a card. */
 function shopRules(){ var m=pref('shopCat',{}); return (m&&typeof m==='object'&&!(m instanceof Array))?m:{}; }
+function ruleParts(v){
+  if(v&&typeof v==='object') return {sub:String(v.sub||''),acc:String(v.acc||'')};
+  return {sub:String(v||''),acc:''};
+}
 function ruleFor(shop){
-  var k=shopStrict(shop); if(!k) return '';
+  var k=shopStrict(shop); if(!k) return null;
   var m=shopRules();
-  for(var n in m) if(m.hasOwnProperty(n)&&shopStrict(n)===k) return m[n];
-  return '';
+  for(var n in m) if(m.hasOwnProperty(n)&&shopStrict(n)===k) return ruleParts(m[n]);
+  return null;
 }
 function applyShopRule(){
   var s=S.sheet; if(!s||s.edit||s.kind!=='e'||s.receipt||isXferSub(s.sub)) return;
-  if(s.sub&&s.sub!==s.autoSub) return;
-  var sub=ruleFor(s.shop);
-  if(sub&&(!D.subMap[sub]||isXferSub(sub))) sub='';
-  if(sub===s.sub) return;
-  /* the shop no longer matches: what the rule filled in goes again */
-  if(!sub&&!s.autoSub) return;
-  s.sub=sub; s.main=sub?(D.subMap[sub].main||''):''; s.autoSub=sub;
-  var m=document.getElementById('f_main'); if(m) m.value=s.main;
-  var el=document.getElementById('f_sub'); if(el){ el.innerHTML=subOptions(s.main,sub); el.value=sub; }
+  var r=ruleFor(s.shop)||{sub:'',acc:''};
+  /* the category */
+  if(!s.sub||s.sub===s.autoSub){
+    var sub=r.sub;
+    if(sub&&(!D.subMap[sub]||isXferSub(sub))) sub='';
+    /* the shop no longer matches: what the rule filled in goes again */
+    if(sub!==s.sub&&(sub||s.autoSub)){
+      s.sub=sub; s.main=sub?(D.subMap[sub].main||''):''; s.autoSub=sub;
+      refreshCatFields();
+    }
+  }
+  /* the card: unless you picked one yourself */
+  if(!s.accPicked){
+    var acc=(r.acc&&D.accMap&&D.accMap[r.acc])?r.acc:'';
+    if(acc&&acc!==s.account){
+      if(!s.autoAcc) s.accBefore=s.account;
+      setSheetAccount(acc); s.autoAcc=acc;
+    }else if(!acc&&s.autoAcc&&s.account===s.autoAcc){
+      setSheetAccount(s.accBefore||s.account); s.autoAcc=''; s.accBefore='';
+    }
+  }
   updateCbHint();
+}
+/* the account field, changed from code: the amount's currency follows */
+function setSheetAccount(name){
+  var s=S.sheet; if(!s||!name) return;
+  s.account=name;
+  var el=document.getElementById('f_acc'); if(el) el.innerHTML=accFieldInner(name);
+  updateAmt();
 }
 function drawShopRules(){
   var m=shopRules(), names=Object.keys(m).sort(function(a,b){ return a.localeCompare(b); });
   var h=sheetTop('Shop rules','','backToSettings()');
-  h+='<p class="tiny" style="margin:0 4px 12px;line-height:1.45">Type a shop that has a rule and its category is filled in. You can still pick another one for that record.</p>';
+  h+='<p class="tiny" style="margin:0 4px 12px;line-height:1.45">Type a shop that has a rule and its category and card are filled in. You can still pick others for that record.</p>';
   h+='<div class="glass" style="padding:4px 0">'+(names.length?names.map(function(n){
-      var sub=m[n], sm=D.subMap[sub];
-      return navRow(esc(n),'→ '+strip(sub)+(sm?'':' · not in Setup any more'),'openShopRule('+q(n)+')');
+      var r=ruleParts(m[n]), bits=[];
+      if(r.sub) bits.push(strip(r.sub)+(D.subMap[r.sub]?'':' (not in Setup any more)'));
+      if(r.acc) bits.push(strip(r.acc)+(D.accMap[r.acc]?'':' (no such account now)'));
+      return navRow(esc(n),'→ '+bits.join(' · '),'openShopRule('+q(n)+')');
     }).join(''):'<div class="empty" style="padding:14px 18px">No rules yet.</div>')+
     '<button class="expadd" style="color:'+ACCENT+'" onclick="openShopRule(\'\')">+ Add rule</button></div>';
   var sug=ruleSuggestions();
   if(sug.length) h+='<div class="sect" style="margin-top:18px"><span>You always file these the same way</span></div><div class="glass" style="padding:4px 0">'+
     sug.slice(0,8).map(function(x){
-      return '<div class="setrow"><span class="setmain"><b>'+esc(x.shop)+'</b><i>'+esc(strip(x.sub))+' · '+x.n+' times</i></span>'+
-        '<button class="unlinkb" onclick="addRule('+q(x.shop)+','+q(x.sub)+')">Add rule</button></div>';
+      return '<div class="setrow"><span class="setmain"><b>'+esc(x.shop)+'</b><i>'+esc(strip(x.sub))+(x.acc?' · '+esc(strip(x.acc)):'')+' · '+x.n+' times</i></span>'+
+        '<button class="unlinkb" onclick="addRule('+q(x.shop)+','+q(x.sub)+','+q(x.acc)+')">Add rule</button></div>';
     }).join('')+'</div>';
   h+=sheetEnd();
   document.getElementById('modal').innerHTML=h;
@@ -8117,22 +8369,27 @@ function ruleSuggestions(){
   (D.tx||[]).forEach(function(t){
     if(t.k!=='e'||!t.shop||!t.sub||t.date<from||isXferSub(t.sub)||isCorrName(t.sub)||isLine(t)||t.sched) return;
     var k=shopStrict(t.shop); if(!k||have[k]) return;
-    var b=by[k]||(by[k]={shop:String(t.shop).trim(),subs:{},n:0});
-    b.n++; b.subs[t.sub]=(b.subs[t.sub]||0)+1;
+    var b=by[k]||(by[k]={shop:String(t.shop).trim(),subs:{},accs:{},n:0});
+    b.n++; b.subs[t.sub]=(b.subs[t.sub]||0)+1; b.accs[t.account]=1;
   });
   var out=[];
-  Object.keys(by).forEach(function(k){ var b=by[k], ss=Object.keys(b.subs); if(b.n>=3&&ss.length===1) out.push({shop:b.shop,sub:ss[0],n:b.n}); });
+  /* one category every time - and the card too, when it was always the same one */
+  Object.keys(by).forEach(function(k){
+    var b=by[k], ss=Object.keys(b.subs), aa=Object.keys(b.accs);
+    if(b.n>=3&&ss.length===1) out.push({shop:b.shop,sub:ss[0],acc:(aa.length===1&&D.accMap[aa[0]])?aa[0]:'',n:b.n});
+  });
   return out.sort(function(a,b){ return b.n-a.n; });
 }
-function putRule(shop,sub,orig){
+function putRule(shop,sub,orig,acc){
   var m=shopRules(), n={}, key=shopStrict(shop);
   for(var k in m) if(m.hasOwnProperty(k)&&k!==orig&&shopStrict(k)!==key) n[k]=m[k];
-  if(sub) n[shop]=sub;
+  if(sub||acc) n[shop]=acc?{sub:sub||'',acc:acc}:sub;
   setPref('shopCat',n);
 }
-function addRule(shop,sub){ putRule(shop,sub,''); drawShopRules(); toast(shop+' → '+strip(sub)); }
+function addRule(shop,sub,acc){ putRule(shop,sub,'',acc||''); drawShopRules(); toast(shop+' → '+strip(sub)+(acc?' · '+strip(acc):'')); }
 function openShopRule(name){
-  S.ruleD={orig:name||'',shop:name||'',sub:(name&&shopRules()[name])||''};
+  var r=ruleParts(name?shopRules()[name]:'');
+  S.ruleD={orig:name||'',shop:name||'',sub:r.sub,acc:r.acc};
   drawShopRule();
 }
 function drawShopRule(){
@@ -8140,7 +8397,10 @@ function drawShopRule(){
   var h=sheetTop(d.orig?'Shop rule':'New shop rule','saveShopRule()','drawShopRules()');
   h+='<div class="glass" style="padding:2px 0">'+
     fRow('Shop','<input class="tinput fin" id="rule_shop" autocomplete="off" autocorrect="off" placeholder="Silpo" value="'+esc(d.shop)+'" oninput="S.ruleD.shop=this.value;ruleChips()">')+
-    fRow('Category','<select class="tinput fin" onchange="S.ruleD.sub=this.value">'+subOptions('',d.sub)+'</select>')+
+    fRow('Category','<select class="tinput fin" onchange="S.ruleD.sub=this.value">'+
+      subOptions('',d.sub).replace(opt('','Choose subcategory\u2026',!d.sub),opt('','Keep what I pick',!d.sub))+'</select>')+
+    fRow('Account','<select class="tinput fin" onchange="S.ruleD.acc=this.value">'+opt('','Keep what I pick',!d.acc)+
+      (D.accounts||[]).map(function(a){ return opt(a.name,strip(a.name),a.name===d.acc); }).join('')+'</select>')+
     '</div><div class="shopchips" id="rulechips"></div>';
   if(d.orig) h+='<button class="delbtn" onclick="dropShopRule()">Delete rule</button>';
   h+=sheetEnd();
@@ -8159,30 +8419,43 @@ function saveShopRule(){
   var d=S.ruleD; if(!d) return;
   var shop=String(d.shop||'').replace(/\s+/g,' ').trim().slice(0,80);
   if(!shop){ toast('Type the shop'); return; }
-  if(!d.sub||!D.subMap[d.sub]){ toast('Pick a category'); return; }
-  if(isXferSub(d.sub)){ toast('A transfer cannot be a shop rule'); return; }
-  putRule(shop,d.sub,d.orig);
+  if(!d.sub&&!d.acc){ toast('Pick a category, an account or both'); return; }
+  if(d.sub&&!D.subMap[d.sub]){ toast('Pick a category'); return; }
+  if(isXferSub(d.sub)){ toast('A transfer or a withdrawal cannot be a shop rule'); return; }
+  putRule(shop,d.sub,d.orig,d.acc||'');
   S.ruleD=null; drawShopRules(); toast('Rule saved');
 }
 function dropShopRule(){
   var d=S.ruleD; if(!d||!d.orig) return;
-  putRule(d.orig,'',d.orig);
+  putRule(d.orig,'',d.orig,'');
   S.ruleD=null; drawShopRules(); toast('Rule deleted');
 }
 
 /* ══════ savings goals ═════════════════════════════════════════════════════
-   "New laptop, 60 000": how far along it is, by one of two measures - the
-   balance of an account set aside for it, or money you add to it by hand.
-   Kept with the app's settings; nothing is written to the sheet. */
+   "New laptop, 60 000", filled the way a project is: a Savings transfer is
+   put towards one - picked right under its category, or later with the
+   Project button in Activity - and the goal adds up what went in. It is a
+   mark on the record (g:Name), the way a project is (p:Name). The goal's own
+   numbers - the target, a date, whatever was saved before the app counted
+   it - are kept with the app's settings. */
+var SAVE_RE=/savings?\s*(transfer|jar|deposit)|to\s+savings|заощадж|накопич|сбереж|копилк|скарбничк/i;
+function isSavingsSub(n){ return SAVE_RE.test(strip(n||'')); }
 function goalsList(){ var g=pref('goals',[]); return (g instanceof Array)?g:[]; }
+function goalsOf(t){ return allFlags(t).filter(function(k){ return k.slice(0,2)==='g:'; }).map(function(k){ return k.slice(2); }); }
+function goalOfFlags(f){ var g=(f||[]).filter(function(k){ return String(k).slice(0,2)==='g:'; })[0]; return g?String(g).slice(2):''; }
+function goalRecords(name){
+  return txAll().filter(function(t){ return t.k==='e'&&goalsOf(t).indexOf(name)>-1; });
+}
+/* what was saved before the app counted it ("saved" in the first version) */
+function goalStart(g){ return Math.max(0,Number(g.start!==undefined?g.start:g.saved)||0); }
 function goalSaved(g){
-  if(g.account){ var a=D.accMap[g.account]; return a?Math.max(0,Number(a.uah)||0):0; }
-  return Math.max(0,Number(g.saved)||0);
+  return goalStart(g)+sum(goalRecords(g.name),function(t){ return Math.abs(Number(t.uah)||0); });
 }
 function goalCard(g){
   var saved=goalSaved(g), target=Math.max(0,Number(g.target)||0), p=target?Math.min(100,saved/target*100):0;
-  var left=Math.max(0,target-saved), bits=[];
-  if(left<0.005) bits.push('Reached — well done');
+  var left=Math.max(0,target-saved), bits=[], n=goalRecords(g.name).length;
+  if(!target) bits.push('Set a target');
+  else if(left<0.005) bits.push('Reached — well done');
   else{
     bits.push(bmoney(left,0)+' to go');
     if(g.due){
@@ -8196,71 +8469,155 @@ function goalCard(g){
   var hue=hueOf(g.name||'goal');
   return '<button class="glass goal" onclick="openGoal('+q(g.id)+')">'+
     '<div class="gtop">'+icBadge(icKey(g.name,'',1)==='tag'?'piggy':icKey(g.name,'',1),hue,'sm')+
-      '<span class="gname">'+esc(g.name)+'</span><span class="gpct">'+(anyHidden()?DOTS:Math.floor(p)+'%')+'</span></div>'+
+      '<span class="gname">'+esc(g.name)+'</span><span class="gpct">'+(target?(anyHidden()?DOTS:Math.floor(p)+'%'):'')+'</span></div>'+
     '<div class="track lg" style="margin-top:11px">'+barFill(p,g.name||'goal')+'</div>'+
-    '<div class="gmeta"><span>'+bmoney(saved,0)+' of '+bmoney(target,0)+(g.account?' · '+esc(strip(g.account)):'')+'</span><span>'+esc(bits.join(' · '))+'</span></div>'+
+    '<div class="gmeta"><span>'+bmoney(saved,0)+(target?' of '+bmoney(target,0):'')+
+      (n?' · '+n+' transfer'+(n===1?'':'s'):'')+'</span><span>'+esc(bits.join(' · '))+'</span></div>'+
     '</button>';
 }
 function goalsSection(){
   var l=goalsList();
   var h='<div class="sect"><span>'+inIc('Savings','',null)+'Savings goals</span>'+
     '<button class="sectadd" onclick="openGoal(\'\')">+ Goal</button></div>';
-  if(!l.length) return h+'<button class="glass goalnew" onclick="openGoal(\'\')">Set a goal — a target and how far along you are</button>';
+  if(!l.length) return h+'<button class="glass goalnew" onclick="openGoal(\'\')">Set a goal, then put Savings transfers towards it</button>';
   return h+l.map(goalCard).join('');
 }
+/* ---- in the add sheet: right under the category, once it is Savings transfer */
+function goalField(s){
+  if(!s||s.kind!=='e'||s.receipt||!isSavingsSub(s.sub)||apiV()<3) return '';
+  var l=goalsList(), cur=goalOfFlags(s.flags);
+  var h='<div class="fieldlabel">Saving goal <span class="opt">optional</span></div><div class="mrow">';
+  if(!l.length&&!cur) return h+'<span class="goalnone">No goals yet — set one under Accounts, then pick it here.</span></div>';
+  var names=l.map(function(g){ return g.name; });
+  if(cur&&names.indexOf(cur)<0) names.push(cur);
+  names.forEach(function(n){
+    h+='<button class="mchip'+(n===cur?' on':'')+'" onclick="sheetGoal('+q(n)+')"><span class="mglyph">'+svgIc('piggy',16,2)+'</span>'+esc(n)+'</button>';
+  });
+  return h+'</div>';
+}
+function dropGoalFlags(f){ return (f||[]).filter(function(k){ return String(k).slice(0,2)!=='g:'; }); }
+/* one goal per record: tapping another moves it, tapping the same one again takes it off */
+function sheetGoal(n){
+  var s=S.sheet; if(!s) return;
+  var cur=goalOfFlags(s.flags);
+  s.flags=dropGoalFlags(s.flags);
+  if(cur!==n) s.flags.push('g:'+n);
+  var w=document.getElementById('goalwrap'); if(w) w.innerHTML=goalField(s); else drawSheet();
+}
+/* ---- from Activity: the Project button, when everything picked is a Savings transfer */
+function allSavings(items){ return items.length>0&&items.every(function(t){ return t.k==='e'&&isSavingsSub(t.sub)&&!isReceipt(t); }); }
+function openGoalPicker(items){
+  var common=goalsList().map(function(g){ return g.name; }).filter(function(n){
+    return items.every(function(t){ return goalsOf(t).indexOf(n)>-1; }); });
+  S.projPick={title:'Put towards a goal',goals:true,items:items,current:common};
+  drawProjectPicker();
+}
+function goalPickHtml(P){
+  var l=goalsList();
+  var h='<div class="glass"><div class="newproj"><input class="tinput" id="newgoal" maxlength="40" autocomplete="off"'+
+    ' placeholder="'+(l.length?'New goal':'Name it — e.g. New laptop')+'" enterkeyhint="done"'+
+    ' onkeydown="if(event.key===\'Enter\'){event.preventDefault();newGoalGo();}">'+
+    '<button onclick="newGoalGo()">Add</button></div></div>';
+  if(l.length){
+    h+='<div class="sect" style="margin-top:14px"><span>Savings goals</span></div><div class="glass list">'+l.map(function(g){
+      var on=P.current.indexOf(g.name)>-1, sv=goalSaved(g), tg=Number(g.target)||0;
+      return '<button class="row" onclick="goalPick('+q(g.name)+')">'+icBadge('piggy',hueOf(g.name))+
+        '<span class="rmain"><span class="rtitle" style="display:block">'+esc(g.name)+'</span>'+
+        '<span class="rmeta" style="display:block">'+bmoney(sv,0)+(tg?' of '+bmoney(tg,0):' saved')+'</span></span>'+
+        '<span class="tick" style="color:'+(on?ACCENT:'transparent')+'">✓</span></button>';
+    }).join('')+'</div>';
+  }
+  return h;
+}
+function newGoalGo(){
+  var el=document.getElementById('newgoal'), n=cleanProject(el&&el.value);
+  if(!n){ toast('Give the goal a name'); if(el) el.focus(); return; }
+  var l=goalsList().slice(), same=l.filter(function(g){ return g.name.toLowerCase()===n.toLowerCase(); })[0];
+  if(same) n=same.name;
+  else{ l.push({id:'g'+Date.now().toString(36),name:n,target:0,start:0,due:''}); setPref('goals',l); }
+  goalPick(n);
+}
+function goalPick(n){
+  var P=S.projPick; S.projPick=null; closePicker();
+  if(P&&P.items) addToGoal(P.items,n);
+}
+function addToGoal(items,n){
+  var tag='g:'+n, touched=[], del=[];
+  items.forEach(function(t){
+    var f=allFlags(t); if(f.indexOf(tag)>-1) return;
+    f.forEach(function(k){ if(k.slice(0,2)==='g:'&&del.indexOf(k)<0) del.push(k); });
+    touched.push({t:t,was:t.flags});
+    t.flags=dropGoalFlags(f).concat([tag]).join(',');
+  });
+  S.sel=null; S.selDel=0; render(true);
+  if(!touched.length){ toast('Already going towards '+n); return; }
+  toast((touched.length===1?'Put towards ':touched.length+' put towards ')+n);
+  var p={items:touched.map(function(x){ return txRef(x.t); }),flagAdd:[tag]};
+  if(del.length) p.flagDel=del;
+  bg('editMany',p,null,function(){ touched.forEach(function(x){ x.t.flags=x.was; }); });
+}
+/* ---- the goal's own page ----------------------------------------------- */
 function openGoal(id){
   var g=goalsList().filter(function(x){ return x.id===id; })[0];
-  S.goalD=g?{id:g.id,name:g.name,target:String(g.target||''),account:g.account||'',saved:String(g.saved||''),due:g.due||'',add:''}
-           :{id:'',name:'',target:'',account:'',saved:'',due:'',add:''};
+  S.goalD=g?{id:g.id,orig:g.name,name:g.name,target:g.target?String(g.target):'',start:goalStart(g)?String(goalStart(g)):'',due:g.due||''}
+           :{id:'',orig:'',name:'',target:'',start:'',due:''};
   drawGoal();
 }
 function drawGoal(){
   var d=S.goalD; if(!d) return;
-  var accs=(D.accounts||[]).map(function(a){ return a.name; });
   var h=sheetTop(d.id?'Savings goal':'New savings goal','saveGoal()');
   h+='<div class="glass" style="padding:2px 0">'+
     fRow('Goal','<input class="tinput fin" maxlength="40" placeholder="New laptop" value="'+esc(d.name)+'" oninput="S.goalD.name=this.value">')+
     fRow('Target','<input class="tinput fin" inputmode="decimal" placeholder="60000" value="'+esc(d.target)+'" oninput="S.goalD.target=this.value"><span class="fsuf">UAH</span>')+
-    fRow('Counts','<select class="tinput fin" onchange="S.goalD.account=this.value;drawGoal()">'+
-      opt('','Money I add by hand',!d.account)+accs.map(function(a){ return opt(a,'Balance of '+strip(a),a===d.account); }).join('')+'</select>')+
-    (d.account?'':fRow('Saved so far','<input class="tinput fin" inputmode="decimal" placeholder="0" value="'+esc(d.saved)+'" oninput="S.goalD.saved=this.value"><span class="fsuf">UAH</span>'))+
+    fRow('Saved before','<input class="tinput fin" inputmode="decimal" placeholder="0" value="'+esc(d.start)+'" oninput="S.goalD.start=this.value"><span class="fsuf">UAH</span>')+
     fRow('By','<input class="tinput fin" type="date" value="'+esc(d.due)+'" onchange="S.goalD.due=this.value">')+
     '</div>';
-  if(d.id&&!d.account){
-    h+='<div class="sect"><span>Add money to it</span></div><div class="glass"><div class="newproj">'+
-      '<input class="tinput" inputmode="decimal" placeholder="Amount" value="'+esc(d.add)+'" oninput="S.goalD.add=this.value">'+
-      '<button onclick="goalAdd(1)">+ Add</button><button style="background:rgba(25,23,19,.08);color:rgba(25,23,19,.7)" onclick="goalAdd(-1)">− Take</button></div></div>';
-  }
-  h+='<p class="tiny" style="margin:12px 4px 0;line-height:1.45">A goal lives in the app’s settings — nothing is written to the spreadsheet. Counting an account’s balance suits a card or a jar kept just for this.</p>';
-  if(d.id) h+='<button class="delbtn" onclick="deleteGoal()">Delete goal</button>';
+  var recs=d.orig?goalRecords(d.orig).slice().sort(function(a,b){
+    if(a.date!==b.date) return a.date<b.date?1:-1;
+    return orderKey(b)-orderKey(a);
+  }):[];
+  h+='<div class="sect"><span>What went in</span>'+(recs.length?'<span class="r">'+money(sum(recs,function(t){ return Math.abs(Number(t.uah)||0); }),0)+'</span>':'')+'</div>';
+  if(recs.length) h+='<div class="glass list">'+recs.map(function(t){ return txRow(t,'editTx('+q(t.k)+','+t.row+')'); }).join('')+'</div>';
+  else h+='<div class="glass"><div class="empty">Nothing yet. Add a Savings transfer and pick this goal right under the category, or hold transfers in Activity and tap Project.</div></div>';
+  if(d.id) h+='<button class="delbtn" id="goaldel" onclick="deleteGoal()">Delete goal</button>';
   h+=sheetEnd();
   document.getElementById('modal').innerHTML=h;
 }
 function goalNum(v){ var n=parseFloat(String(v||'').replace(/\s/g,'').replace(',','.')); return isNaN(n)?0:n; }
-function goalAdd(sign){
-  var d=S.goalD; if(!d) return;
-  var v=goalNum(d.add); if(!(v>0)){ toast('Enter an amount'); return; }
-  d.saved=numStr(Math.max(0,Math.round((goalNum(d.saved)+sign*v)*100)/100)); d.add='';
-  saveGoal(true);
-  drawGoal(); toast(sign>0?'Added':'Taken out');
+/* the records that go towards a goal, told its new name (or that it is gone) */
+function retagGoal(old,n){
+  var recs=goalRecords(old), items=recs.filter(function(t){ return !t.pending&&t.row; });
+  var was=recs.map(function(t){ return {t:t,f:t.flags}; });
+  recs.forEach(function(t){ t.flags=allFlags(t).filter(function(k){ return k!=='g:'+old; }).concat(n?['g:'+n]:[]).join(','); });
+  if(!items.length||apiV()<3) return;
+  var p={items:items.map(txRef),flagDel:['g:'+old]};
+  if(n) p.flagAdd=['g:'+n];
+  bg('editMany',p,null,function(){ was.forEach(function(x){ x.t.flags=x.f; }); });
 }
-function saveGoal(stay){
+function saveGoal(){
   var d=S.goalD; if(!d) return;
-  var name=String(d.name||'').replace(/\s+/g,' ').trim().slice(0,40), target=goalNum(d.target);
+  var name=cleanProject(d.name), target=goalNum(d.target);
   if(!name){ toast('Name the goal'); return; }
-  if(!(target>0)){ toast('Set a target'); return; }
-  var l=goalsList().slice(), g={id:d.id||('g'+Date.now().toString(36)),name:name,target:target,
-        account:d.account||'',saved:d.account?0:goalNum(d.saved),due:d.due||''};
+  var l=goalsList().slice();
+  if(l.some(function(x){ return x.id!==d.id&&x.name.toLowerCase()===name.toLowerCase(); })){ toast('There is a goal with that name already'); return; }
+  var g={id:d.id||('g'+Date.now().toString(36)),name:name,target:Math.max(0,target),start:Math.max(0,goalNum(d.start)),due:d.due||''};
   var i=-1; l.forEach(function(x,j){ if(x.id===g.id) i=j; });
   if(i<0) l.push(g); else l[i]=g;
-  d.id=g.id;
   setPref('goals',l);
-  if(stay!==true){ S.goalD=null; closeModal(); toast('Saved'); }
-  render(true);
+  if(d.orig&&d.orig!==name) retagGoal(d.orig,name);
+  S.goalD=null; closeModal(); render(true); toast('Saved');
 }
 function deleteGoal(){
   var d=S.goalD; if(!d||!d.id) return;
+  if(!S.goalKill){
+    S.goalKill=1;
+    var b=document.getElementById('goaldel'); if(b) b.textContent='Tap again — the transfers stay, only the goal goes';
+    setTimeout(function(){ S.goalKill=0; },3500);
+    return;
+  }
+  S.goalKill=0;
   setPref('goals',goalsList().filter(function(x){ return x.id!==d.id; }));
+  if(d.orig) retagGoal(d.orig,'');
   S.goalD=null; closeModal(); render(true); toast('Goal deleted');
 }
 
@@ -8845,6 +9202,24 @@ function quickRow(a){
 /* Writing the record is the same wherever it came from - a plain tap, the
    swipe panel, or the panel that asks for what the action left blank. An
    override belongs to this one record; the quick action is never touched. */
+/* Cash taken out, or a transfer, goes somewhere - an action made for one
+   before they were a pair opens the transfer form with everything it knows
+   filled in, instead of writing half of it. */
+function quickAsXfer(a,over){
+  over=over||{};
+  closeModal(); S.qsel=null; S.qonce=null;
+  openSheet('e');
+  var s=S.sheet; if(!s) return;
+  var acct=over.account||a.account;
+  if(acct&&D.accMap&&D.accMap[acct]) s.account=acct;
+  var amt=Number(over.amount!==undefined&&over.amount!==''?over.amount:a.amount)||0;
+  if(amt) s.amount=numStr(amt);
+  var sub=(over.sub!==undefined&&over.sub!=='')?over.sub:(a.sub||'');
+  s.sub=sub; s.main=(D.subMap[sub]||{}).main||''; s.note=a.note||''; s.trip='';
+  if(over.date) s.date=over.date;
+  s.toAccount=(a.shop&&D.accMap&&D.accMap[a.shop])?a.shop:(isAtmName(sub)?cashAccountFor(s.account):'');
+  drawSheet();
+}
 function writeQuick(a,over){
   over=over||{};
   var acct=over.account||a.account;
@@ -8855,6 +9230,7 @@ function writeQuick(a,over){
   if(!amt){ toast('Enter an amount'); return false; }
   if(!acct||!(D.accMap&&D.accMap[acct])){ toast('Pick an account'); return false; }
   if(a.kind==='i'?!src:!sub){ toast(a.kind==='i'?'Pick a source':'Pick a category'); return false; }
+  if(a.kind==='e'&&isXferSub(sub)){ quickAsXfer(a,over); return true; }
   var cur=currencyOf(acct);
   var main=(D.subMap[sub]||{}).main||a.main||'';
   var f={kind:a.kind, amount:String(amt), account:acct, date:date,
@@ -8876,6 +9252,7 @@ function writeQuick(a,over){
 function fireQuick(id){
   var a=quickById(id); if(!a) return;
   if(S.qsel){ S.qsel=null; drawQuick(); return; }
+  if(a.kind==='e'&&isXferSub(a.sub)){ quickAsXfer(a,null); return; }
   var miss=quickMissing(a);
   /* whatever the action left blank is asked for now, and only that */
   if(miss.length){ openQuickAsk(id,miss); return; }
@@ -8920,7 +9297,7 @@ function drawQuickEdit(){
       ? fRow('Source','<select class="tinput fin" onchange="qset(\'source\',this.value)">'+
           opt('','Ask each time',!d.source)+
           (D.setup.incomeSources||[]).filter(function(x){ return !isCorrName(x.name)||x.name===d.source; })
-            .map(function(x){ return opt(x.name,strip(x.name),x.name===d.source); }).join('')+'</select>')
+            .map(function(x){ return opt(x.name,x.name,x.name===d.source); }).join('')+'</select>')
       : fRow('Category','<select class="tinput fin" onchange="qset(\'sub\',this.value)">'+
           opt('','Ask each time',!d.sub)+
           subOptions('',d.sub).replace(opt('','Choose subcategory\u2026',!d.sub),'')+'</select>'))+
@@ -8937,7 +9314,7 @@ function saveQuickEdit(){
   if(raw&&!amt){ toast('That amount does not look like a number'); return; }
   /* a transfer is two records and a conversion; a one-tap button is the
      wrong shape for it, so it is not offered here */
-  if(isXferSub(d.sub)){ toast('Transfers cannot be a quick action'); return; }
+  if(isXferSub(d.sub)){ toast('Transfers and withdrawals cannot be quick actions'); return; }
   /* everything else may be left blank on purpose - a blank field is asked
      for at the moment you tap the action, which is the point of leaving it */
   var a={id:d.id||newQuickId(), name:String(d.name||'').trim(), kind:d.kind, amount:amt||'',
@@ -9083,7 +9460,7 @@ function drawQuickOnce(){
       : '<select class="tinput fin" onchange="qonce(\'source\',this.value)">'+
           opt('','Choose\u2026',!o.source)+
           (D.setup.incomeSources||[]).filter(function(x){ return !isCorrName(x.name)||x.name===o.source; })
-            .map(function(x){ return opt(x.name,strip(x.name),x.name===o.source); }).join('')+'</select>');
+            .map(function(x){ return opt(x.name,x.name,x.name===o.source); }).join('')+'</select>');
   if(has('account'))
     h+=fRow('Account','<select class="tinput fin" onchange="qonce(\'account\',this.value)">'+
       opt('','Choose\u2026',!o.account)+
@@ -9178,7 +9555,7 @@ function expBlock(title,items,kind){
       '<select class="tinput expname" onchange="expSetName('+i+',this.value)">'+
         opt('','Choose\u2026',!a.name)+
         expChoices(kind,a.name).map(function(x){
-          return opt(x.name,strip(x.name),x.name===a.name);
+          return opt(x.name,x.name,x.name===a.name);
         }).join('')+
       '</select>'+
       '<input inputmode="decimal" class="tinput expamt" placeholder="0" value="'+esc(String(a.expected))+'" oninput="expSetAmt('+i+',this.value)">'+
@@ -9228,7 +9605,7 @@ window.__S=S;
    As a website, a small service worker keeps these files on the phone, so
    the app opens instantly and with no signal. A new version is fetched in
    the background; when it arrives, a note offers to switch to it. */
-var APP_VERSION='2026.09.30.2';
+var APP_VERSION='2026.09.30.3';
 (function(){
   try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persist(); }catch(e){}
   if(inGas()||!('serviceWorker' in navigator)) return;
