@@ -100,7 +100,7 @@ h1.page{margin:6px 4px 14px;font:700 34px/1.05 -apple-system,sans-serif;letter-s
 .eyebrow{font:500 12px/1 -apple-system,sans-serif;letter-spacing:.4px;text-transform:uppercase;color:rgba(25,23,19,.45)}
 .sect{font:600 13px/1 -apple-system,sans-serif;color:rgba(25,23,19,.72);padding:0 8px 10px;margin-top:20px;display:flex;justify-content:space-between;align-items:baseline}
 .sect .r{font:500 12px/1 ui-monospace,Menlo,monospace;color:rgba(25,23,19,.38)}
-.big{font:700 38px/1 -apple-system,sans-serif;letter-spacing:-1.5px}
+.big{font:700 38px/1 -apple-system,sans-serif;letter-spacing:-1.5px;white-space:nowrap}
 .huge{font:700 40px/1 -apple-system,sans-serif;letter-spacing:-1.6px}
 .muted{color:rgba(25,23,19,.45)}
 .tiny{font:400 11.5px/1.3 -apple-system,sans-serif;color:rgba(25,23,19,.45)}
@@ -1256,6 +1256,55 @@ body.stale .iconbtn.more::after,body.refreshing .iconbtn.more::after{opacity:1;a
 .actbtns button{padding:8px 12px;border-radius:12px;font:600 13px/1 -apple-system,sans-serif;color:rgba(25,23,19,.65);background:rgba(25,23,19,.06)}
 .actbtns button.go{color:#fff;background:rgb(51,123,208)}
 .actcard.upcard{cursor:pointer;-webkit-tap-highlight-color:transparent}
+/* Settings lists: a row to tap, to hold, to drag */
+.clist{padding:2px 0}
+.crow{display:flex;align-items:center;border-bottom:.5px solid rgba(25,23,19,.06);
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.crmain{flex:1;min-width:0;display:flex;align-items:center;gap:10px;padding:12px 4px 12px 14px;border:0;background:none;text-align:left;
+  -webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
+.crmain:active{background:rgba(25,23,19,.03)}
+.crt{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.crt b{font:600 15px/1.25 -apple-system,system-ui;letter-spacing:-.2px;color:#191713;overflow-wrap:anywhere}
+.crt i{font:400 12.5px/1.3 -apple-system,system-ui;font-style:normal;color:rgba(25,23,19,.5)}
+.crow .chevr,.crmain .chevr{flex:none}
+.cgrip{width:auto;margin:0;padding:0 16px 0 8px;align-self:stretch}
+.cgrip svg{flex:none}
+.crow .ck,.shoprow .ck{flex:none;width:22px;height:22px;border-radius:50%;box-shadow:inset 0 0 0 1.5px rgba(25,23,19,.22);
+  display:flex;align-items:center;justify-content:center;color:transparent}
+.crow.on .ck,.shoprow.on .ck{box-shadow:none;background:#2F6BFF;color:#fff}
+.crow.on,.shoprow.on{background:rgba(47,107,255,.06)}
+.shoprow{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.crow.cdrag{position:relative;z-index:5;background:rgba(255,255,255,.97);border-radius:14px;
+  box-shadow:0 10px 26px -8px rgba(30,26,22,.38);transition:none}
+.sheet-body.cdragging{position:relative}
+.cdropline{position:absolute;left:18px;right:18px;height:3px;margin-top:-1px;border-radius:2px;background:#2F6BFF;pointer-events:none;z-index:6}
+.addln{display:flex;align-items:center;gap:10px;width:100%;padding:9px 16px;border:0;background:none;-webkit-tap-highlight-color:transparent}
+.addln .rlplus{flex:none;display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;
+  background:rgba(47,107,255,.10);color:#2F6BFF;transition:background .15s,transform .15s}
+.addln .rlrule{flex:1;height:1px;background:rgba(25,23,19,.13)}
+.addln:active .rlplus{background:rgba(47,107,255,.22);transform:scale(.92)}
+.catfoot{margin:10px 6px 0;line-height:1.45}
+/* the button that floats in the middle while things are picked */
+.mrgfab{position:fixed;left:50%;bottom:calc(30px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:58;
+  display:flex;align-items:center;gap:8px;padding:6px;border-radius:28px;
+  background:rgba(255,255,255,.9);-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%);
+  box-shadow:0 12px 34px -10px rgba(30,26,22,.5),inset 0 0 0 .5px rgba(25,23,19,.1);animation:sheetUp .28s cubic-bezier(.2,.9,.15,1)}
+.mrgfab .mfx{flex:none;width:38px;height:38px;border-radius:50%;border:0;background:rgba(25,23,19,.06);
+  color:rgba(25,23,19,.55);font:500 15px/1 -apple-system,system-ui}
+.mrgfab .mfgo{display:flex;align-items:center;gap:8px;padding:12px 22px;border:0;border-radius:22px;color:#fff;
+  font:600 15px/1 -apple-system,system-ui;background:linear-gradient(160deg,#5b8def,#2f6bff);box-shadow:0 6px 16px -6px rgba(47,107,255,.6)}
+.mrgfab .mfgo:disabled{opacity:.45;box-shadow:none}
+.mrgfab .mfgo:active{transform:scale(.97)}
+/* a receipt an expense is being dropped into */
+.rcp.rcpdrop{box-shadow:0 0 0 2px #2F6BFF,0 8px 22px -10px rgba(47,107,255,.55);border-radius:22px}
+/* money that came back: an income, and plainly one */
+.txback .ramt{color:#1d7a46!important}
+.rcpover{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:4px 0 2px;padding:9px 12px 9px 14px;
+  border-radius:14px;background:rgba(214,88,66,.08);font:500 12.5px/1.35 -apple-system,system-ui;color:#b0412c}
+.rcpfix{flex:none;padding:7px 14px;border:0;border-radius:11px;font:600 13px/1 -apple-system,system-ui;color:#fff;
+  background:linear-gradient(160deg,#4E9A5B,#3C7F49);-webkit-tap-highlight-color:transparent}
+.rcpfix:active{transform:scale(.96)}
+.rcpfix.sm{padding:4px 10px;font-size:12px;border-radius:9px;vertical-align:1px;margin-left:4px}
 .mrgpair{padding:6px 0}
 .mrgside{display:flex;align-items:center;gap:12px;padding:10px 16px}
 .mrgn{display:flex;flex-direction:column;gap:4px;min-width:0}
@@ -2152,11 +2201,29 @@ function render(keepScroll){
   }[S.tab])();
   v.className=keepScroll?'':'fade';
   renderTabs(); renderFab();
+  fitNums(v);
   setPageY(keepScroll?y:0);
   if(S.justPaid){ if(S.justPaid.shown) S.justPaid=null; else S.justPaid.shown=true; }
   if(S.tab==='Activity'){ clearTimeout(render._st); render._st=setTimeout(streakCheck,900); }
 }
 
+/* A number never cut off: one that does not fit its box is made smaller
+   until it does - down to 55% of its size, which fits anything a budget
+   holds. Only the ones that overflow are touched. */
+function fitNums(root){
+  var els=(root||document).querySelectorAll('.tvalue,.big,.fitnum');
+  for(var i=0;i<els.length;i++){
+    var el=els[i];
+    el.style.fontSize='';
+    if(!el.clientWidth||el.scrollWidth<=el.clientWidth+1) continue;
+    var base=parseFloat(getComputedStyle(el).fontSize)||20, fs=base;
+    for(var n=0;n<8&&el.scrollWidth>el.clientWidth+1&&fs>base*0.55;n++){
+      fs=Math.max(base*0.55,fs*el.clientWidth/el.scrollWidth*0.97);
+      el.style.fontSize=fs.toFixed(1)+'px';
+    }
+  }
+}
+try{ window.addEventListener('resize',function(){ clearTimeout(fitNums._t); fitNums._t=setTimeout(function(){ fitNums(document.getElementById('view')); },150); }); }catch(e){}
 /* ---------------- optimistic writes -----------------------------------
    The spreadsheet round trip takes seconds (Google recalculates the live
    currency rates on every write), so nothing waits for it: the record is
@@ -2415,7 +2482,7 @@ function txAll(){
   var pd=S.pendingDel;
   return D.tx.concat(S.older.filter(function(t){ return !pd[delKey(t)]; }));
 }
-function needOlder(){ return rangeDef().all||(S.qOpen&&S.q); }
+function needOlder(){ return rangeOld()||(S.qOpen&&S.q); }
 function ensureOlder(){
   if(S.older||S.olderAsked) return;
   S.olderAsked=true;
@@ -3288,10 +3355,11 @@ function txRow(t,onclick,drag,sel){
     (e&&projectsOf(t).length?'<span class="mk">'+svgIc('folder',13,2)+'</span>':'')+
     (e&&goalsOf(t).length?'<span class="mk">'+svgIc('piggy',13,2)+'</span>':'')+
     ((fl.length&&(t.sub||t.main))?fl.map(function(f){ return '<span class="mk">'+svgIc(icKey(f.name),13,2)+'</span>'; }).join(''):'');
-  /* refunded, owed, paid back - or the money that came back for one of
-     those: said in a word, and greyed out because it is not counted */
+  /* refunded, owed, paid back: said in a word, and greyed out because it
+     is not counted. The money that came back for one of those is money
+     in, and looks it - green, never the grey of the purchase it undoes */
   var st=e?stateOf(t):'', lk=!e&&isLinkedInc(t);
-  var grey=st==='refund'||st==='owedback'||lk;
+  var grey=st==='refund'||st==='owedback';
   if(st||lk) marks=stPill(st||(/-r$/.test(t.id)?'gotref':'gotback'))+marks;
   if(cr){
     /* the account and the two balances are the whole story */
@@ -3320,7 +3388,7 @@ function txRow(t,onclick,drag,sel){
   /* one still being written has no row yet: it is found by its own id */
   var pid=pend?' data-cid="'+esc(t.cid||'')+'" data-id="'+esc(t.id)+'"':'';
   return '<button class="row'+(drag?' txdrag':'')+(sw?' swipeable':'')+(cr?' corrrow':'')+(t.pending?' pendrow':'')+
-    (grey?' txout':'')+(st==='owed'?' txowed':'')+(st==='refund'?' txref':'')+
+    (grey?' txout':'')+(lk?' txback':'')+(st==='owed'?' txowed':'')+(st==='refund'?' txref':'')+
     (picking?' selrow':'')+(sel?' selon':'')+'"'+
     (drag?' data-k="'+esc(t.k)+'" data-row="'+(t.row||0)+'"':'')+
     (sw?' data-sk="'+esc(t.k)+'" data-sr="'+(t.row||0)+'"'+(canRepeat(t)?' data-rep="1"':''):'')+
@@ -3499,6 +3567,16 @@ function activityList(){
      it just does not need saying twice. Income entered by hand is untouched. */
   var hid=xferHidden(list).concat(receiptHidden(list));
   if(hid.length) list=list.filter(function(t){ return hid.indexOf(t)<0; });
+  /* Settings → Display can keep transfers and balance corrections out of
+     the list. A search still finds them. */
+  if(!searching){
+    var hx=pref('hideXfer',false)===true, hc=pref('hideCorr',false)===true;
+    if(hx||hc) list=list.filter(function(t){
+      if(hx&&(isXfer(t)||(t.k==='e'&&isXferSub(t.sub))||(t.k==='i'&&isXferSrc(t.source)))) return false;
+      if(hc&&isCorr(t)) return false;
+      return true;
+    });
+  }
   if(searching){
     /* newest first, across both years and anything older */
     list.sort(function(a,b){ if(a.date!==b.date) return a.date<b.date?1:-1; return orderKey(b)-orderKey(a); });
@@ -3826,6 +3904,7 @@ function setFilter(f){ S.filter=f; S.fCat=[]; S.fSub=[]; S.fSrc=[]; S.fAcc=[]; S
    applied in one place rather than page by page. */
 var RANGES=[
   {key:'w',   label:'Last week',     days:7},
+  {key:'d30', label:'Last 30 days',  days:30},
   {key:'m',   label:'Last month',    months:1},
   {key:'m3',  label:'Last 3 months', months:3},
   {key:'m6',  label:'Last 6 months', months:6},
@@ -3833,12 +3912,41 @@ var RANGES=[
   {key:'all', label:'All time',      all:true}
 ];
 function rangeDef(){
-  var k=pref('range','m');
-  for(var i=0;i<RANGES.length;i++) if(RANGES[i].key===k) return RANGES[i];
-  return RANGES[1];
+  var k=pref('range','m'), i;
+  /* a stretch of whole months, from one to another */
+  if(k==='custom'){
+    var c=rangeCustom();
+    if(c) return {key:'custom',custom:true,from:c.from,to:c.to,label:customLabel(c.from,c.to)};
+  }
+  for(i=0;i<RANGES.length;i++) if(RANGES[i].key===k) return RANGES[i];
+  for(i=0;i<RANGES.length;i++) if(RANGES[i].key==='m') return RANGES[i];
+  return RANGES[0];
 }
+function rangeCustom(){
+  var c=pref('rangeC',null);
+  if(!c||!/^\d{4}-\d{2}$/.test(c.from||'')||!/^\d{4}-\d{2}$/.test(c.to||'')) return null;
+  return c.from<=c.to?{from:c.from,to:c.to}:{from:c.to,to:c.from};
+}
+function customLabel(a,b){
+  function m(x){ return MONS[Number(x.slice(5,7))-1]; }
+  if(a===b) return MON[Number(a.slice(5,7))-1]+' '+a.slice(0,4);
+  if(a.slice(0,4)===b.slice(0,4)) return m(a)+' \u2013 '+m(b)+' '+b.slice(0,4);
+  return m(a)+' '+a.slice(0,4)+' \u2013 '+m(b)+' '+b.slice(0,4);
+}
+/* the last day a window reaches: only a stretch of months ends before today */
+function rangeTo(){
+  var r=rangeDef();
+  if(!r.custom) return '';
+  var d=parseD(r.to+'-01');
+  return iso(new Date(d.getFullYear(),d.getMonth()+1,0));
+}
+/* whether the window reaches back past the two years the phone keeps */
+function rangeOld(){ var r=rangeDef(); return !!(r.all||(r.custom&&r.from<=olderFrom())); }
+/* everything the window can see, older history included when it reaches it */
+function rangeTx(){ if(rangeOld()) ensureOlder(); return (rangeOld()?txAll():(D.tx||[])).filter(inRange); }
 function rangeFrom(){
   var r=rangeDef();
+  if(r.custom) return r.from+'-01';
   if(r.all||!D.today) return '';
   var d=parseD(D.today);
   if(isNaN(d.getTime())) return '';
@@ -3852,6 +3960,8 @@ function rangeAccs(){ var a=pref('rAcc',[]); return (a&&a.length)?a:[]; }
 function inRange(t){
   var from=rangeFrom();
   if(from&&t.date<from) return false;
+  var to=rangeTo();
+  if(to&&t.date>to) return false;
   var accs=rangeAccs();
   if(accs.length&&accs.indexOf(t.account)<0) return false;
   return true;
@@ -3859,8 +3969,7 @@ function inRange(t){
 /* the same shape monthAgg returns, so the pages did not have to be rebuilt */
 function rangeAgg(){
   /* "All time" means all of it: older history is fetched the first time */
-  if(rangeDef().all) ensureOlder();
-  var tx=(rangeDef().all?txAll():(D.tx||[])).filter(inRange);
+  var tx=rangeTx();
   return {
     income:sum(tx.filter(realInc),function(t){return Math.abs(txAmount(t));}),
     spend:sum(tx.filter(realExp),function(t){return Math.abs(txAmount(t));}),
@@ -3872,11 +3981,16 @@ function rangeAgg(){
 function rangeWords(){
   var r=rangeDef();
   if(r.all) return (S.older||!S.olderAsked)?'all time':'all time (older records still loading)';
+  if(r.custom) return r.label+((rangeOld()&&!S.older&&S.olderAsked)?' (older records still loading)':'');
   return 'the '+r.label.toLowerCase();
 }
 function rangeStamp(){
   var r=rangeDef();
-  return r.all?'ALL':(r.days?'7D':(r.months===12?'1Y':r.months+'M'));
+  if(r.custom){
+    var a=MONS[Number(r.from.slice(5,7))-1], b=MONS[Number(r.to.slice(5,7))-1];
+    return (r.from===r.to?a:a+'\u2013'+b).toUpperCase();
+  }
+  return r.all?'ALL':(r.days?r.days+'D':(r.months===12?'1Y':r.months+'M'));
 }
 function accOk(t){
   var accs=rangeAccs();
@@ -3887,6 +4001,11 @@ function accOk(t){
 function rangeDays(){
   var r=rangeDef();
   if(r.days) return r.days;
+  if(r.custom){
+    var a0=parseD(rangeFrom()), end=rangeTo()<D.today?rangeTo():D.today, b0=parseD(end);
+    if(isNaN(a0.getTime())||isNaN(b0.getTime())||b0<a0) return 1;
+    return Math.max(1,Math.round((b0-a0)/86400000)+1);
+  }
   var from=rangeFrom();
   if(!from){
     var first='';
@@ -3906,10 +4025,58 @@ function rangeBar(){
     '</div>';
 }
 function openRangePicker(){
-  openPicker({title:'Period', current:pref('range','m'),
+  var c=rangeCustom();
+  openPicker({title:'Period', current:rangeDef().key,
     groups:[{label:'',items:RANGES.map(function(r){
-      return {value:r.key,label:r.label,icon:'calendar',hue:255}; })}],
-    apply:function(v){ if(v) setPref('range',v); render(); }});
+      return {value:r.key,label:r.label,icon:'calendar',hue:255}; }).concat([
+      {value:'custom',label:'Custom\u2026',meta:c?customLabel(c.from,c.to):'From one month to another',icon:'calendar',hue:285}])}],
+    apply:function(v){
+      if(v==='custom'){ openCustomRange(); return; }
+      if(v) setPref('range',v); render();
+    }});
+}
+/* any stretch of whole months: from the first day of one to the last day
+   of another */
+function rangeMonths(){
+  var first=olderFrom(), out=[];
+  txAll().forEach(function(t){ if(t.date&&t.date.slice(0,7)<first) first=t.date.slice(0,7); });
+  var m=String(D.today).slice(0,7);
+  for(var g=0;g<240&&m>=first;g++){ out.push(m); m=shiftMonth(m,-1); }
+  return out;
+}
+function openCustomRange(){
+  var c=rangeCustom()||{from:shiftMonth(String(D.today).slice(0,7),-2),to:String(D.today).slice(0,7)};
+  S.rangeD={from:c.from,to:c.to};
+  drawCustomRange();
+}
+function drawCustomRange(){
+  var d=S.rangeD; if(!d) return;
+  var ms=rangeMonths();
+  function sel(k){
+    var cur=d[k];
+    if(ms.indexOf(cur)<0) ms=[cur].concat(ms);
+    return '<div class="selwrap" style="flex:1"><select class="tinput sel" onchange="S.rangeD.'+k+'=this.value">'+
+      ms.map(function(m){ return opt(m,monthName(m),m===cur); }).join('')+'</select><span class="chev">\u25BC</span></div>';
+  }
+  var h='<div class="scrim" style="z-index:60" onclick="closePicker()"></div><div class="sheet" style="z-index:61">'+
+    '<div class="sheet-head"><button class="xbtn" onclick="closePicker()">\u2715</button>'+
+    '<span class="sheet-title">Custom period</span>'+
+    '<button class="savebtn" style="background:linear-gradient(160deg,'+ok(.72,.13,255)+','+ok(.60,.15,255)+')" onclick="applyCustomRange()">Show</button></div>'+
+    '<div class="sheet-body" style="margin-top:14px">'+
+    '<div class="glass" style="padding:2px 0">'+
+      fRow('From',sel('from'))+fRow('To',sel('to'))+
+    '</div><p class="tiny" style="margin:10px 4px 0;line-height:1.45">From the first day of the first month to the last day of the second. Pick the same month twice for just that month.</p>'+
+    '<div style="height:10px"></div></div></div>';
+  document.getElementById('modal2').innerHTML=h;
+}
+function applyCustomRange(){
+  var d=S.rangeD; if(!d) return;
+  var a=d.from<=d.to?d.from:d.to, b=d.from<=d.to?d.to:d.from;
+  S.rangeD=null;
+  closePicker();
+  setPref('rangeC',{from:a,to:b});
+  setPref('range','custom');
+  render();
 }
 function openRangeAcc(){
   openPicker({title:'Filter by account', anyLabel:'All accounts', multi:true,
@@ -4375,8 +4542,8 @@ function drawShop(){
   var name=S.shop;
   if(!name) return;
   var by=S.shopSort||'new';
-  var list=(rangeDef().all?txAll():(D.tx||[])).filter(function(t){
-    return t.k==='e'&&realExp(t)&&inRange(t)&&shopParts(t.shop).indexOf(name)>-1;
+  var list=rangeTx().filter(function(t){
+    return t.k==='e'&&realExp(t)&&shopParts(t.shop).indexOf(name)>-1;
   });
   list.sort(function(a,b){
     if(by==='big'||by==='small'){
@@ -4496,8 +4663,10 @@ function logOcc(it,o,key){
   if(cur!==own) amt=amt*rateOf(own)/(rateOf(cur)||1);
   var p=Math.pow(10,decOf(cur));
   s.amount=numStr(Math.round(amt*p)/p);
-  s.shop=it.service||'';
-  s.note=it.notes||'';
+  /* the payment's name is what it was for, so it is the note; the shop is
+     the one given in the Calendar, if any */
+  s.shop=calShopOf(it.service);
+  s.note=it.service||'';
   /* logged late it still belongs on the day it was due; paid early, it
      happened today */
   s.date=(o&&o<=D.today)?o:D.today;
@@ -4550,7 +4719,7 @@ function quickPay(it,o,key){
   /* logged late it still belongs on the day it was due; paid early, it
      happened today. A bill paid from home is never part of a trip. */
   var s={kind:'e',id:newId(),date:(o&&o<=D.today)?o:D.today,amount:amt,account:mem.account,
-         main:(sub&&sub.main)||'',sub:mem.sub,shop:it.service||'',note:it.notes||'',flags:[],sched:key||'',trip:''};
+         main:(sub&&sub.main)||'',sub:mem.sub,shop:calShopOf(it.service),note:it.service||'',flags:[],sched:key||'',trip:''};
   var payload={kind:'e',id:s.id,row:0,was:{date:'',amount:0,account:''},date:s.date,amount:amt,currency:cur,
                account:s.account,main:s.main,sub:s.sub,source:'',shop:s.shop,note:s.note,flags:[],
                sched:s.sched,trip:'',rid:newRid()};
@@ -4588,8 +4757,7 @@ function payCandidates(it,target){
     var a=Math.abs(Number(isReceipt(t)?t.rtotal:t.amount)||0);
     var sameAmt=(String(t.currency||'UAH')===own&&cost&&Math.abs(a-cost)<=Math.max(0.01,cost*0.03))||
                 (uah&&Math.abs(Math.abs(txAmount(t))-uah)<=uah*0.05);
-    var fs=t.shop?shopStrict(t.shop):'';
-    var sameName=!!(name&&fs&&fs.length>=3&&(fs.indexOf(name)>=0||name.indexOf(fs)>=0));
+    var sameName=nameHit(t,name);
     if(!sameAmt&&!sameName) return;
     out.push({t:t,score:Math.abs(daysBetween(parseD(t.date),parseD(target)))+(sameAmt?0:6)+(sameName?0:3)});
   });
@@ -4846,7 +5014,8 @@ function accountRow(a){
   if(!sub.length) sub.push(strip(bankType(a.type)));
   var badge=accLogo(a,'badge');
   var right='<div class="ramt" style="color:'+((a.uah||0)<0&&!anyHidden()?RED:'#191713')+'">'+bmoney(a.uah||0,2)+'</div>';
-  if((a.creditLimit||0)>0) right+='<div class="rsub">'+bmoney(a.available||0,0)+' free of '+bmoney(a.creditLimit,0)+'</div>';
+  /* rounded down: 100.90 free is 100 free, never 101 */
+  if((a.creditLimit||0)>0) right+='<div class="rsub">'+bmoney(Math.floor(Number(a.available)||0),0)+' free of '+bmoney(Math.floor(Number(a.creditLimit)||0),0)+'</div>';
   else if(a.currency&&a.currency!=='UAH') right+='<div class="rsub">'+(anyHidden()?DOTS:esc(a.balance+' '+a.currency))+'</div>';
 
   var cb=cashbackList(a);
@@ -5203,7 +5372,7 @@ function splitEditor(s){
       '<span class="rlplus">'+svgIc('plus',15,2.6)+'</span><span class="rlrule"></span></button>'+
     '<label class="rlrest">Rest \u2192 category<select onchange="rlRest(this.value);this.selectedIndex=0" aria-label="Put the rest into a category">'+
       opt('','Put the rest into\u2026',true)+subOptions('','').replace(opt('','Choose subcategory\u2026',true),'')+markOptions('')+'</select></label></div></div>';
-  h+='<p class="tiny" id="splitnote" style="margin:7px 2px 0">'+esc(splitNote(s))+'</p>';
+  h+='<p class="tiny" id="splitnote" style="margin:7px 2px 0">'+splitNoteHtml(s)+'</p>';
   return h;
 }
 /* a line is added and taken away in place. Redrawing the whole sheet for it
@@ -5246,17 +5415,25 @@ function rlSub(id,v){
    so only the line that says how much is left gets rewritten */
 function updateSplitNote(){
   var n=document.getElementById('splitnote');
-  if(n&&S.sheet) n.textContent=splitNote(S.sheet);
+  if(n&&S.sheet) n.innerHTML=splitNoteHtml(S.sheet);
+}
+/* over the total: Fix makes the total what the lines come to */
+function splitNoteHtml(s){
+  var h=esc(splitNote(s)), d=decOfAcc(s.account), p=Math.pow(10,d), tot=amtOf(s.amount,d), used=splitSum(s);
+  if(tot&&Math.round((used-tot)*p)>0) h+=' <button class="rcpfix sm" onclick="splitFix()">Fix</button>';
+  return h;
+}
+function splitFix(){
+  var s=S.sheet; if(!s) return;
+  s.amount=numStr(splitSum(s));
+  updateAmt(); updateSplitNote();
 }
 function setReceipt(v){
   var s=S.sheet; if(!s||!!s.receipt===!!v) return;
   if(s.edit){
     var t=findTx('e',s.row);
-    if(!v&&t&&linesOf(t.receipt).length){
-      var n=linesOf(t.receipt).length;
-      toast('Take its '+n+' split line'+(n===1?'':'s')+' out first');
-      return;
-    }
+    /* one that is split already turns into its lines, each an expense */
+    if(!v&&t&&linesOf(t.receipt).length){ closeSheet(); openUnform(t.row); return; }
     /* the amount means different things on the two sides: a receipt shows
        the whole payment, an expense shows itself */
     if(v&&t) s.amount=numStr(Math.abs(Number(t.amount)||0));
@@ -5908,7 +6085,7 @@ function projectNames(){
   return out;
 }
 var ST_WORD={refund:['Refunded','ref'],owed:['Owed to you','owed'],owedback:['Paid back','back'],
-             gotref:['Refund','ref'],gotback:['Paid back','ref']};
+             gotref:['Refund','back'],gotback:['Paid back','back']};
 function stPill(k){ var w=ST_WORD[k]; return w?'<span class="stpill '+w[1]+'">'+w[0]+'</span>':''; }
 /* the two names they used to go by, so the old subcategories stop being
    offered as a choice once the tick exists */
@@ -6167,6 +6344,9 @@ function drawSheet(){
     h+='<div id="stwrap">'+stateBox(s)+'</div>';
     /* something to come back to: it waits in the "!" list */
     h+='<div id="chkwrap">'+checkRow(s)+'</div>';
+    /* a receipt can be taken apart into expenses of their own */
+    var rhead=s.receipt?findTx('e',s.row):null;
+    if(rhead&&isReceipt(rhead)&&rhead.row) h+='<button class="refbtn" onclick="closeSheet();openUnform('+rhead.row+')">'+svgIc('list',17,2)+'Split into separate expenses</button>';
     /* deleting a receipt takes its split lines with it, so say how many */
     var nl=s.receipt?linesOf((findTx('e',s.row)||{}).receipt).length:0;
     h+='<button class="delbtn" id="delbtn" onclick="deleteSheet()">'+
@@ -7096,7 +7276,18 @@ function gripDown(e){
   }
   if(mates.length<2&&days.length<2) return;
 
-  DRAG={row:row,list:list,kind:kind,mates:mates,tops:tops,hs:hs,days:days,tgt:null,idx:0,line:null,
+  /* an expense can be dropped onto a receipt's header, to go into it */
+  var meTx=elTx(row), rcps=[];
+  if(meTx&&meTx.k==='e'&&!meTx.pending&&!isReceipt(meTx)&&!isLine(meTx)&&!isXfer(meTx)&&!isXferSub(meTx.sub)&&!isCorr(meTx)){
+    var rbox=document.getElementById('actlist');
+    [].slice.call((rbox||document).querySelectorAll('.rcp[data-row]')).forEach(function(el){
+      if(el===row) return;
+      var hd=el.querySelector('.rcphead'), r0=(hd||el).getBoundingClientRect();
+      var ht=findTx('e',Number(el.getAttribute('data-row')));
+      rcps.push({el:el,row:Number(el.getAttribute('data-row')),id:ht?ht.id||'':'',top:r0.top+sy,bottom:r0.bottom+sy});
+    });
+  }
+  DRAG={txv:TXV,meTx:meTx,rcps:rcps,rcp:null,row:row,list:list,kind:kind,mates:mates,tops:tops,hs:hs,days:days,tgt:null,idx:0,line:null,
         pid:e.pointerId,startY:e.clientY+sy,y:e.clientY+sy,cy:e.clientY,from:from,to:from,
         raf:0,scr:0,rerender:0,cancelled:0};
   row.classList.add('dragrow');
@@ -7144,6 +7335,23 @@ function dragFrame(d){
   var dy=d.y-d.startY;
   d.row.style.transform='translateY('+dy+'px)';
   var mid=d.tops[d.from]+dy+d.hs[d.from]/2, tgt=null, j;
+  /* over the middle of a receipt's header: it goes into the receipt */
+  if(d.rcps&&d.rcps.length){
+    var hit=null;
+    for(j=0;j<d.rcps.length;j++){ var rc=d.rcps[j], pad=(rc.bottom-rc.top)*0.2; if(mid>rc.top+pad&&mid<rc.bottom-pad){ hit=rc; break; } }
+    if(hit!==d.rcp){
+      if(d.rcp) d.rcp.el.classList.remove('rcpdrop');
+      d.rcp=hit;
+      if(hit) hit.el.classList.add('rcpdrop');
+    }
+    if(hit){
+      dropTarget(d,null);
+      if(d.to!==d.from){ d.to=d.from; paintGap(d); }
+      if(!d.pill){ d.pill=document.createElement('i'); d.pill.className='dragpill'; d.row.appendChild(d.pill); }
+      d.pill.textContent='Into this receipt'; d.pillDay=''; d.pill.style.opacity='1';
+      return;
+    }
+  }
   /* which day is under it - over a date header, the nearer of the two */
   if(d.days.length){
     for(j=0;j<d.days.length;j++){ var x=d.days[j]; if(mid>=x.top-10&&mid<=x.bottom+10){ tgt=x; break; } }
@@ -7229,6 +7437,18 @@ function gripUp(){
   if(d.pill&&d.pill.parentNode) d.pill.parentNode.removeChild(d.pill);
   document.body.classList.remove('dragging');
   var me=elTx(d.row);
+  var into=d.rcp; if(into) into.el.classList.remove('rcpdrop');
+  if(!d.cancelled&&into&&me){
+    /* the sheet may have answered while it was carried, and numbered its
+       rows again: by id, or not at all */
+    var same=TXV===d.txv;
+    var hd=(into.id&&txById('e',into.id))||(same?findTx('e',into.row):null);
+    var mine=(d.meTx&&d.meTx.id&&txById('e',d.meTx.id))||(same?d.meTx:null);
+    render(true);
+    if(!hd||!mine){ toast('The list changed while you were moving it. Try again.'); return; }
+    openIntoReceipt(hd,[mine]);
+    return;
+  }
   if(!d.cancelled&&tgt&&!tgt.own){
     var before=tgt.mates[idx]?tgt.mates[idx].el:null;
     dropOnDay(me,tgt.day,before?elTx(before):null);
@@ -7519,6 +7739,8 @@ function toggleEmptyDays(){
   setPref('emptyDays',pref('emptyDays',true)===false);
   drawSettings(); render(true);
 }
+/* a yes/no preference that only changes what Activity shows */
+function togglePrefFlag(k){ setPref(k,pref(k,false)!==true); drawSettings(); render(true); }
 function toggleRcpOpen(){
   var now=pref('rcpOpen',true)!==false;
   setPref('rcpOpen',!now);
@@ -7544,9 +7766,9 @@ function catInit(){
   S.catI=(D.setup.incomeSources||[]).map(function(x){
     return {row:x.row||0,name:x.name,real:x.real!==false,orig:x.name};
   });
-  /* opened again while a merge is on its way: when it lands, these lists
+  /* opened again while a change is on its way: when it lands, these lists
      are simply made again, unless something was changed in them by hand */
-  if(S.catBusy) S.catPost=catSig();
+  S.catPost=catBusyNow()?catSig():null;
 }
 /* Settings, grouped the way the phone's own Settings are: what records are
    filed under, shops, how the app looks, what it hides, what it can do -
@@ -7572,9 +7794,9 @@ function drawSettings(){
   var ord=tabOrder(), off=tabsOff().length, orph=orphanCount(), tr=tripNow();
   var tidy=shopGroups().length, rules=Object.keys(shopRules()).length;
   h+=sGroup('Categories',
-    sRow('grid',45,'Main categories',String(S.catM.length),'openMains()')+
-    sRow('list',255,'Subcategories',String(S.catS.length),'drawSubs()')+
-    sRow('in',150,'Income sources',String(S.catI.length),'drawSrcs()'),
+    sRow('grid',45,'Main categories',String(S.catM.length),'catOpen(\'m\')')+
+    sRow('list',255,'Subcategories',String(S.catS.length),'catOpen(\'s\')')+
+    sRow('in',150,'Income sources',String(S.catI.length),'catOpen(\'i\')'),
     '<p class="setfoot">Renaming or merging updates every record that uses it.</p>'+
     (orph?'<p class="setfoot bad">'+orph+' record'+(orph>1?'s':'')+' still name'+(orph>1?'':'s')+' a category that is no longer here. '+
       'They are counted as usual — renaming the one that stayed folds them back in.</p>':''));
@@ -7584,7 +7806,9 @@ function drawSettings(){
   h+=sGroup('Display',
     sRow('tabbar',230,'Bottom menu',off?(ord.length+' of '+(ord.length+off)+' tabs'):(ord.length+' tabs'),'drawTabsOrder()')+
     sSw('calendar',25,'Show empty days',pref('emptyDays',true)!==false,'toggleEmptyDays()')+
-    sSw('receipt',65,'Receipts start open',pref('rcpOpen',true)!==false,'toggleRcpOpen()'));
+    sSw('receipt',65,'Receipts start open',pref('rcpOpen',true)!==false,'toggleRcpOpen()')+
+    sSw('transfer',235,'Hide transfers',pref('hideXfer',false)===true,'togglePrefFlag(\'hideXfer\')')+
+    sSw('sliders',45,'Hide balance corrections',pref('hideCorr',false)===true,'togglePrefFlag(\'hideCorr\')'));
   h+=sGroup('Privacy',
     sSw('eye',260,'Hide balances',!!PRIV.balance,'setPriv(\'balance\');drawSettings()',.03)+
     sSw('eyeoff',260,'Hide all amounts',!!PRIV.all,'setPriv(\'all\');drawSettings()',.03));
@@ -7625,75 +7849,361 @@ function catUses(name,kind){
   return n;
 }
 function catList(k){ return k==='m'?S.catM:(k==='i'?S.catI:S.catS); }
-function catAdd(k){
-  if(k==='m') S.catM.push({row:0,name:''});
-  else S.catI.push({row:0,name:'',real:true});
-  if(k==='m') drawMains(); else drawSrcs();
-}
 function catDrop(k,i){
   var l=catList(k), x=l[i];
+  if(!x) return;
   var n=x.name?catUses(x.name,k):0;
   l.splice(i,1);
-  toast(n?('Removed \u2014 '+n+' record'+(n>1?'s':'')+' still name it'):'Removed');
-  if(k==='m') drawMains(); else drawSrcs();
+  toast(n?('Removed — '+n+' record'+(n>1?'s':'')+' still name it'):'Removed');
+  drawCatList(k);
+}
+/* ══════ the three lists ════════════════════════════════════════════════════
+   Every entry is one row. Tap it to change it. Hold it to pick it, pick the
+   others it is one with, and merge them with the button that appears. Drag
+   it by the grip to move it - a subcategory into another category as well,
+   and its records go with it. The line with the plus under a list adds to
+   it. What is changed here is kept with Save, all at once. */
+function catSelOn(k){ return !!(S.csel&&S.csel.kind===k); }
+function catRowHtml(k,x,i,meta){
+  var sel=catSelOn(k), on=sel&&S.csel.names.indexOf(x.name)>-1;
+  return '<div class="crow'+(on?' on':'')+(sel?' picking':'')+'" data-hold="cat" data-ck="'+k+'" data-ci="'+i+'">'+
+    '<button class="crmain" onclick="catRowTap(\''+k+'\','+i+')">'+
+      (sel?'<span class="ck">'+CHECK_ICON+'</span>':'')+
+      '<span class="inic" style="color:'+ok(.52,.12,edHue(x,k))+'">'+svgIc(edIcon(x,k),16,2)+'</span>'+
+      '<span class="crt"><b>'+esc(strip(x.name)||'Untitled')+'</b>'+(meta?'<i>'+esc(meta)+'</i>':'')+'</span>'+
+      (sel?'':'<span class="chevr">›</span>')+
+    '</button>'+
+    (sel?'':'<span class="grip cgrip" onpointerdown="catGripDown(event)" onclick="event.stopPropagation()">'+GRIP_ICON+'</span>')+
+  '</div>';
+}
+/* the line with the plus on its left, the way a receipt adds a line */
+function addLine(go,label){
+  return '<button class="addln" onclick="'+go+'" aria-label="'+esc(label)+'">'+
+    '<span class="rlplus">'+svgIc('plus',15,2.6)+'</span><span class="rlrule"></span></button>';
+}
+function catFoot(k){
+  if(catSelOn(k)) return '<p class="tiny catfoot">Tap the others to pick them too, then Merge.</p>';
+  return '<p class="tiny catfoot">Hold one to pick it for merging. Drag the grip to move it'+(k==='s'?', into another category too':'')+'.</p>';
 }
 function openMains(){ drawMains(); }
-function drawMains(){
-  var h=sheetTop('Main categories','saveCats()','drawSettings()','Save')+'<i id="catscr" data-k="m" hidden></i>';
-  h+='<div class="glass" style="padding:4px 0">';
-  h+=S.catM.map(function(x,i){
-    return '<div class="exprow">'+icPickBtn('m',i,x)+
-      '<input class="tinput expname" value="'+esc(x.name)+'" oninput="S.catM['+i+'].name=this.value">'+
-      '<button class="exprm" onclick="catDrop(\'m\','+i+')">\u2715</button></div>';
-  }).join('');
-  h+='<button class="expadd" style="color:'+ACCENT+'" onclick="catAdd(\'m\')">+ Add category</button></div>';
-  h+=mergeBtn('m');
-  h+='<p class="tiny" style="margin:12px 4px 0">Tap an icon to choose another one. Left on Automatic, the app picks it from the name \u2014 an emoji at the front can stay, the sheet still shows it.</p>';
-  h+=sheetEnd();
-  document.getElementById('modal').innerHTML=h;
+/* into one of the lists from Settings: not while a change to them is still
+   on its way, and made again from the sheet when one landed since Settings
+   was opened */
+function catOpen(k){
+  if(catBusyNow()){ toast('The last change is still saving. One moment.'); return; }
+  if(S.catPost){ if(catSig()===S.catPost) catInit(); S.catPost=null; }
+  drawCatScreen(k);
 }
-function drawSrcs(){
-  var h=sheetTop('Income sources','saveCats()','drawSettings()','Save')+'<i id="catscr" data-k="i" hidden></i>';
-  h+='<div class="glass" style="padding:4px 0">';
-  h+=S.catI.map(function(x,i){
-    return '<div class="exprow">'+icPickBtn('i',i,x)+
-      '<input class="tinput expname" value="'+esc(x.name)+'" oninput="S.catI['+i+'].name=this.value">'+
-      tog(x.real,'S.catI['+i+'].real=!S.catI['+i+'].real;drawSrcs()')+
-      '<button class="exprm" onclick="catDrop(\'i\','+i+')">\u2715</button></div>';
-  }).join('');
-  h+='<button class="expadd" style="color:'+ACCENT+'" onclick="catAdd(\'i\')">+ Add source</button></div>';
-  h+=mergeBtn('i');
-  h+='<p class="tiny" style="margin:12px 4px 0">\u201cYes\u201d means it counts as real income in Summary and Analytics. Transfers and corrections are No.</p>';
-  h+=sheetEnd();
-  document.getElementById('modal').innerHTML=h;
+/* a save of these lists has landed (or stopped): Settings opened meanwhile
+   is made again from what the sheet has now */
+function catSaved(){ S.catBusy=false; setTimeout(function(){ if(S.catPost&&!catBusyNow()) catRefresh(null); },0); }
+function drawMains(){ drawCatScreen('m'); }
+function drawSrcs(){ drawCatScreen('i'); }
+function drawSubs(){ drawCatScreen('s'); }
+var CAT_TITLE={m:'Main categories',s:'Subcategories',i:'Income sources'};
+function drawCatScreen(k){
+  document.getElementById('modal').innerHTML=sheetTop(CAT_TITLE[k],'saveCats()','catBack(\''+k+'\')','Save')+
+    catBodyHtml(k)+sheetEnd()+mergeFab(k);
 }
-function drawSubs(){
-  var h=sheetTop('Subcategories','saveCats()','drawSettings()','Save')+'<i id="catscr" data-k="s" hidden></i>';
-  var byMain={};
-  S.catS.forEach(function(x,i){ (byMain[x.main]=byMain[x.main]||[]).push(i); });
-  var order=S.catM.map(function(m){ return m.name; });
-  Object.keys(byMain).forEach(function(m){ if(order.indexOf(m)<0) order.push(m); });
-  order.forEach(function(m){
-    var idx=byMain[m]||[]; if(!idx.length) return;
-    h+='<div class="fieldlabel">'+inIc(m)+esc(strip(m)||'No category')+'</div>'+
-      '<div class="glass" style="padding:4px 0">'+idx.map(function(i){
-        var x=S.catS[i];
-        var bits=[];
-        if(!x.real) bits.push('not counted');
-        bits.push(x.limit!==''&&x.limit!==null?('limit '+x.limit):'no limit');
-        if(x.shop) bits.push(x.shop);
-        return navRow('<span class="inic" style="color:'+ok(.52,.12,hueOf(x.main||x.name))+'">'+svgIc(edIcon(x,'s'),16,2)+'</span>'+
-          esc(strip(x.name)),bits.join(' \u00b7 '),'openSubEdit('+i+')');
-      }).join('')+'</div>';
+/* what is inside the sheet, drawn again in place: no slide, same scroll */
+function catRepaint(k){
+  var el=document.getElementById('catscr');
+  if(!el||el.getAttribute('data-k')!==k){ drawCatScreen(k); return; }
+  var body=el.closest('.sheet-body'); if(!body){ drawCatScreen(k); return; }
+  var top=body.scrollTop;
+  body.innerHTML=catBodyHtml(k);
+  body.scrollTop=top;
+  fabPaint(mergeFab(k));
+}
+/* the floating button: changed where it is, so it does not pop up again */
+function fabPaint(html){
+  var m=document.getElementById('modal'), old=m.querySelector('.mrgfab');
+  if(!html){ if(old) old.parentNode.removeChild(old); return; }
+  if(!old){ m.insertAdjacentHTML('beforeend',html); return; }
+  var t=document.createElement('div'); t.innerHTML=html;
+  old.innerHTML=t.firstChild.innerHTML;
+}
+function catBodyHtml(k){
+  var sel=catSelOn(k), h='<i id="catscr" data-k="'+k+'" hidden></i>';
+  if(k==='m'){
+    h+='<div class="glass clist" data-cl="m" data-cg="">'+S.catM.map(function(x,i){
+        return catRowHtml('m',x,i,kidsWord(kidsOf(x.name).length));
+      }).join('')+(sel?'':addLine('openMainEdit(-1)','Add a category'))+'</div>';
+  }else if(k==='i'){
+    h+='<div class="glass clist" data-cl="i" data-cg="">'+S.catI.map(function(x,i){
+        return catRowHtml('i',x,i,x.real!==false?'counts as income':'not counted');
+      }).join('')+(sel?'':addLine('openSrcEdit(-1)','Add a source'))+'</div>';
+  }else{
+    var byMain={};
+    S.catS.forEach(function(x,i){ (byMain[x.main]=byMain[x.main]||[]).push(i); });
+    /* every category gets its group, an empty one too - somewhere to add
+       to and to drag into */
+    var order=S.catM.map(function(m){ return m.name; }).filter(function(m){ return String(m).trim(); });
+    Object.keys(byMain).forEach(function(m){ if(order.indexOf(m)<0) order.push(m); });
+    order.forEach(function(m){
+      var idx=byMain[m]||[];
+      if(sel&&!idx.length) return;
+      h+='<div class="fieldlabel">'+inIc(m)+esc(strip(m)||'No category')+'</div>'+
+        '<div class="glass clist" data-cl="s" data-cg="'+esc(m)+'">'+idx.map(function(i){
+          var x=S.catS[i], bits=[];
+          if(!x.real) bits.push('not counted');
+          bits.push(x.limit!==''&&x.limit!==null?('limit '+x.limit):'no limit');
+          if(x.shop) bits.push(x.shop);
+          return catRowHtml('s',x,i,bits.join(' \u00b7 '));
+        }).join('')+(sel?'':addLine('openSubEdit(-1,'+q(m)+')','Add to '+strip(m)))+'</div>';
+    });
+  }
+  h+=catFoot(k);
+  return h;
+}
+function catRowTap(k,i){
+  /* the hold that picked it can end in a click as well - that one is not a tap */
+  if(S.holdKey==='cat:'+k+':'+i){ S.holdKey=null; return; }
+  var x=catList(k)[i]; if(!x) return;
+  if(catSelOn(k)){ catToggle(k,i); return; }
+  if(k==='m') openMainEdit(i); else if(k==='i') openSrcEdit(i); else openSubEdit(i);
+}
+function catToggle(k,i){
+  var x=catList(k)[i]; if(!x||!catSelOn(k)) return;
+  var at=S.csel.names.indexOf(x.name);
+  if(at<0){
+    var why=catPickWhy(k,x); if(why){ toast(why,6000); return; }
+    S.csel.names.push(x.name);
+  }else S.csel.names.splice(at,1);
+  if(!S.csel.names.length) S.csel=null;
+  catRepaint(k);
+}
+/* why one cannot be picked for merging */
+function catPickWhy(k,x){
+  if(!x.row) return 'Save it first, then it can be merged.';
+  return mergeWhy(k,x);
+}
+function catHold(k,i){
+  var x=catList(k)[i]; if(!x) return;
+  if(catSelOn(k)){ catToggle(k,i); return; }
+  var why=catPickWhy(k,x); if(why){ toast(why,6000); return; }
+  S.csel={kind:k,names:[x.name]};
+  try{ if(navigator.vibrate) navigator.vibrate(14); }catch(e){}
+  catRepaint(k);
+}
+function catSelClear(){ var k=S.csel&&S.csel.kind; S.csel=null; if(k) catRepaint(k); }
+function catBack(k){ if(catSelOn(k)){ catSelClear(); return; } S.csel=null; drawSettings(); }
+/* the button that floats in the middle while some are picked */
+function mergeFab(k){
+  if(!catSelOn(k)) return '';
+  var n=S.csel.names.length;
+  return '<div class="mrgfab"><button class="mfx" onclick="catSelClear()" aria-label="Cancel">✕</button>'+
+    '<button class="mfgo"'+(n<2?' disabled':'')+' onclick="catMergeGo()">'+svgIc('merge',16,2.2)+
+    (n<2?'Merge':'Merge '+n)+'</button></div>';
+}
+
+/* ---- holding a row: shared by these lists and the shops ---------------- */
+var CLP=null;
+function clpCancel(){ if(CLP){ clearTimeout(CLP.t); CLP=null; } }
+function clpDown(e){
+  if(!e.target.closest||CDRAG) return;
+  /* a new press: whatever an earlier hold was waiting to swallow is over */
+  S.holdKey=null;
+  var row=e.target.closest('[data-hold]'); if(!row) return;
+  if(e.target.closest('.grip')) return;
+  clpCancel();
+  CLP={x:e.clientX,y:e.clientY,pid:e.pointerId,row:row,t:setTimeout(function(){
+    var r=CLP&&CLP.row; CLP=null;
+    if(!r||!r.isConnected) return;
+    var kind=r.getAttribute('data-hold');
+    if(kind==='cat'){
+      var ck=r.getAttribute('data-ck'), ci=Number(r.getAttribute('data-ci'));
+      S.holdKey='cat:'+ck+':'+ci;
+      catHold(ck,ci);
+    }else if(kind==='shop'){
+      var sn=r.getAttribute('data-sn');
+      S.holdKey='shop:'+sn;
+      shopHold(sn);
+    }
+  },460)};
+  document.addEventListener('pointermove',clpMove,{passive:true});
+  document.addEventListener('pointerup',clpUp);
+  document.addEventListener('pointercancel',clpUp);
+}
+function clpMove(e){
+  if(!CLP||e.pointerId!==CLP.pid) return;
+  if(Math.abs(e.clientX-CLP.x)>9||Math.abs(e.clientY-CLP.y)>9) clpCancel();
+}
+function clpUp(e){
+  if(CLP&&e&&e.pointerId!==undefined&&e.pointerId!==CLP.pid) return;
+  clpCancel();
+  document.removeEventListener('pointermove',clpMove);
+  document.removeEventListener('pointerup',clpUp);
+  document.removeEventListener('pointercancel',clpUp);
+}
+document.addEventListener('pointerdown',clpDown,true);
+
+/* ---- dragging a row by its grip ------------------------------------------
+   The row follows the finger and a line shows where it will land: between
+   two rows, or at the end of a group - another category's group moves a
+   subcategory into that category. Near the top or the bottom of the sheet
+   the list scrolls by itself. */
+var CDRAG=null;
+function catGripDown(e){
+  var row=e.target.closest&&e.target.closest('.crow'); if(!row) return;
+  var body=row.closest('.sheet-body'); if(!body) return;
+  var k=row.getAttribute('data-ck'), i=Number(row.getAttribute('data-ci'));
+  if(catSelOn(k)) return;
+  e.preventDefault(); e.stopPropagation();
+  clpCancel();
+  var L=catList(k), br=body.getBoundingClientRect(), st=body.scrollTop, slots=[];
+  [].slice.call(body.querySelectorAll('.clist[data-cl="'+k+'"]')).forEach(function(l){
+    var g=l.getAttribute('data-cg')||'';
+    [].slice.call(l.querySelectorAll('.crow')).forEach(function(r){
+      if(r===row) return;
+      var b=r.getBoundingClientRect();
+      slots.push({g:g,before:L[Number(r.getAttribute('data-ci'))],y:b.top-br.top+st});
+    });
+    var end=l.querySelector('.addln'), lb=l.getBoundingClientRect();
+    slots.push({g:g,before:null,y:(end?end.getBoundingClientRect().top:lb.bottom-6)-br.top+st});
   });
-  h+='<button class="expadd" style="color:'+ACCENT+';margin-top:10px" onclick="openSubEdit(-1)">+ Add subcategory</button>';
-  h+=mergeBtn('s');
+  if(!slots.length) return;
+  var rb=row.getBoundingClientRect();
+  CDRAG={k:k,x:L[i],row:row,body:body,slots:slots,startY:e.clientY,y:e.clientY,st0:st,
+         top0:rb.top-br.top+st,h:rb.height,pid:e.pointerId,slot:null,line:null,raf:0,scr:0};
+  row.classList.add('cdrag');
+  body.classList.add('cdragging');
+  try{ if(navigator.vibrate) navigator.vibrate(8); }catch(err){}
+  document.addEventListener('pointermove',catGripMove,{passive:false});
+  document.addEventListener('touchmove',catDragTouch,{passive:false});
+  document.addEventListener('pointerup',catGripUp);
+  document.addEventListener('pointercancel',catGripUp);
+  catDragFrame();
+}
+function catDragTouch(e){ if(CDRAG) e.preventDefault(); }
+function catGripMove(e){
+  var d=CDRAG; if(!d||e.pointerId!==d.pid) return;
+  e.preventDefault();
+  d.y=e.clientY;
+  if(!d.raf) d.raf=requestAnimationFrame(function(){ d.raf=0; catDragFrame(); });
+  if(!d.scr) catDragScroll();
+}
+function catDragScroll(){
+  var d=CDRAG; if(!d) return;
+  function step(){
+    if(CDRAG!==d){ return; }
+    var br=d.body.getBoundingClientRect(), v=0;
+    if(d.y<br.top+56) v=-Math.min(14,Math.ceil((br.top+56-d.y)/4));
+    else if(d.y>br.bottom-56) v=Math.min(14,Math.ceil((d.y-(br.bottom-56))/4));
+    if(!v){ d.scr=0; return; }
+    var before=d.body.scrollTop;
+    d.body.scrollTop=before+v;
+    if(d.body.scrollTop===before){ d.scr=0; return; }
+    catDragFrame();
+    d.scr=requestAnimationFrame(step);
+  }
+  d.scr=requestAnimationFrame(step);
+}
+function catDragFrame(){
+  var d=CDRAG; if(!d) return;
+  var dy=(d.y-d.startY)+(d.body.scrollTop-d.st0);
+  d.row.style.transform='translateY('+dy+'px)';
+  var mid=d.top0+dy+d.h/2, best=null, bd=Infinity;
+  d.slots.forEach(function(s){ var dist=Math.abs(s.y-mid); if(dist<bd){ bd=dist; best=s; } });
+  if(best&&best!==d.slot){
+    d.slot=best;
+    if(!d.line){ d.line=document.createElement('i'); d.line.className='cdropline'; d.body.appendChild(d.line); }
+    d.line.style.top=Math.round(best.y-2)+'px';
+  }
+}
+function catGripUp(e){
+  var d=CDRAG; if(!d||(e&&e.pointerId!==undefined&&e.pointerId!==d.pid)) return;
+  document.removeEventListener('pointermove',catGripMove);
+  document.removeEventListener('touchmove',catDragTouch);
+  document.removeEventListener('pointerup',catGripUp);
+  document.removeEventListener('pointercancel',catGripUp);
+  CDRAG=null;
+  if(d.raf) cancelAnimationFrame(d.raf);
+  if(d.scr) cancelAnimationFrame(d.scr);
+  if(d.slot&&!(e&&e.type==='pointercancel')) catMove(d.k,d.x,d.slot.g,d.slot.before);
+  else catRepaint(d.k);
+}
+/* where it lands: before another entry, or at the end of a group */
+function catMove(k,x,g,before){
+  var L=catList(k), i=L.indexOf(x);
+  if(i<0||before===x){ catRepaint(k); return; }
+  var wasMain=x.main;
+  L.splice(i,1);
+  if(k==='s'&&g) x.main=g;
+  var at=before?L.indexOf(before):-1;
+  if(at<0){
+    at=L.length;
+    if(k==='s'&&g){ for(var j=L.length-1;j>=0;j--) if(L[j].main===g){ at=j+1; break; } }
+  }
+  L.splice(at,0,x);
+  catRepaint(k);
+  if(k==='s'&&g&&g!==wasMain){ toast('Moved to '+strip(g)+' · Save to keep it'); olderSoon(); }
+}
+
+/* ---- the editors ---------------------------------------------------------- */
+function openMainEdit(i){
+  S.mainI=i;
+  var x=i<0?null:S.catM[i];
+  S.mainD=x?{row:x.row,name:x.name,orig:x.orig||'',icon:x.icon||''}:{row:0,name:'',orig:'',icon:''};
+  drawMainEdit();
+}
+function drawMainEdit(){
+  var d=S.mainD; if(!d) return;
+  var h=sheetTop(S.mainI<0?'New category':'Category','mainApply()','drawMains()')+'<i id="mainedscr" hidden></i>';
+  h+='<div class="glass" style="padding:2px 0">'+
+    fRow('Icon','<span class="tiny" style="flex:1">'+(edPicked(d)?'Chosen by you':'From the name')+'</span>'+icPickBtn('m',0,d))+
+    fRow('Name','<input class="tinput fin" value="'+esc(d.name)+'" oninput="S.mainD.name=this.value">')+
+    '</div>';
+  h+='<p class="tiny" style="margin:10px 4px 0;line-height:1.45">Left on Automatic, the app picks the icon from the name. An emoji at the front can stay: the sheet still shows it.</p>';
+  if(S.mainI>=0) h+='<button class="delbtn" onclick="mainRemove()">Delete category</button>';
   h+=sheetEnd();
   document.getElementById('modal').innerHTML=h;
 }
-function openSubEdit(i){
+function mainApply(){
+  var d=S.mainD; if(!d) return;
+  d.name=String(d.name||'').trim();
+  if(!d.name){ toast('Give it a name'); return; }
+  if(S.mainI<0) S.catM.push(d);
+  else{
+    /* its subcategories follow the new name at once, so the list shows them
+       under it before it is saved */
+    var old=S.catM[S.mainI].name;
+    if(old!==d.name) S.catS.forEach(function(x){ if(x.main===old) x.main=d.name; });
+    S.catM[S.mainI]=d;
+  }
+  S.mainD=null; drawMains();
+}
+function mainRemove(){ var i=S.mainI; S.mainD=null; catDrop('m',i); }
+function openSrcEdit(i){
+  S.srcI=i;
+  var x=i<0?null:S.catI[i];
+  S.srcD=x?{row:x.row,name:x.name,real:x.real!==false,orig:x.orig||'',icon:x.icon||''}:{row:0,name:'',real:true,orig:'',icon:''};
+  drawSrcEdit();
+}
+function drawSrcEdit(){
+  var d=S.srcD; if(!d) return;
+  var h=sheetTop(S.srcI<0?'New source':'Income source','srcApply()','drawSrcs()')+'<i id="srcedscr" hidden></i>';
+  h+='<div class="glass" style="padding:2px 0">'+
+    fRow('Icon','<span class="tiny" style="flex:1">'+(edPicked(d)?'Chosen by you':'From the name')+'</span>'+icPickBtn('i',0,d))+
+    fRow('Name','<input class="tinput fin" value="'+esc(d.name)+'" oninput="S.srcD.name=this.value">')+
+    fRow('Counts as income',tog(d.real,'S.srcD.real=!S.srcD.real;drawSrcEdit()'))+
+    '</div>';
+  h+='<p class="tiny" style="margin:10px 4px 0;line-height:1.45">“Yes” means it counts as real income in Summary and Analytics. Transfers and corrections are No.</p>';
+  if(S.srcI>=0) h+='<button class="delbtn" onclick="srcRemove()">Delete source</button>';
+  h+=sheetEnd();
+  document.getElementById('modal').innerHTML=h;
+}
+function srcApply(){
+  var d=S.srcD; if(!d) return;
+  d.name=String(d.name||'').trim();
+  if(!d.name){ toast('Give it a name'); return; }
+  if(S.srcI<0) S.catI.push(d); else S.catI[S.srcI]=d;
+  S.srcD=null; drawSrcs();
+}
+function srcRemove(){ var i=S.srcI; S.srcD=null; catDrop('i',i); }
+function openSubEdit(i,main){
   S.subI=i;
-  S.subD=i<0?{row:0,name:'',main:(S.catM[0]||{}).name||'',real:true,limit:'',shop:'',orig:'',icon:''}
+  S.subD=i<0?{row:0,name:'',main:main||(S.catM[0]||{}).name||'',real:true,limit:'',shop:'',orig:'',icon:''}
             :{row:S.catS[i].row,name:S.catS[i].name,main:S.catS[i].main,real:S.catS[i].real,
               limit:S.catS[i].limit,shop:S.catS[i].shop,orig:S.catS[i].orig||'',icon:S.catS[i].icon||''};
   drawSubEdit();
@@ -7710,8 +8220,7 @@ function drawSubEdit(){
     fRow('Monthly limit','<input class="tinput fin" inputmode="decimal" placeholder="none" value="'+esc(String(d.limit))+'" oninput="S.subD.limit=this.value">')+
     fRow('Default shop','<input class="tinput fin" placeholder="none" value="'+esc(d.shop)+'" oninput="S.subD.shop=this.value">')+
     '</div>';
-  if(S.subI>=0) h+='<button class="refbtn" onclick="mergeFrom(\'s\','+q(S.catS[S.subI].name)+',1)">'+svgIc('merge',17,2)+'Merge into another subcategory</button>'+
-    '<button class="delbtn" onclick="subRemove()">Delete subcategory</button>';
+  if(S.subI>=0) h+='<button class="delbtn" onclick="subRemove()">Delete subcategory</button>';
   h+=sheetEnd();
   document.getElementById('modal').innerHTML=h;
 }
@@ -7724,7 +8233,7 @@ function subApply(){
 function subRemove(){
   var x=S.catS[S.subI], n=catUses(x.name,'s');
   S.catS.splice(S.subI,1);
-  toast(n?('Removed \u2014 '+n+' record'+(n>1?'s':'')+' still name it'):'Removed');
+  toast(n?('Removed — '+n+' record'+(n>1?'s':'')+' still name it'):'Removed');
   drawSubs();
 }
 function saveCats(){
@@ -7732,7 +8241,14 @@ function saveCats(){
      so one save waits for the last one, and lists made before the sheet
      was last read take its rows first */
   if(catBusyNow()){ toast('The last change is still saving. One moment.'); return; }
-  catRows();
+  if(!catRows()){
+    /* made before the sheet last changed them: saving would undo that */
+    toast('The categories changed on the sheet meanwhile. Here they are as they are now: make your change once more.',7000);
+    var scr=document.getElementById('catscr'), sk=scr?scr.getAttribute('data-k'):'';
+    S.csel=null; catInit();
+    if(sk) drawCatScreen(sk); else drawSettings();
+    return;
+  }
   /* a main category that was renamed here has to be renamed inside the
      subcategories too, or they would point at a name that no longer exists */
   var ren={};
@@ -7741,23 +8257,68 @@ function saveCats(){
     var hit=S.catM.filter(function(x){ return x.row===row; })[0];
     if(hit&&hit.name&&was!==hit.name) ren[was]=hit.name;
   });
-  S.catS.forEach(function(x){ if(ren[x.main]) x.main=ren[x.main]; });
+  /* the editor moves them at once; only one still naming a category that is
+     no longer on the list follows here (renaming A to B and C to A must not
+     send C's subcategories on to B) */
+  var mnow={}; S.catM.forEach(function(x){ mnow[String(x.name).trim()]=1; });
+  S.catS.forEach(function(x){ if(ren[x.main]&&!mnow[x.main]) x.main=ren[x.main]; });
+  /* a subcategory now under another category: once the sheet knows, its
+     records are moved across too, older years included */
+  var moved=[];
+  S.catS.forEach(function(x){
+    if(!x.orig||!x.row) return;
+    var was=null; (D.setup.subcategories||[]).forEach(function(y){ if(y.name===x.orig) was=y; });
+    if(!was) return;
+    var oldMain=ren[was.main]||was.main;
+    if(x.main!==oldMain) moved.push({from:x.orig,to:String(x.name).trim(),main:x.main});
+  });
   var keep=function(l){ return l.filter(function(x){ return String(x.name).trim(); }); };
+  if(moved.length){
+    /* its records are moved one by one, every year of them, so this needs
+       the sheet now and the history older than the phone keeps */
+    if(offline()){ toast('Moving a subcategory to another category needs a connection.',5000); return; }
+    if(UNDO||Object.keys(S.pending||{}).length||qCount()){ toast('Something is still saving. Try again in a moment.'); return; }
+    if(!S.older){
+      S.catBusy=true;
+      toast('Getting the older records first\u2026',9000);
+      loadOlderThen(function(){
+        S.catBusy=false;
+        /* still on these lists: carry on; somewhere else now: leave it */
+        if(document.getElementById('catscr')) saveCats(); else toast('Not saved: tap Save again.',5000);
+      },function(){
+        S.catBusy=false;
+        toast('The older records did not load, so it is not saved yet. Try Save again in a moment.',6000);
+      });
+      return;
+    }
+  }
   saveIcons();
   closeModal();
   toast('Saving\u2026');
   S.catBusy=true;
-  bg('saveCategories',{mains:keep(S.catM),subs:keep(S.catS),sources:keep(S.catI)},function(){ S.catBusy=false; });
+  var pl=JSON.parse(JSON.stringify({mains:keep(S.catM),subs:keep(S.catS),sources:keep(S.catI)}));
+  if(!moved.length){ bg('saveCategories',pl,catSaved); return; }
+  /* under the new category on screen at once, and back if the sheet says no */
+  var back=[];
+  txAll().forEach(function(t){ moved.forEach(function(mv){ if(t.k==='e'&&t.sub===mv.from){ back.push([t,t.main]); t.main=mv.main; } }); });
+  TXV++; prep(); render(true);
+  var steps=[{fn:'saveCategories',payload:pl,rollback:function(){ back.forEach(function(b){ b[0].main=b[1]; }); TXV++; }}];
+  moved.forEach(function(mv){
+    var refs=txAll().filter(function(t){ return t.k==='e'&&t.sub===mv.from&&!t.pending&&!isReceipt(t)&&(t.row>0||t.srow>0); }).map(txRef);
+    for(var i=0;i<refs.length;i+=MERGE_CHUNK) steps.push({fn:'editMany',payload:{items:refs.slice(i,i+MERGE_CHUNK),sub:mv.to}});
+  });
+  bgChain(steps,catSaved);
 }
 
 /* ══════ merging ═══════════════════════════════════════════════════════════
-   Two categories, subcategories or income sources that are really one: the
-   one merged away hands everything over to the one that stays, then comes
-   off its list. Its records go across - every year of them, the sheet
-   renames them in one go - and so do its monthly limit and its planned
-   amount (added to the other's), and the quick actions, shop rules and
-   Calendar payments that name it. A subcategory merged into one under
-   another category takes its records across to that category as well.
+   Categories, subcategories or income sources that are really one: hold one
+   in its list to pick it, tap the others, Merge, and say which one stays.
+   The ones merged away hand everything over to it and come off the list:
+   their records (every year of them - the sheet renames them in one go),
+   their monthly limits and planned amounts (added together), and the quick
+   actions, shop rules and Calendar payments that name them. A subcategory
+   merged into one under another category takes its records across to that
+   category as well.
 
    The sheet script needs nothing new for this: to it, a merge is the rename
    Settings already does, to the name of the one that stays. */
@@ -7791,8 +8352,8 @@ function mergeWhy(kind,a,b){
   if(b&&ra&&ra!==rb) return 'The app keeps '+ROLE_WORD[ra]+' under “'+strip(a.name)+'”, so it can only go into another one for '+ROLE_WORD[ra]+'.';
   return '';
 }
-/* Changes typed on these screens and not saved yet. A merge sends the lists
-   whole, so it would save them too, unseen - they get saved first. */
+/* Changes typed on these screens and not saved yet. A merge writes the
+   lists, so it would save them too, unseen - they get saved first. */
 function catDirty(){
   var st=S.catSetup;
   if(!S.catM||!st) return false;
@@ -7860,51 +8421,37 @@ function mergeItem(kind,x){
   bits.push(recWord(n));
   return {value:x.name,label:strip(x.name),meta:bits.join(' · '),icon:edIcon(x,kind),hue:edHue(x,kind)};
 }
-/* what the pickers offer: the ones that can go (from left out), or the ones
-   the from one can go into */
-function mergeGroups(kind,from){
-  var L=catList(kind), a=from?catByName(kind,from):null;
-  function fits(x){
-    if(!x.row||!String(x.name).trim()||x===a) return false;
-    return a?!mergeWhy(kind,a,x):!mergeWhy(kind,x);
-  }
-  if(kind!=='s') return [{label:'',items:L.filter(fits).map(function(x){ return mergeItem(kind,x); })}];
-  var by={}, order=S.catM.map(function(m){ return m.name; }), out=[];
-  L.forEach(function(x){ if(fits(x)) (by[x.main]=by[x.main]||[]).push(x); });
-  Object.keys(by).forEach(function(m){ if(order.indexOf(m)<0) order.push(m); });
-  order.forEach(function(m){
-    if(by[m]) out.push({label:strip(m)||'No category',icon:icKey(m),items:by[m].map(function(x){ return mergeItem(kind,x); })});
-  });
-  return out;
-}
-function groupCount(g){ var n=0; g.forEach(function(x){ n+=x.items.length; }); return n; }
-function mergeBtn(kind){
-  return '<button class="refbtn" onclick="mergeStart(\''+kind+'\')">'+svgIc('merge',17,2)+'Merge two '+KIND_WORD[kind][1]+'</button>';
-}
-function mergeStart(kind){
-  if(!mergeReady()) return;
-  var g=mergeGroups(kind,'');
-  if(groupCount(g)<2){ toast('There is nothing here to merge'); return; }
-  openPicker({title:'Merge which '+KIND_WORD[kind][0]+'?',groups:g,
-    apply:function(v){ mergeFrom(kind,v); }});
-}
-function mergeFrom(kind,name,fromEdit){
-  if(!mergeReady()) return;
-  var a=catByName(kind,name); if(!a) return;
-  var why=mergeWhy(kind,a); if(why){ toast(why,6000); return; }
-  var g=mergeGroups(kind,name);
-  if(!groupCount(g)){ toast('There is no other '+KIND_WORD[kind][0]+' it can go into',5000); return; }
-  S.mrg={kind:kind,from:name,into:'',back:fromEdit?'edit':''};
-  openPicker({title:'Merge “'+strip(name)+'” into',groups:g,
-    apply:function(v){ if(!S.mrg) return; S.mrg.into=v; drawMerge(); }});
-}
 function drawCatList(k){ if(k==='m') drawMains(); else if(k==='i') drawSrcs(); else drawSubs(); }
+/* the button in the middle: which of the picked ones stays? */
+function catMergeGo(){
+  var k=S.csel&&S.csel.kind; if(!k) return;
+  var names=S.csel.names.slice();
+  if(names.length<2){ toast('Tap one more to merge with'); return; }
+  if(!mergeReady()) return;
+  catMergeKeep({kind:k,names:names});
+}
+function catMergeKeep(P){
+  if(!P&&S.mrg) P={kind:S.mrg.kind,names:S.mrg.from.concat([S.mrg.into])};
+  if(!P) return;
+  var k=P.kind, items=P.names.map(function(n){ return catByName(k,n); }).filter(Boolean);
+  if(items.length<2){ S.csel=null; S.mrg=null; drawCatList(k); return; }
+  /* the one that stays has to be able to take every other one */
+  var fits=items.filter(function(b){ return items.every(function(a){ return a===b||!mergeWhy(k,a,b); }); });
+  if(!fits.length){
+    var w=''; items.forEach(function(a){ items.forEach(function(b){ if(!w&&a!==b) w=mergeWhy(k,a,b); }); });
+    toast(w||'These cannot be merged into one.',6000); return;
+  }
+  openPicker({title:'Keep which one?',current:S.mrg?S.mrg.into:'',
+    groups:[{label:'',items:fits.map(function(x){ return mergeItem(k,x); })}],
+    apply:function(v){
+      S.mrg={kind:k,from:items.filter(function(x){ return x.name!==v; }).map(function(x){ return x.name; }),into:v};
+      drawMerge();
+    }});
+}
 function mergeBack(){
   var M=S.mrg; S.mrg=null;
-  if(M&&M.back==='edit'&&S.subD){ drawSubEdit(); return; }
-  drawCatList(M?M.kind:'s');
+  drawCatList(M?M.kind:(S.csel?S.csel.kind:'s'));
 }
-function mergeSwap(){ var M=S.mrg; if(!M) return; var t=M.from; M.from=M.into; M.into=t; drawMerge(); }
 function mrgSide(kind,x){
   var bits=[];
   if(kind==='s') bits.push(strip(x.main));
@@ -7933,51 +8480,64 @@ function mergeUses(kind,name){
   return u;
 }
 /* an amount that never breaks from its currency sign inside a sentence */
-function nbMoney(v){ return String(money(v,0)).replace(/ /g,'\u00a0'); }
+function nbMoney(v){ return String(money(v,0)).replace(/ /g,' '); }
+function quoted(l){ return l.map(function(n){ return '“'+n+'”'; }); }
 /* what the merge will do, a line each, before it is done */
-function mergeLines(kind,a,b){
-  var A='“'+esc(strip(a.name))+'”', B='“'+esc(strip(b.name))+'”', out=[];
-  var n=catCount(kind,a.name);
+function mergeLines(kind,froms,b){
+  var one=froms.length===1, names=froms.map(function(a){ return strip(a.name); });
+  var A=esc(listWords(quoted(names),9)), B='“'+esc(strip(b.name))+'”', out=[];
+  var n=0; froms.forEach(function(a){ n+=catCount(kind,a.name); });
   if(kind==='m'){
-    var kids=kidsOf(a.name).map(function(x){ return strip(x.name); });
-    if(kids.length) out.push('Its '+(kids.length===1?'subcategory moves':kids.length+' subcategories move')+' under '+B+': '+esc(listWords(kids,4))+'.');
-    out.push(n?('<b>'+recWord(n)+'</b> go with '+(kids.length===1?'it':'them')+'.'):'It has no records to move.');
+    var kids=[]; froms.forEach(function(a){ kidsOf(a.name).forEach(function(x){ kids.push(strip(x.name)); }); });
+    if(kids.length) out.push((one?'Its ':'Their ')+(kids.length===1?'subcategory moves':kids.length+' subcategories move')+' under '+B+': '+esc(listWords(kids,4))+'.');
+    out.push(n?('<b>'+recWord(n)+'</b> go with '+(kids.length===1?'it':'them')+'.'):'There are no records to move.');
   }else{
-    out.push(n?('<b>'+recWord(n)+'</b> move to '+B+'.'):'It has no records to move.');
-  }
-  if(kind==='s'&&a.main!==b.main)
-    out.push(B+' is under “'+esc(strip(b.main))+'”, so they leave “'+esc(strip(a.main))+'”.');
-  if(kind!=='m'&&(a.real!==false)!==(b.real!==false)){
-    var what=kind==='i'?'income':'spending';
-    out.push((b.real!==false?'They start counting as ':'They stop counting as ')+what+', like '+B+'.');
+    out.push(n?('<b>'+recWord(n)+'</b> move to '+B+'.'):'There are no records to move.');
   }
   if(kind==='s'){
-    var la=numOr0(a.limit), lb=numOr0(b.limit);
-    if(la&&lb) out.push('Monthly limits add up: '+nbMoney(la)+' + '+nbMoney(lb)+' = <b>'+nbMoney(la+lb)+'</b>.');
-    else if(la) out.push('Its monthly limit of '+nbMoney(la)+' goes to '+B+'.');
+    var cross=froms.filter(function(a){ return a.main!==b.main; }), mains=[];
+    cross.forEach(function(a){ var m=strip(a.main); if(mains.indexOf(m)<0) mains.push(m); });
+    if(cross.length) out.push(B+' is under “'+esc(strip(b.main))+'”, so '+
+      (cross.length===froms.length?'they':'the records from '+esc(listWords(quoted(cross.map(function(a){ return strip(a.name); })),9)))+
+      ' leave '+esc(listWords(quoted(mains),9))+'.');
   }
   if(kind!=='m'){
-    var ea=expOf(kind,a.name), eb=expOf(kind,b.name);
-    if(ea&&eb) out.push('Planned amounts add up: '+nbMoney(ea)+' + '+nbMoney(eb)+' = <b>'+nbMoney(ea+eb)+'</b>.');
-    else if(ea) out.push('Its planned '+nbMoney(ea)+' goes to '+B+'.');
+    var what=kind==='i'?'income':'spending', flip=froms.filter(function(a){ return (a.real!==false)!==(b.real!==false); });
+    if(flip.length) out.push((flip.length===froms.length?'They':'The records from '+esc(listWords(quoted(flip.map(function(a){ return strip(a.name); })),9)))+
+      (b.real!==false?' start counting as ':' stop counting as ')+what+', like '+B+'.');
   }
-  var u=mergeUses(kind,a.name), bits=[];
+  function sums(get,word,lead){
+    var parts=[], tot=0;
+    froms.concat([b]).forEach(function(x){ var v=get(x); if(v){ parts.push(nbMoney(v)); tot+=v; } });
+    var mine=froms.some(function(x){ return get(x); });
+    if(!mine) return;
+    if(parts.length>1) out.push(lead+' add up: '+parts.join(' + ')+' = <b>'+nbMoney(tot)+'</b>.');
+    else out.push((one?'Its ':'Their ')+word+' of '+nbMoney(tot)+' goes to '+B+'.');
+  }
+  if(kind==='s') sums(function(x){ return numOr0(x.limit); },'monthly limit','Monthly limits');
+  if(kind!=='m') sums(function(x){ return expOf(kind,x.name); },'planned amount','Planned amounts');
+  var u={quick:0,rules:0,cal:0}, bits=[];
+  froms.forEach(function(a){ var v=mergeUses(kind,a.name); u.quick+=v.quick; u.rules+=v.rules; u.cal+=v.cal; });
   if(u.quick) bits.push(u.quick===1?'1 quick action':u.quick+' quick actions');
   if(u.rules) bits.push(u.rules===1?'1 shop rule':u.rules+' shop rules');
   if(u.cal) bits.push(u.cal===1?'1 Calendar payment':u.cal+' Calendar payments');
   if(bits.length) out.push(esc(listWords(bits,9))+(bits.length===1&&/^1 /.test(bits[0])?' switches':' switch')+' to '+B+'.');
-  out.push(A+' comes off the list.');
+  out.push(A+(one?' comes':' come')+' off the list.');
   return out;
 }
 function drawMerge(){
   var M=S.mrg; if(!M) return;
-  var kind=M.kind, a=catByName(kind,M.from), b=catByName(kind,M.into);
-  if(!a||!b||a===b){ S.mrg=null; drawCatList(kind); return; }
-  var why=mergeWhy(kind,a,b);
+  var kind=M.kind, b=catByName(kind,M.into);
+  var froms=M.from.map(function(n){ return catByName(kind,n); }).filter(Boolean);
+  if(!b||!froms.length||froms.indexOf(b)>-1){ S.mrg=null; drawCatList(kind); return; }
+  var why=''; froms.forEach(function(a){ if(!why) why=mergeWhy(kind,a,b); });
   var h=sheetTop('Merge','','mergeBack()')+'<i id="mrgscr" hidden></i>';
-  h+='<div class="glass mrgpair">'+mrgSide(kind,a)+'<div class="mrgarrow">'+svgIc('chevdown',16,2.4)+'</div>'+mrgSide(kind,b)+'</div>';
-  if(!mergeWhy(kind,b,a)) h+='<button class="mrgswap" onclick="mergeSwap()">Keep “'+esc(strip(a.name))+'” instead</button>';
-  h+='<div class="glass mrgsum">'+mergeLines(kind,a,b).map(function(l){ return '<div class="mrgline">'+l+'</div>'; }).join('')+'</div>';
+  h+='<div class="glass mrgpair">'+froms.map(function(a){ return mrgSide(kind,a); }).join('')+
+    '<div class="mrgarrow">'+svgIc('chevdown',16,2.4)+'</div>'+mrgSide(kind,b)+'</div>';
+  var all=froms.concat([b]);
+  var other=froms.some(function(c){ return all.every(function(a){ return a===c||!mergeWhy(kind,a,c); }); });
+  if(other) h+='<button class="mrgswap" onclick="catMergeKeep()">Keep another one</button>';
+  h+='<div class="glass mrgsum">'+mergeLines(kind,froms,b).map(function(l){ return '<div class="mrgline">'+l+'</div>'; }).join('')+'</div>';
   if(why) h+='<p class="setfoot bad">'+esc(why)+'</p>';
   else h+='<button class="paybtn mrggo" style="background:linear-gradient(160deg,'+ok(.66,.13,255)+','+ok(.55,.15,255)+')" onclick="doMerge()">'+
     'Merge into “'+esc(strip(b.name))+'”</button>'+
@@ -7987,13 +8547,15 @@ function drawMerge(){
 }
 function doMerge(){
   var M=S.mrg; if(!M||!mergeReady()) return;
-  var kind=M.kind, from=M.from, into=M.into;
-  var a=catByName(kind,from), b=catByName(kind,into);
-  if(!a||!b||a===b) return;
-  var why=mergeWhy(kind,a,b); if(why){ toast(why,6000); return; }
+  var kind=M.kind, into=M.into, fromNames=M.from.slice();
+  function look(){ return {b:catByName(kind,into),froms:fromNames.map(function(n){ return catByName(kind,n); })}; }
+  var L0=look();
+  if(!L0.b||!fromNames.length||L0.froms.some(function(a){ return !a||a===L0.b; })) return;
+  var why=''; L0.froms.forEach(function(a){ if(!why) why=mergeWhy(kind,a,L0.b); });
+  if(why){ toast(why,6000); return; }
   if(offline()){ toast('Merging needs a connection.'); return; }
   if(UNDO||Object.keys(S.pending||{}).length||qCount()){ toast('Something is still saving. Try again in a moment.'); return; }
-  var cross=kind==='s'&&a.main!==b.main;
+  var cross=kind==='s'&&L0.froms.some(function(a){ return a.main!==L0.b.main; });
   S.catBusy=true;
   toast('Merging…',8000);
   /* a subcategory that crosses into another category takes its records
@@ -8005,47 +8567,68 @@ function doMerge(){
   });
   else go();
   function go(){
-    S.mrg=null;
-    a=catByName(kind,from); b=catByName(kind,into);
-    if(!a||!b){ S.catBusy=false; return; }
-    var L=catList(kind), la=numOr0(a.limit), lb=numOr0(b.limit), kept={}, k;
+    S.mrg=null; S.csel=null;
+    var LL=look(), b=LL.b, froms=LL.froms;
+    if(!b||froms.some(function(a){ return !a; })){ S.catBusy=false; return; }
+    var L=catList(kind), first=froms[0], kept={}, k;
     for(k in b) if(b.hasOwnProperty(k)) kept[k]=b[k];
-    /* the row of the one that goes, with the name of the one that stays:
+    /* the row of the first one merged, with the name of the one that stays:
        the sheet script reads that as a rename and rewrites every record */
-    kept.row=a.row;
-    if(kind==='s'){ kept.limit=(la||lb)?la+lb:''; kept.shop=b.shop||a.shop||''; }
-    var next=[];
-    L.forEach(function(x){ if(x!==a) next.push(x===b?kept:x); });
-    var nm=S.catM, ns=S.catS, ni=S.catI;
-    if(kind==='m'){
-      nm=next;
-      ns=S.catS.map(function(x){
-        if(x.main!==from) return x;
-        var c={}; for(var j in x) if(x.hasOwnProperty(j)) c[j]=x[j];
-        c.main=into; return c;
-      });
-    }else if(kind==='s') ns=next; else ni=next;
+    kept.row=first.row;
+    if(kind==='s'){
+      var lim=numOr0(b.limit); froms.forEach(function(a){ lim+=numOr0(a.limit); });
+      kept.limit=lim?lim:'';
+      froms.forEach(function(a){ if(!kept.shop&&a.shop) kept.shop=a.shop; });
+    }
+    function copy(x,patch){ var c={}, j; for(j in x) if(x.hasOwnProperty(j)) c[j]=x[j]; for(j in patch) c[j]=patch[j]; return c; }
+    /* the first write: the one kept, where it was; any others merged are
+       renamed where they stand - a rename of their own records each */
+    var call1=[], fin=[];
+    L.forEach(function(x){
+      if(x===first) return;
+      if(x===b){ call1.push(kept); fin.push(kept); return; }
+      /* no limit on these copies: if the second write never comes, a limit
+         counted once per copy would be counted several times */
+      if(froms.indexOf(x)>-1){ call1.push(copy(kept,kind==='s'?{row:x.row,limit:''}:{row:x.row})); return; }
+      call1.push(x); fin.push(x);
+    });
     function keep(l){ return l.filter(function(x){ return String(x.name).trim(); }); }
+    /* no row numbers: to the sheet script nothing in it is a rename */
+    function rowless(l){ return keep(l).map(function(x){ return copy(x,{row:0}); }); }
+    var ns=S.catS, p1, p2=null, many=froms.length>1;
+    if(kind==='m'){
+      ns=S.catS.map(function(x){ return fromNames.indexOf(x.main)>-1?copy(x,{main:into}):x; });
+      p1={mains:keep(call1),subs:keep(ns)};
+      if(many) p2={mains:rowless(fin)};
+    }else if(kind==='s'){
+      p1={subs:keep(call1)}; if(many) p2={subs:rowless(fin)};
+    }else{
+      p1={sources:keep(call1)}; if(many) p2={sources:rowless(fin)};
+    }
     var steps=[];
     if(cross){
       /* Across a category line the rename is not enough: every record's
          category changes too. Those go up first, so that if anything stops
          half way nothing is left naming something that is gone. */
+      var crossed=froms.filter(function(a){ return a.main!==b.main; }).map(function(a){ return a.name; });
       var refs=txAll().filter(function(t){
-        return t.k==='e'&&t.sub===from&&!t.pending&&!isReceipt(t)&&(t.row>0||t.srow>0);
+        return t.k==='e'&&crossed.indexOf(t.sub)>-1&&!t.pending&&!isReceipt(t)&&(t.row>0||t.srow>0);
       }).map(txRef);
       for(var i=0;i<refs.length;i+=MERGE_CHUNK) steps.push({fn:'editMany',payload:{items:refs.slice(i,i+MERGE_CHUNK),sub:into}});
     }
-    /* a copy: it may go up only after the records, and the lists on screen
-       can be typed into meanwhile */
-    steps.push({fn:'saveCategories',payload:JSON.parse(JSON.stringify({mains:keep(nm),subs:keep(ns),sources:keep(ni)}))});
-    /* both had a planned amount: the rename leaves two lines with one name,
-       so the first takes the sum and the other goes */
+    /* copies: they may go up only after the records, and the lists on
+       screen can be typed into meanwhile */
+    steps.push({fn:'saveCategories',payload:JSON.parse(JSON.stringify(p1))});
+    /* several merged at once: the list is written once more as it ends up,
+       one entry for the one kept */
+    if(p2) steps.push({fn:'saveCategories',payload:JSON.parse(JSON.stringify(p2))});
+    /* planned lines that now carry one name: the first takes the sum */
     if(kind!=='m') steps.push(function(){ return expJoin(kind,into); });
-    mergeLocal(kind,from,into,b,kept);
-    S.catM=nm; S.catS=ns; S.catI=ni; S.catPost=catSig();
+    fromNames.forEach(function(f){ mergeLocal(kind,f,into,b,kept); });
+    if(kind==='m'){ S.catM=fin; S.catS=ns; } else if(kind==='s') S.catS=fin; else S.catI=fin;
+    S.catPost=catSig();
     drawCatList(kind);
-    var M2={kind:kind,from:from,into:into,bMain:kind==='s'?b.main:''};
+    var M2={kind:kind,from:fromNames,into:into,bMain:kind==='s'?b.main:''};
     bgChain(steps,function(ok){ mergeDone(M2,ok); });
   }
 }
@@ -8089,12 +8672,13 @@ function mergeLocal(kind,from,into,b,kept){
   if(kind==='m') S.fCat=sw(S.fCat); else if(kind==='s') S.fSub=sw(S.fSub); else S.fSrc=sw(S.fSrc);
   TXV++; prep(); render(true);
 }
-/* the quick actions, shop rules, Calendar payments and picked icon that
-   name the one that goes */
-function mergePrefs(kind,from,into,bMain){
+/* the quick actions, shop rules, Calendar payments and picked icons that
+   name the ones that went */
+function mergePrefs(kind,froms,into,bMain){
+  function gone(n){ return froms.indexOf(n)>-1; }
   var changed=false;
   var nq=(D.quick||[]).map(function(a){
-    var hit=(kind==='s'&&a.sub===from)||(kind==='m'&&a.main===from)||(kind==='i'&&a.source===from);
+    var hit=(kind==='s'&&gone(a.sub))||(kind==='m'&&gone(a.main))||(kind==='i'&&gone(a.source));
     if(!hit) return a;
     var c={}; for(var k in a) if(a.hasOwnProperty(k)) c[k]=a[k];
     if(kind==='s'){ c.sub=into; if(bMain) c.main=bMain; }
@@ -8109,21 +8693,18 @@ function mergePrefs(kind,from,into,bMain){
     var r=shopRules(), nr={}, rc=false, n;
     for(n in r) if(r.hasOwnProperty(n)){
       var p=ruleParts(r[n]);
-      if(p.sub===from){ nr[n]=p.acc?{sub:into,acc:p.acc}:into; rc=true; } else nr[n]=r[n];
+      if(gone(p.sub)){ nr[n]=p.acc?{sub:into,acc:p.acc}:into; rc=true; } else nr[n]=r[n];
     }
     if(rc) setPref('shopCat',nr);
     var cc=pref('calCat',{})||{}, nc={}, cch=false;
-    for(n in cc) if(cc.hasOwnProperty(n)){ if(cc[n]===from){ nc[n]=into; cch=true; } else nc[n]=cc[n]; }
+    for(n in cc) if(cc.hasOwnProperty(n)){ if(gone(cc[n])){ nc[n]=into; cch=true; } else nc[n]=cc[n]; }
     if(cch) setPref('calCat',nc);
   }
-  var ov=iconOverrides();
-  if(ov.hasOwnProperty(from)){
-    var ni={};
-    for(var x in ov) if(ov.hasOwnProperty(x)&&x!==from) ni[x]=ov[x];
-    setPref('icons',ni);
-  }
+  var ov=iconOverrides(), ni={}, ich=false;
+  for(var x in ov) if(ov.hasOwnProperty(x)){ if(gone(x)) ich=true; else ni[x]=ov[x]; }
+  if(ich) setPref('icons',ni);
 }
-/* two planned lines that now carry one name: one line, the sum */
+/* planned lines that now carry one name: one line, the sum */
 function expJoin(kind,name){
   var e=D.expectations||{};
   var l=((kind==='i'?e.income:e.expenses)||[]).filter(function(x){ return x.name===name; });
@@ -8144,14 +8725,15 @@ function bgChain(steps,done){
     if(typeof st==='function') st=st();
     if(!st){ next(); return; }
     var bad=false, fired=false;
+    var undo=st.rollback;
     bg(st.fn,st.payload,
       /* a step sent again after a slow answer can come back twice */
       function(){ if(fired) return; fired=true; setTimeout(function(){ if(bad){ if(done) done(false); } else next(); },0); },
-      function(){ bad=true; });
+      function(){ bad=true; if(undo) undo(); });
   })();
 }
 function mergeDone(M,ok){
-  if(ok) toast('Merged into \u201c'+strip(M.into)+'\u201d');
+  if(ok) toast('Merged into “'+strip(M.into)+'”');
   /* Read once more, now that everything has landed: an answer that crossed
      one of these on the way may have been read before a write. Refused
      somewhere on the way, this is also the truth about how far it got. */
@@ -8168,16 +8750,18 @@ function mergeDone(M,ok){
    ones. Whatever part of Settings is open is drawn again. */
 function catRefresh(M){
   if(!S.catM) return;
-  var sd=S.subD, onEdit=!!document.getElementById('subedscr');
-  /* changed by hand while the merge was on its way: those changes stay,
-     the one merged away goes, and the rows are brought up to date */
+  var eds=[['subedscr','subD','subI','s'],['mainedscr','mainD','mainI','m'],['srcedscr','srcD','srcI','i']];
+  var open=null;
+  eds.forEach(function(e){ if(!open&&document.getElementById(e[0])&&S[e[1]]) open=e; });
+  /* changed by hand while it was on its way: those changes stay, the ones
+     merged away go, and the rows are brought up to date */
   var edited=!!S.catPost&&catSig()!==S.catPost;
   S.catPost=null;
   if(edited){
-    if(M){
+    if(M&&M.from){
       var L=catList(M.kind);
-      for(var j=L.length-1;j>=0;j--) if(L[j].orig===M.from&&L[j].name===M.from) L.splice(j,1);
-      if(M.kind==='m') S.catS.forEach(function(x){ if(x.main===M.from) x.main=M.into; });
+      for(var j=L.length-1;j>=0;j--) if(M.from.indexOf(L[j].orig)>-1&&L[j].name===L[j].orig) L.splice(j,1);
+      if(M.kind==='m') S.catS.forEach(function(x){ if(M.from.indexOf(x.main)>-1) x.main=M.into; });
     }
     catRows();
     return;
@@ -8186,29 +8770,38 @@ function catRefresh(M){
   var el=document.getElementById('catscr');
   if(el){ drawCatList(el.getAttribute('data-k')); return; }
   if(document.getElementById('setscr')){ drawSettings(); return; }
-  if(onEdit&&sd){
-    var i=-1;
-    S.catS.forEach(function(x,j){ if(sd.orig&&x.name===sd.orig) i=j; });
-    if(sd.row&&i<0){ drawSubs(); return; }
-    S.subI=i; if(i>=0) sd.row=S.catS[i].row;
+  if(open){
+    var d=S[open[1]], list=catList(open[3]), i=-1;
+    list.forEach(function(x,j){ if(d.orig&&x.name===d.orig) i=j; });
+    if(d.row&&i<0){ S[open[1]]=null; drawCatList(open[3]); return; }
+    S[open[2]]=i; if(i>=0) d.row=list[i].row;
   }
 }
 /* the lists, reduced to what a save would send */
 function catSig(){
-  function one(x){ return [x.row,x.name,x.main||'',x.real!==false,String(x.limit==null?'':x.limit),x.shop||'',x.icon||''].join('\u0001'); }
-  return [S.catM,S.catS,S.catI].map(function(l){ return (l||[]).map(one).join('\u0002'); }).join('\u0003');
+  function one(x){ return [x.row,x.name,x.main||'',x.real!==false,String(x.limit==null?'':x.limit),x.shop||'',x.icon||''].join('\\u0001'); }
+  return [S.catM,S.catS,S.catI].map(function(l){ return (l||[]).map(one).join('\\u0002'); }).join('\\u0003');
 }
 /* the rows the sheet has now, found by the name each entry had when saved */
+/* false when one of them is no longer on the sheet under the name it had:
+   the lists are older than the sheet, and a save would undo what changed */
 function catRows(){
-  var st=D.setup, mr={}, sr={}, ir={};
+  var st=D.setup, mr={}, sr={}, ir={}, gone=false;
   (st.mainCategories||[]).forEach(function(n,i){ mr[n]=(st.mainRows||[])[i]||0; });
   (st.subcategories||[]).forEach(function(x){ sr[x.name]=x.row||0; });
   (st.incomeSources||[]).forEach(function(x){ ir[x.name]=x.row||0; });
-  function fix(map){ return function(x){ if(x.orig) x.row=map.hasOwnProperty(x.orig)?map[x.orig]:0; }; }
-  (S.catM||[]).forEach(fix(mr)); (S.catS||[]).forEach(fix(sr)); (S.catI||[]).forEach(fix(ir));
-  if(S.subD) fix(sr)(S.subD);
+  function fix(map,list){ return function(x){
+    if(!x||!x.orig) return;
+    if(map.hasOwnProperty(x.orig)) x.row=map[x.orig];
+    else { x.row=0; if(list) gone=true; }
+  }; }
+  (S.catM||[]).forEach(fix(mr,1)); (S.catS||[]).forEach(fix(sr,1)); (S.catI||[]).forEach(fix(ir,1));
+  fix(sr)(S.subD); fix(mr)(S.mainD); fix(ir)(S.srcD);
   S.catSetup=st;
+  return !gone;
 }
+/* a subcategory changed category: its older records will be needed on Save */
+function olderSoon(){ if(!S.older&&!offline()) loadOlderThen(function(){},function(){}); }
 /* the history older than the two years the phone keeps, then cb */
 function loadOlderThen(cb,fail){
   if(S.older){ cb(); return; }
@@ -8291,9 +8884,9 @@ function openCalEdit(row){
   S.calD=it?{row:it.row,service:it.service,cost:it.cost,currency:it.currency||'UAH',
              kind:it.kind||'',every:it.every||1,unit:it.unit||'Months',first:it.first||'',
              repeats:it.repeats||'',account:it.account||'',notes:it.notes||'',
-             orig:it.service,cancelBy:cancelOf(it.service),next:it.next||''}
+             orig:it.service,cancelBy:cancelOf(it.service),next:it.next||'',shop:calShopOf(it.service)}
            :{row:0,service:'',cost:'',currency:'UAH',kind:'',every:1,unit:'Months',
-             first:D.today,repeats:'Forever',account:defaultAccount(),notes:''};
+             first:D.today,repeats:'Forever',account:defaultAccount(),notes:'',shop:''};
   drawCalEdit();
 }
 function drawCalEdit(){
@@ -8309,6 +8902,7 @@ function drawCalEdit(){
   var h=sheetTop(d.row?'Edit payment':'New payment','calApply()');
   h+='<div class="glass" style="padding:2px 0">'+
     fRow('Service','<input class="tinput fin" value="'+esc(d.service)+'" oninput="S.calD.service=this.value">')+
+    fRow('Shop','<input class="tinput fin" placeholder="none" autocomplete="off" value="'+esc(d.shop||'')+'" oninput="S.calD.shop=this.value">')+
     fRow('Cost','<input class="tinput fin" inputmode="decimal" placeholder="0" value="'+esc(String(d.cost||''))+'" oninput="S.calD.cost=this.value">')+
     fRow('Currency','<select class="tinput fin" onchange="S.calD.currency=this.value">'+
       curs.map(function(c){ return opt(c,c,c===d.currency); }).join('')+'</select>')+
@@ -8342,7 +8936,15 @@ function calApply(){
   /* the reminder is the app's, kept by the service's name */
   var svc=String(d.service).trim(), was=d.orig||'';
   if((d.cancelBy||'')!==cancelOf(was)||(was&&was!==svc&&cancelOf(was))) setCancel(svc,d.cancelBy||'',was);
-  var out={}; for(var k in d) if(d.hasOwnProperty(k)&&k!=='orig'&&k!=='cancelBy'&&k!=='next') out[k]=d[k];
+  /* so is its shop, and the category it was last written down under
+     follows a new name */
+  var shop=shopNorm(d.shop||'');
+  if(shop!==calShopOf(was)||(was&&was!==svc&&calShopOf(was))) setCalShop(svc,shop,was);
+  if(was&&was!==svc){
+    var cc=pref('calCat',{})||{};
+    if(cc[was]&&!cc[svc]){ var nc={}; for(var c in cc) if(cc.hasOwnProperty(c)&&c!==was) nc[c]=cc[c]; nc[svc]=cc[was]; setPref('calCat',nc); }
+  }
+  var out={}; for(var k in d) if(d.hasOwnProperty(k)&&k!=='orig'&&k!=='cancelBy'&&k!=='next'&&k!=='shop') out[k]=d[k];
   closeModal();
   toast('Saving\u2026');
   bg('saveCalendar',d.row?{edits:[out]}:{adds:[out]});
@@ -8350,6 +8952,7 @@ function calApply(){
 function calRemove(){
   var d=S.calD;
   if(cancelOf(d.orig||d.service)) setCancel('','',d.orig||d.service);
+  if(calShopOf(d.orig||d.service)) setCalShop('','',d.orig||d.service);
   closeModal();
   toast('Deleting\u2026');
   bg('saveCalendar',{deletes:[{row:d.row}]});
@@ -8931,7 +9534,15 @@ function upcPaidGuess(it,o){
   if(name.length<3) return false;
   return txAll().some(function(t){
     if(t.k!=='e'||t.date<lo||t.date>D.today) return false;
-    var fs=t.shop?shopStrict(t.shop):'';
+    return nameHit(t,name);
+  });
+}
+/* a record that names a Calendar payment, in its shop or in its note (a
+   payment written down from the Calendar keeps its name in the note) */
+function nameHit(t,name){
+  if(!name) return false;
+  return [t.shop,t.note].some(function(v){
+    var fs=v?shopStrict(v):'';
     return fs.length>=3&&(fs.indexOf(name)>=0||name.indexOf(fs)>=0);
   });
 }
@@ -9143,6 +9754,15 @@ function notSub(key){
    kept with the app's settings. The sheet script sends a notification three
    days before and the day before; the Calendar shows a card for the week. */
 function cancelMap(){ var m=pref('cancelBy',{}); return (m&&typeof m==='object'&&!(m instanceof Array))?m:{}; }
+/* the shop a Calendar payment is paid at, kept by the payment's name */
+function calShopMap(){ var m=pref('calShop',{}); return (m&&typeof m==='object'&&!(m instanceof Array))?m:{}; }
+function calShopOf(svc){ return String(calShopMap()[svc||'']||''); }
+function setCalShop(svc,shop,oldSvc){
+  var m=calShopMap(), n={}, k;
+  for(k in m) if(m.hasOwnProperty(k)&&k!==svc&&k!==oldSvc) n[k]=m[k];
+  if(svc&&shop) n[svc]=shop;
+  setPref('calShop',n);
+}
 function cancelOf(svc){ var v=cancelMap()[svc]; return /^\d{4}-\d{2}-\d{2}/.test(String(v||''))?String(v).slice(0,10):''; }
 function setCancel(svc,date,oldSvc){
   var m=cancelMap(), n={}, k;
@@ -9207,7 +9827,7 @@ function icPickBtn(kind,i,x){
   return '<button class="icpick" onclick="openIconPick(\''+kind+'\','+i+')" aria-label="Choose an icon">'+
     icBadge(edIcon(x,kind),edHue(x,kind))+'</button>';
 }
-function icItem(kind,i){ return kind==='s'?S.subD:catList(kind)[i]; }
+function icItem(kind,i){ return kind==='s'?S.subD:(kind==='m'?S.mainD:S.srcD); }
 function openIconPick(kind,i){
   if(!icItem(kind,i)) return;
   S.icPick={kind:kind,i:i};
@@ -9235,7 +9855,7 @@ function iconPick(k){
   var x=icItem(P.kind,P.i);
   if(x) x.icon=k;
   closePicker();
-  if(P.kind==='m') drawMains(); else if(P.kind==='i') drawSrcs(); else drawSubEdit();
+  if(P.kind==='m') drawMainEdit(); else if(P.kind==='i') drawSrcEdit(); else drawSubEdit();
 }
 /* on Save in Settings: the picked icons, keyed by the names as saved */
 function saveIcons(){
@@ -9693,7 +10313,7 @@ function receiptBlock(t,drag,sel){
   /* the shop is the useful name here; the word Receipt only stands in when
      there is none. What is still unaccounted for leads the second line, so
      the '!' badge stays a badge and never has to carry a number. */
-  var open_=Math.abs(left)>0.005;
+  var open_=left!==0;
   var bits=[];
   if(open_) bits.push(money(Math.abs(left),0)+(left>0?' left':' over'));
   if(t.note) bits.push(t.note);
@@ -9731,6 +10351,11 @@ function receiptBlock(t,drag,sel){
           : txRow(x,"editTx('e',"+x.row+")",false);
       }).join('')
                    :'<div class="rcpempty">Nothing split out yet \u2014 tap + to add what was in it.</div>';
+    /* the lines are what was actually bought, so when they come to more
+       than the receipt, one tap brings the total up to them */
+    if(left<0&&!picking&&t.row&&!t.pending)
+      h+='<div class="rcpover"><span>The lines come to '+money(-left,0)+' more than the receipt</span>'+
+        '<button class="rcpfix" onclick="fixReceipt('+t.row+')">Fix</button></div>';
     /* the total was a guess when it was typed, so it has to stay changeable:
        the receipt is the one row whose amount is not what it cost, and there
        is nowhere else to reach it once lines are sitting on top of it */
@@ -9739,6 +10364,168 @@ function receiptBlock(t,drag,sel){
   return h+'</div>';
 }
 
+/* The receipt's total becomes what its lines come to - the same edit as
+   typing that total into the receipt yourself. */
+function fixReceipt(row){
+  var t=findTx('e',row); if(!t||!isReceipt(t)) return;
+  var left=receiptLeft(t); if(left>=0) return;
+  var p=Math.pow(10,decOf(t.currency||'UAH'));
+  var total=Math.round(((Number(t.rtotal)||0)-left)*p)/p;
+  editTx('e',row);
+  if(!S.sheet||!S.sheet.receipt){ closeSheet(); return; }
+  S.sheet.amount=numStr(total);
+  saveSheet();
+}
+/* ══════ taking a receipt apart, putting expenses into one ═══════════════════
+   Both change what the rows are rather than what they say, so the page waits
+   for the sheet (Receipts.gs does the work) and shows what comes back. */
+var NEED_RCP='This needs Receipts.gs in Apps Script: add it next to Код.gs, then Deploy → Manage deployments → Edit → Version: New version → Deploy.';
+function callSheet(fn,payload,msg,done){
+  if(offline()){ toast('This needs a connection.'); if(done) done(false); return; }
+  /* rows move when it lands, so nothing else may be on its way up */
+  if(UNDO||Object.keys(S.pending||{}).length||qCount()){ toast('Something is still saving. Try again in a moment.'); if(done) done(false); return; }
+  payload.rid=payload.rid||newRid();
+  var seq=++S.seq;
+  toast(msg||'Saving…',9000);
+  try{
+    API.call(fn,payload,function(err,res){
+      if(err){
+        toast(/unknown action/i.test(String(err))?NEED_RCP:String(err),9000);
+        if(done) done(false);
+        return;
+      }
+      applyData(res,seq);
+      if(done) done(true);
+    });
+  }catch(e){
+    /* inside Apps Script a call the script does not have is not there at all */
+    toast(NEED_RCP,9000);
+    if(done) done(false);
+  }
+}
+/* a receipt taken apart: its lines stand on their own, and what was not
+   split yet becomes one more expense, under a category you pick */
+function openUnform(row){
+  var t=findTx('e',row);
+  if(!t||!isReceipt(t)) return;
+  if(t.pending||!t.row){ toast('Wait a moment, it is still saving'); return; }
+  if(stateOf(t)){ toast('A refunded or owed receipt cannot be split up.',5000); return; }
+  S.unf={row:row,sub:''};
+  drawUnform();
+}
+function drawUnform(){
+  var U=S.unf; if(!U) return;
+  var t=findTx('e',U.row);
+  if(!t||!isReceipt(t)){ S.unf=null; closeModal(); return; }
+  /* receiptLeft is rounded to the currency's own places: anything but 0 is money */
+  var lines=linesOf(t.receipt), left=receiptLeft(t), n=lines.length+(left>0?1:0);
+  var h=sheetTop('Split into expenses','','unformBack()');
+  h+='<p class="tiny" style="margin:0 4px 10px;line-height:1.45">'+esc(strip(t.shop)||'Receipt')+' · '+esc(fmtShort(t.date))+' · '+
+    esc(strip(t.account))+' · '+money(Math.abs(Number(t.rtotal)||0),0)+'</p>';
+  if(lines.length){
+    h+='<div class="fieldlabel">'+(lines.length===1?'This line becomes an expense of its own':'These '+lines.length+' lines become expenses of their own')+'</div>'+
+      '<div class="glass list">'+lines.map(function(x){ return txRow(x,'',false); }).join('')+'</div>';
+  }
+  if(left>0){
+    h+='<div class="fieldlabel">The rest, '+money(left,left<1?decOf(t.currency):0)+', was not split yet</div>'+
+      '<div class="selwrap"><select class="tinput sel" onchange="S.unf.sub=this.value">'+unfOptions(U.sub)+'</select><span class="chev">▼</span></div>'+
+      '<p class="tiny" style="margin:7px 4px 0">It becomes one more expense, under the category you pick.</p>';
+  }else if(left<0){
+    h+='<p class="tiny" style="margin:10px 4px 0;line-height:1.45">The lines come to '+money(-left,-left<1?decOf(t.currency):0)+' more than the receipt. They are what was bought, so they are what stays.</p>';
+  }
+  h+='<button class="paybtn mrggo" style="background:linear-gradient(160deg,'+ok(.66,.13,255)+','+ok(.55,.15,255)+')" onclick="doUnform()">'+
+    (n===1?'Make it one expense':'Split into '+n+' expenses')+'</button>';
+  h+=sheetEnd();
+  document.getElementById('modal').innerHTML=h;
+}
+/* the categories the rest can go under: spending ones, not a transfer */
+function unfOptions(v){
+  var h=subOptions('',v);
+  (D.setup.subcategories||[]).forEach(function(x){ if(isXferSub(x.name)) h=h.replace(opt(x.name,x.name,x.name===v),''); });
+  return h;
+}
+function unformBack(){
+  var U=S.unf; S.unf=null;
+  if(U) editTx('e',U.row); else closeModal();
+}
+function doUnform(){
+  var U=S.unf; if(!U) return;
+  var t=findTx('e',U.row); if(!t) return;
+  var left=receiptLeft(t);
+  if(left>0&&!U.sub){ toast('Pick a category for the rest'); return; }
+  if(left>0&&(isXferSub(U.sub)||isCorrName(U.sub))){ toast('Pick a spending category for the rest'); return; }
+  var n=linesOf(t.receipt).length+(left>0?1:0);
+  var p=txRef(t); p.sub=left>0?U.sub:'';
+  S.unf=null; S.sel=null; S.selDel=0;
+  closeModal();
+  callSheet('unformReceipt',p,'Splitting it up…',function(ok){
+    if(ok) toast(n===1?'It is one expense now':'Now '+n+' separate expenses');
+  });
+}
+/* why these cannot go into that receipt; '' when they can */
+function intoRcpWhy(head,items){
+  if(!head||!isReceipt(head)) return 'That is not a receipt';
+  if(head.pending||!head.row) return 'Wait a moment, the receipt is still saving';
+  var any=false;
+  for(var i=0;i<items.length;i++){
+    var t=items[i];
+    if(t===head) continue;
+    if(t.k!=='e') return 'Only expenses can go into a receipt';
+    if(isReceipt(t)) return 'Pick one receipt and the expenses to put in it';
+    if(isXfer(t)||isXferSub(t.sub)) return 'A transfer cannot go into a receipt';
+    if(isCorr(t)) return 'A balance correction cannot go into a receipt';
+    if(/-f$/.test(String(t.id||''))) return 'A fee stays with its payment';
+    if(t.receipt) return 'Some of these are already in a receipt';
+    if(t.pending||!(t.row>0||t.srow>0)) return 'Wait a moment, it is still saving';
+    if(String(t.currency||'UAH')!==String(head.currency||'UAH')) return 'It is in another currency than the receipt';
+    any=true;
+  }
+  return any?'':'Pick an expense to put into it';
+}
+/* The receipt grows by what goes into it, so the money does not change.
+   When they were on another day or card, it says so before it happens:
+   as lines they take the receipt's. */
+function openIntoReceipt(head,items){
+  var why=intoRcpWhy(head,items); if(why){ toast(why,5000); render(true); return; }
+  items=items.filter(function(t){ return t!==head; });
+  S.into={row:head.row,refs:items.map(txRef),rows:items.map(function(t){ return {k:t.k,row:t.row}; })};
+  var differ=items.some(function(t){ return t.date!==head.date||t.account!==head.account; });
+  if(!differ){ doInto(); return; }
+  drawInto();
+}
+function drawInto(){
+  var I=S.into; if(!I) return;
+  var head=findTx('e',I.row);
+  var items=I.rows.map(function(r){ return findTx(r.k,r.row); }).filter(Boolean);
+  if(!head||!items.length){ S.into=null; closeModal(); return; }
+  var add=0; items.forEach(function(t){ add+=Math.abs(Number(t.amount)||0); });
+  var tot=Math.abs(Number(head.rtotal)||0);
+  var h=sheetTop('Put into the receipt','','intoBack()');
+  h+='<div class="glass list">'+items.map(function(t){ return txRow(t,'',false); }).join('')+'</div>';
+  h+='<div class="mrgarrow" style="padding-left:34px;height:22px">'+svgIc('chevdown',16,2.4)+'</div>';
+  h+='<div class="glass" style="padding:12px 16px;display:flex;align-items:center;gap:12px">'+icBadge('receipt',hueOf('Receipt'))+
+    '<span class="mrgn"><b>'+esc(strip(head.shop)||'Receipt')+'</b><i>'+esc(fmtShort(head.date)+' · '+strip(head.account))+'</i></span></div>';
+  var lines=['The receipt goes from '+nbMoney(tot)+' to <b>'+nbMoney(tot+add)+'</b>; the money itself does not change.'];
+  var moved=items.filter(function(t){ return t.date!==head.date||t.account!==head.account; });
+  if(moved.length) lines.push((moved.length===1?'It was':'Some were')+' on another day or card: as part of the receipt, '+(moved.length===1?'it counts':'they count')+
+    ' as paid with '+esc(strip(head.account))+' on '+esc(fmtShort(head.date))+'.');
+  h+='<div class="glass mrgsum">'+lines.map(function(l){ return '<div class="mrgline">'+l+'</div>'; }).join('')+'</div>';
+  h+='<button class="paybtn mrggo" style="background:linear-gradient(160deg,'+ok(.66,.13,255)+','+ok(.55,.15,255)+')" onclick="doInto()">Put '+
+    (items.length===1?'it':'them')+' in</button>';
+  h+=sheetEnd();
+  document.getElementById('modal').innerHTML=h;
+}
+function intoBack(){ S.into=null; closeModal(); render(true); }
+function doInto(){
+  var I=S.into; if(!I) return;
+  var head=findTx('e',I.row); if(!head){ S.into=null; return; }
+  var n=I.refs.length;
+  S.into=null; S.sel=null; S.selDel=0;
+  closeModal(); render(true);
+  callSheet('intoReceipt',{receipt:txRef(head),items:I.refs},'Putting '+(n===1?'it':'them')+' into the receipt…',function(ok){
+    if(ok) toast(n===1?'It is part of the receipt now':n+' are part of the receipt now');
+  });
+}
 /* Adding to a receipt only ever asks the two things it cannot know: how much,
    and what kind. Shop, account, date and currency come from the receipt. */
 function openLine(id){
@@ -9912,7 +10699,10 @@ function selPayload(){
   return selItems().map(txRef);
 }
 function selMergeWhy(){
-  var it=selItems();
+  var it=selItems(), heads=it.filter(isReceipt);
+  /* a receipt among them: the others go into it */
+  if(heads.length>1) return 'Pick one receipt and the expenses to put in it';
+  if(heads.length===1) return intoRcpWhy(heads[0],it);
   if(it.length<2) return 'Pick at least two expenses';
   for(var i=0;i<it.length;i++){
     if(!selPlainExp(it[i])) return 'Only plain expenses can go into a receipt';
@@ -9930,9 +10720,11 @@ function selReceipts(){
 }
 function selUnreceiptWhy(){
   var it=selItems();
+  /* one that is split turns back into its lines, each an expense */
+  if(it.length===1&&linesOf(it[0].receipt).length) return (it[0].pending||!it[0].row)?'Wait a moment, it is still saving':'';
   for(var i=0;i<it.length;i++){
     var n=linesOf(it[i].receipt).length;
-    if(n) return 'Take its '+n+' split line'+(n===1?'':'s')+' out first';
+    if(n) return 'Split them one at a time: open each and tap Split into separate expenses';
     if(it[i].pending||!it[i].row) return 'Wait a moment \u2014 it is still saving';
   }
   return '';
@@ -9941,6 +10733,8 @@ function selUnreceiptWhy(){
    plain expense has to say what it was for - so the category is asked once
    and every one of them gets it. */
 function selUnreceipt(){
+  var one=selItems();
+  if(one.length===1&&linesOf(one[0].receipt).length){ var r=one[0].row; S.sel=null; S.selDel=0; render(true); openUnform(r); return; }
   var groups=[];
   D.setup.mainCategories.forEach(function(m){
     groups.push({label:strip(m),icon:icKey(m),
@@ -10016,6 +10810,8 @@ function selDelete(){
 }
 
 function selMerge(){
+  var it=selItems(), heads=it.filter(isReceipt);
+  if(heads.length===1){ openIntoReceipt(heads[0],it); return; }
   var items=selPayload();
   S.sel=null; S.selDel=0;
   render(true); toast('Making a receipt…');
@@ -10667,7 +11463,7 @@ window.__S=S;
    As a website, a small service worker keeps these files on the phone, so
    the app opens instantly and with no signal. A new version is fetched in
    the background; when it arrives, a note offers to switch to it. */
-var APP_VERSION='2026.09.30.8';
+var APP_VERSION='2026.09.30.9';
 (function(){
   try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persist(); }catch(e){}
   if(inGas()||!('serviceWorker' in navigator)) return;
@@ -11271,26 +12067,100 @@ function shopGroups(){
     return {id:groupId(items.map(function(x){ return x.name; })), items:items};
   }).filter(function(g){ return g.items.length>1&&!ign[g.id]; });
 }
-function openShops(){ S.shopQ=''; S.tidyKeep={}; drawShops(); }
+function openShops(){ S.shopQ=''; S.tidyKeep={}; S.ssel=null; drawShops(); }
 function drawShops(){
   var st=shopStats(), g=shopGroups(), qv=String(S.shopQ||'').trim(), qk=shopStrict(qv);
   var list=qv?st.filter(function(x){ return shopStrict(x.name).indexOf(qk)>-1||x.name.toLowerCase().indexOf(qv.toLowerCase())>-1; }):st;
-  var h=sheetTop('Shops','','backToSettings()');
+  var h=sheetTop('Shops','','shopsBack()');
   h+='<div class="glass" style="padding:4px 0">'+
     navRow('Tidy up spellings',g.length?(g.length+' shop'+(g.length===1?' is':'s are')+' written more than one way'):'Every shop has one spelling','drawTidy()')+'</div>';
   h+='<div class="fieldlabel">Rename a shop <span class="opt">'+st.length+' in your records</span></div>'+
     '<input class="tinput" id="shopq" type="search" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Find a shop" value="'+esc(qv)+'" oninput="S.shopQ=this.value;drawShopList()">';
   h+='<div class="glass" id="shoplist" style="margin-top:10px;padding:0">'+shopListHtml(list)+'</div>';
-  h+='<p class="tiny" style="margin:12px 4px 0;line-height:1.45">Renaming rewrites the shop in every record, older ones included, and in your quick actions and shop rules.</p>';
+  h+='<p class="tiny" style="margin:12px 4px 0;line-height:1.45">Renaming rewrites the shop in every record, older ones included, and in your quick actions and shop rules. Hold a shop to pick several and merge them into one.</p>';
   h+=sheetEnd();
-  document.getElementById('modal').innerHTML=h;
+  document.getElementById('modal').innerHTML=h+shopFab();
 }
 function shopListHtml(list){
   if(!list.length) return '<div class="empty" style="padding:16px">No shop like that.</div>';
+  var sel=!!S.ssel;
   return list.slice(0,200).map(function(x){
-    return '<button class="shoprow" onclick="openShopEdit('+q(x.name)+')"><span class="sn">'+esc(x.name)+'</span>'+
-      '<span class="sc">'+x.n+'</span><span class="chevr">›</span></button>';
+    var on=sel&&S.ssel.indexOf(x.name)>-1;
+    return '<button class="shoprow'+(on?' on':'')+(sel?' picking':'')+'" data-hold="shop" data-sn="'+esc(x.name)+'" onclick="shopRowTap('+q(x.name)+')">'+
+      (sel?'<span class="ck">'+CHECK_ICON+'</span>':'')+
+      '<span class="sn">'+esc(x.name)+'</span>'+
+      '<span class="sc">'+x.n+'</span>'+(sel?'':'<span class="chevr">›</span>')+'</button>';
   }).join('');
+}
+/* shops that are one: hold one, tap the others, Merge, say which name stays */
+function shopRowTap(name){
+  if(S.holdKey==='shop:'+name){ S.holdKey=null; return; }
+  if(S.ssel){ shopToggle(name); return; }
+  openShopEdit(name);
+}
+function shopToggle(name){
+  if(!S.ssel) return;
+  var i=S.ssel.indexOf(name);
+  if(i<0) S.ssel.push(name); else S.ssel.splice(i,1);
+  if(!S.ssel.length) S.ssel=null;
+  shopListRedraw();
+}
+function shopHold(name){
+  if(S.ssel){ shopToggle(name); return; }
+  S.ssel=[name];
+  try{ if(navigator.vibrate) navigator.vibrate(14); }catch(e){}
+  shopListRedraw();
+}
+/* the list and the button, without redrawing the search field */
+function shopListRedraw(){
+  if(!document.getElementById('shoplist')){ drawShops(); return; }
+  drawShopList();
+  fabPaint(shopFab());
+}
+function shopFab(){
+  if(!S.ssel) return '';
+  var n=S.ssel.length;
+  return '<div class="mrgfab"><button class="mfx" onclick="shopSelClear()" aria-label="Cancel">✕</button>'+
+    '<button class="mfgo"'+(n<2?' disabled':'')+' onclick="shopMergeGo()">'+svgIc('merge',16,2.2)+
+    (n<2?'Merge':'Merge '+n)+'</button></div>';
+}
+function shopSelClear(){ S.ssel=null; shopListRedraw(); }
+function shopsBack(){ if(S.ssel){ shopSelClear(); return; } backToSettings(); }
+function shopMergeGo(){
+  var names=(S.ssel||[]).slice();
+  if(names.length<2){ toast('Tap one more to merge with'); return; }
+  if(apiV()<5){ toast(NEED_V5,6000); return; }
+  var cnt={}; shopStats().forEach(function(x){ cnt[x.name]=x.n; });
+  openPicker({title:'Keep which name?',current:S.smrg?S.smrg.into:'',
+    groups:[{label:'',items:names.map(function(n){
+      return {value:n,label:n,meta:recWord(cnt[n]||0),icon:'bag',hue:330};
+    })}],
+    apply:function(v){ S.smrg={into:v,from:names.filter(function(n){ return n!==v; })}; drawShopMerge(); }});
+}
+function drawShopMerge(){
+  var M=S.smrg; if(!M) return;
+  var cnt={}; shopStats().forEach(function(x){ cnt[x.name]=x.n; });
+  var n=0; M.from.forEach(function(x){ n+=cnt[x]||0; });
+  function side(name){
+    return '<div class="mrgside">'+icBadge('bag',330)+'<span class="mrgn"><b>'+esc(name)+'</b><i>'+esc(recWord(cnt[name]||0))+'</i></span></div>';
+  }
+  var h=sheetTop('Merge shops','','shopMergeBack()');
+  h+='<div class="glass mrgpair">'+M.from.map(side).join('')+'<div class="mrgarrow">'+svgIc('chevdown',16,2.4)+'</div>'+side(M.into)+'</div>';
+  h+='<button class="mrgswap" onclick="shopMergeGo()">Keep another name</button>';
+  h+='<div class="glass mrgsum">'+
+    '<div class="mrgline"><b>'+recWord(n)+'</b> '+(n===1?'is':'are')+' renamed to “'+esc(M.into)+'”, older ones too.</div>'+
+    '<div class="mrgline">Quick actions and shop rules that name '+(M.from.length===1?'it':'them')+' follow.</div>'+
+    (tidyCfg().auto?'<div class="mrgline">Typed again later, '+(M.from.length===1?'that name is':'those names are')+' saved as “'+esc(M.into)+'”.</div>':'')+
+    '</div>';
+  h+='<button class="paybtn mrggo" style="background:linear-gradient(160deg,'+ok(.66,.13,255)+','+ok(.55,.15,255)+')" onclick="shopMergeDo()">'+
+    'Merge into “'+esc(M.into)+'”</button>';
+  h+=sheetEnd();
+  document.getElementById('modal').innerHTML=h;
+}
+function shopMergeBack(){ S.smrg=null; drawShops(); }
+function shopMergeDo(){
+  var M=S.smrg; if(!M) return;
+  if(renameShopsNow([{from:M.from,to:M.into}],'Merged into “'+M.into+'”')){ S.smrg=null; S.ssel=null; drawShops(); }
 }
 function drawShopList(){
   var el=document.getElementById('shoplist'); if(!el){ drawShops(); return; }
