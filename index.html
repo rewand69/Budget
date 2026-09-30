@@ -188,7 +188,12 @@ h1.page{margin:6px 4px 14px;font:700 34px/1.05 -apple-system,sans-serif;letter-s
 .xbtn{background:rgba(25,23,19,.06);width:32px;height:32px;border-radius:50%;font:400 15px/1 -apple-system,sans-serif;color:rgba(25,23,19,.5);flex:none}
 .savebtn{padding:9px 18px;border-radius:22px;font:600 14px/1 -apple-system,sans-serif;color:#fff;flex:none;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 4px 12px -5px rgba(30,26,22,.5);transition:opacity .2s}
-.sheet-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;margin:0 -4px;padding:0 4px}
+.sheet-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;margin:0 -4px;padding:0 4px;overscroll-behavior:contain}
+/* With a sheet open the page behind it is pinned where it was (syncPageLock):
+   a scroll that runs off the end of the sheet, or starts on the dimmed part,
+   has nothing else to move. The dimmed part takes taps only. */
+body.pinned{position:fixed;left:0;right:0;width:100%}
+.scrim{touch-action:none}
 .amt{font:700 50px/1 -apple-system,sans-serif;letter-spacing:-2.2px;text-align:center;padding-top:16px}
 .fieldlabel{font:600 11px/1 -apple-system,sans-serif;letter-spacing:.5px;text-transform:uppercase;color:rgba(25,23,19,.4);margin:16px 4px 8px}
 .tinput{width:100%;padding:13px 15px;border-radius:16px;border:.5px solid rgba(255,255,255,.7);
@@ -784,8 +789,6 @@ select.expname{padding:9px 10px;font-size:14px;border-radius:13px}
 .qform .tinput{min-height:48px}
 .qform .qnote{margin:7px 4px 0;line-height:1.4}
 .qsave{margin-top:24px}
-/* the month as a filter, beside the other pills */
-.fpill.mon.set{background:rgba(47,107,255,.14);color:#2F5BD8}
 /* shops */
 .shoprow{display:flex;align-items:center;gap:12px;width:100%;padding:13px 16px;text-align:left;background:none;border-bottom:.5px solid rgba(25,23,19,.07)}
 .shoprow:last-child{border-bottom:0}
@@ -804,14 +807,21 @@ select.expname{padding:9px 10px;font-size:14px;border-radius:13px}
 .segrow{display:flex;gap:8px;padding:12px 16px}
 .segrow button{flex:1;padding:11px 8px;border-radius:13px;font:600 13.5px/1.2 -apple-system,sans-serif;background:rgba(25,23,19,.06);color:rgba(25,23,19,.7)}
 .segrow button.on{background:#191713;color:#fff}
-/* keep adding: floats just above the keys, so it is there without scrolling */
-.ghostbtn.addmore{position:sticky;bottom:6px;z-index:4;margin-top:18px;background:#fbfaf8;
-  box-shadow:0 8px 20px -10px rgba(30,26,22,.45),inset 0 0 0 .5px rgba(25,23,19,.16)}
-/* the rest of a receipt, in one tap */
-.rlbtns{display:flex;gap:8px;align-items:stretch}
-.rlbtns .rladd{flex:1}
-.rlrest{flex:1;position:relative;display:flex;align-items:center;justify-content:center;border-radius:14px;
-  background:rgba(47,107,255,.08);color:#2F5BD8;font:600 14px/1 -apple-system,sans-serif;padding:12px 10px}
+/* a record still on its way up is faded - but not the Delete swiped out of it */
+.pendrow>*:not(.swdel):not(.swrep){opacity:.5}
+/* keep adding: at the end of the form, where it scrolls with everything else */
+.ghostbtn.addmore{margin-top:18px}
+/* the foot of a split: a divider with a plus to add a line, and under it
+   the rest of the receipt in one tap */
+.rlbtns{display:flex;flex-direction:column;gap:8px;margin-top:2px}
+.rlbtns .rladd{display:flex;align-items:center;gap:10px;align-self:stretch;width:100%;margin:0;padding:7px 0;
+  border-radius:0;background:none;color:#2F6BFF}
+.rlplus{flex:none;display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;
+  background:rgba(47,107,255,.10);color:#2F6BFF;transition:background .15s,transform .15s}
+.rlrule{flex:1;height:1px;background:rgba(25,23,19,.13)}
+.rlbtns .rladd:active .rlplus{background:rgba(47,107,255,.22);transform:scale(.92)}
+.rlrest{position:relative;display:flex;align-items:center;justify-content:center;border-radius:14px;
+  background:rgba(47,107,255,.08);color:#2F5BD8;font:600 14px/1 -apple-system,sans-serif;padding:13px 10px}
 .rlrest select{position:absolute;inset:0;opacity:0;width:100%;height:100%;font-size:16px}
 .restrow{display:flex;align-items:center;gap:12px;padding:10px 12px 10px 16px;margin-bottom:12px}
 .restrow .rt{flex:none;font:600 14px/1.2 -apple-system,sans-serif}
@@ -2012,9 +2022,10 @@ function load(){
 try{ window.addEventListener('online',function(){ qFlush(); }); }catch(e){}
 
 /* ================================================================ derived */
-/* a pending row has no number yet — it is the newest thing on its day */
+/* a pending row has no number yet — it is the newest thing on its day,
+   unless it has been moved since */
 function orderKey(t){
-  if(t.pending) return Infinity;
+  if(t.pending) return t.sort||Infinity;
   return t.sort ? t.sort : -(t.row||0);
 }
 function prep(){
@@ -2054,11 +2065,48 @@ function inMonth(t,m){ return ym(t.date)===m; }
 function sum(arr,f){ var s=0; for(var i=0;i<arr.length;i++) s+=f(arr[i]); return s; }
 
 /* ================================================================ render root */
+/* ---- a sheet holds the page still --------------------------------------
+   iOS hands a scroll that runs past the end of a sheet to the page behind it,
+   and while that page coasts every new touch goes to the page as well - the
+   sheet seems to freeze and the list moves instead. So while anything is
+   open in #modal or #modal2 the page is pinned (position:fixed at its own
+   offset) and put back exactly where it was when the last one closes. Code
+   that reads or sets the page's scroll goes through pageY / setPageY, which
+   know about the pin. */
+var PAGE_LOCK=null;
+function pageY(){ return PAGE_LOCK?PAGE_LOCK.y:(window.scrollY||window.pageYOffset||0); }
+function setPageY(y){
+  y=Math.max(0,Math.round(y||0));
+  if(PAGE_LOCK){ PAGE_LOCK.y=y; document.body.style.top=(-y)+'px'; }
+  else window.scrollTo(0,y);
+}
+function lockPage(on){
+  var b=document.body;
+  if(on&&!PAGE_LOCK){
+    PAGE_LOCK={y:window.scrollY||window.pageYOffset||0};
+    b.style.top=(-PAGE_LOCK.y)+'px';
+    b.classList.add('pinned');
+  }else if(!on&&PAGE_LOCK){
+    var y=PAGE_LOCK.y; PAGE_LOCK=null;
+    b.classList.remove('pinned'); b.style.top='';
+    window.scrollTo(0,y);
+  }
+}
+function syncPageLock(){
+  var m=document.getElementById('modal'), m2=document.getElementById('modal2');
+  lockPage(!!((m&&m.firstChild)||(m2&&m2.firstChild)));
+}
+function watchSheets(){
+  try{
+    var mo=new MutationObserver(syncPageLock);
+    ['modal','modal2'].forEach(function(id){ var el=document.getElementById(id); if(el) mo.observe(el,{childList:true}); });
+  }catch(e){}
+}
 function render(keepScroll){
   /* a render replaces #view wholesale, which would rip the row out from under
      a finger mid-drag. Hold it until the drop lands. */
   if(DRAG){ DRAG.rerender=keepScroll?1:2; return; }
-  var y=window.scrollY||window.pageYOffset||0;
+  var y=pageY();
   var v=document.getElementById('view');
   v.innerHTML=({
     Activity:pageActivity, Summary:pageSummary, Budget:pageBudget, Analytics:pageAnalytics,
@@ -2066,7 +2114,7 @@ function render(keepScroll){
   }[S.tab])();
   v.className=keepScroll?'':'fade';
   renderTabs(); renderFab();
-  window.scrollTo(0,keepScroll?y:0);
+  setPageY(keepScroll?y:0);
   if(S.justPaid){ if(S.justPaid.shown) S.justPaid=null; else S.justPaid.shown=true; }
   if(S.tab==='Activity'){ clearTimeout(render._st); render._st=setTimeout(streakCheck,900); }
 }
@@ -2118,7 +2166,7 @@ function rebuildTx(){
   if(Object.keys(gone).length) list=list.filter(function(t){ return !(isLine(t)&&gone[t.receipt]); });
   D.tx=list;
   var keys=Object.keys(S.pending);
-  for(var i=0;i<keys.length;i++) D.tx.push(S.pending[keys[i]]);
+  for(var i=0;i<keys.length;i++){ var pr=S.pending[keys[i]]; if(!pd[delKey(pr)]) D.tx.push(pr); }
 }
 /* Deletes still sitting in the outbox (sent while offline, or cut off when
    the page closed) stay out of the list after a reload too. Both halves of
@@ -2288,7 +2336,7 @@ function hideUndo(){
    and opens it, filled in, to be changed and saved the usual way. */
 function holdAction(label,h){
   commitUndo();
-  UNDO={custom:true,commit:h.commit,revert:h.revert,edit:h.edit||null,
+  UNDO={custom:true,commit:h.commit,revert:h.revert,edit:h.edit||null,cid:h.cid||'',
         t:setTimeout(function(){ commitUndo(); },UNDO_MS)};
   toastUndo(label,!!h.edit);
 }
@@ -2399,6 +2447,8 @@ function qFlush(){
   /* something queued by the previous version of the page has no request id
      yet; give it one now, so from here on a replay is harmless */
   if(e.payload&&typeof e.payload==='object'&&!(e.payload instanceof Array)&&!e.payload.rid){ e.payload.rid=newRid(); qSave(); }
+  var efl=ADD_FNS[e.fn]&&e.payload&&flightOf(e.payload.id);
+  if(efl) efl.sent=true;
   API.call(e.fn,e.payload,function(err,res){
     S.flushing=false;
     if(err&&(offline()||netErr(err))){
@@ -2411,13 +2461,153 @@ function qFlush(){
       qRelease(e.id,true);
       prep(); render(true);
       toast('One waiting change was refused: '+err,6000);
+      if(ADD_FNS[e.fn]) flightEnd(e.payload,false);
       qBadge(); qFlush();
       return;
     }
     qRelease(e.id,false);
     if(res&&res.light) lightApply(res); else applyData(res,++S.seq);
+    if(ADD_FNS[e.fn]) flightEnd(e.payload,true);
     qBadge(); qFlush();
   });
+}
+/* ---- records still on their way up -----------------------------------
+   A record just added is on screen at once, faded, while the sheet writes
+   it - and it can already be moved or taken away. The change shows now and
+   goes to the sheet the moment the record has landed there: sent any sooner
+   it would look for a row that does not exist yet. Everything an add will
+   create is followed under its own id - the record, its fee (id + "-f"),
+   a receipt's lines - and only the last thing asked of each one is kept. */
+var ADD_FNS={addTx:1,addTransfer:1,addReceipt:1,addReceiptLine:1};
+function flightStart(fn,p){
+  if(!ADD_FNS[fn]||!p||typeof p!=='object'||!p.id) return null;
+  var f={ids:[p.id,p.id+'-f'],sent:false};
+  (p.lines||[]).forEach(function(l){ if(l&&l.id) f.ids.push(l.id); });
+  S.flight=S.flight||{};
+  f.ids.forEach(function(x){ S.flight[x]=f; });
+  return f;
+}
+function flightOf(id){ return (id&&S.flight&&S.flight[id])||null; }
+/* the sheet answered the add: what waited for it happens now - or, when
+   the add was refused, is dropped along with it */
+function flightEnd(p,ok){
+  var f=p&&p.id&&flightOf(p.id); if(!f) return;
+  /* how it ended is kept, so something asked of it later still knows */
+  S.flown=S.flown||{};
+  f.ids.forEach(function(x){ if(S.flight[x]===f) delete S.flight[x]; S.flown[x]=!!ok; });
+  f.ids.forEach(function(x){
+    var w=S.follow&&S.follow[x]; if(!w) return;
+    delete S.follow[x];
+    if(ok) w.run(); else if(w.fail) w.fail();
+  });
+}
+/* do this to a record once the sheet has it - straight away if it does */
+function whenSaved(id,run,fail){
+  if(flightOf(id)){ S.follow=S.follow||{}; S.follow[id]={run:run,fail:fail||null}; }
+  else if(S.flown&&S.flown[id]===false){ if(fail) fail(); }
+  else run();
+}
+/* an add still waiting in the outbox, not on its way this very moment */
+function queuedAdd(id){
+  var q=qAll();
+  for(var i=0;i<q.length;i++){
+    var e=q[i];
+    if(e&&ADD_FNS[e.fn]&&e.payload&&e.payload.id===id) return (i===0&&S.flushing)?null:e;
+  }
+  return null;
+}
+function txById(k,id){
+  if(!id) return null;
+  var all=txAll();
+  for(var i=0;i<all.length;i++) if(all[i].k===k&&all[i].id===id) return all[i];
+  return null;
+}
+/* the record a row on screen stands for - one still on its way up by its
+   own id, as it has no row in the sheet yet */
+function elTx(el){
+  if(!el||!el.getAttribute) return null;
+  var k=el.getAttribute('data-k')||el.getAttribute('data-sk')||'e';
+  var c=el.getAttribute('data-cid'), id=el.getAttribute('data-id');
+  if(c&&S.pending[c]) return S.pending[c];
+  if(id) return txById(k,id);
+  if(c) return null;
+  return findTx(k,Number(el.getAttribute('data-row')||el.getAttribute('data-sr'))||0);
+}
+/* Taking back something still on its way up. Inside its own three seconds
+   that is simply Undo. Otherwise it goes from the list at once, with three
+   seconds to change your mind, and is deleted as soon as the sheet has it -
+   or, still waiting in the outbox, it never goes up at all. */
+function cancelPending(t){
+  if(!t||!t.pending) return;
+  if(UNDO&&UNDO.custom&&UNDO.cid&&UNDO.cid===t.cid){ undoNow(); return; }
+  if(!t.id){ toast('Wait a moment \u2014 it is still saving'); return; }
+  commitUndo();
+  var keys=expandDeletion([t]).map(delKey);
+  /* and the halves the sheet will have by then: a transfer's income side,
+     the fee paid with it */
+  ['e:'+t.id,'i:'+t.id,'e:'+t.id+'-f'].forEach(function(k){ if(keys.indexOf(k)<0) keys.push(k); });
+  keys.forEach(function(k){ S.pendingDel[k]=1; });
+  var ref={kind:t.k,id:t.id,row:0,was:{date:t.date,amount:t.amount,account:t.account},rid:newRid()};
+  function unhide(){ keys.forEach(function(k){ delete S.pendingDel[k]; }); }
+  holdAction('Cancelled',{
+    commit:function(){
+      var qe=queuedAdd(t.id), f=flightOf(t.id);
+      if(qe){
+        qRemove(qe.id); qRelease(qe.id,true);
+        /* never sent at all: nothing will ever land */
+        if(!f||!f.sent){ if(f) flightEnd(qe.payload,false); rebuildTx(); prep(); render(true); return; }
+      }
+      whenSaved(t.id,function(){
+        bg('deleteTx',ref,null,function(){ unhide(); rebuildTx(); });
+      },unhide);
+    },
+    revert:function(){ unhide(); rebuildTx(); prep(); render(true); }
+  });
+  S.sel=null; S.selDel=0;
+  rebuildTx(); prep(); render(true);
+}
+/* Every record of this day still on its way up remembers where it now
+   stands - under which record - and is put exactly there once the sheet has
+   it; it would land on top of its day otherwise. */
+function placeLater(seq,day){
+  var any=false;
+  seq.forEach(function(x){ if(x.pending&&x.id) any=true; });
+  if(!any) return;
+  /* one still inside its own three seconds goes up now, so there is a
+     landing to wait for */
+  if(UNDO&&UNDO.custom&&UNDO.cid&&seq.some(function(x){ return x.cid===UNDO.cid; })) commitUndo();
+  seq.forEach(function(x,i){
+    if(!x.pending||!x.id) return;
+    var above=null;
+    for(var j=i-1;j>=0;j--) if(seq[j].id){ above={k:seq[j].k,id:seq[j].id}; break; }
+    var k=x.k, id=x.id;
+    whenSaved(id,function(){ placeRun(k,id,day,above); });
+  });
+}
+function placeRun(k,id,day,above){
+  var me=txById(k,id);
+  if(!me||me.pending) return;
+  var fromDay=me.date, ref=txRef(me);
+  var seq=dayOrder(day).filter(function(x){ return x!==me; }), at=0;
+  if(above){ var nb=txById(above.k,above.id), i=nb?seq.indexOf(nb):-1; if(i>=0) at=i+1; }
+  var group=[me], fee=null;
+  if(fromDay!==day){
+    var mt=xferMate(me); if(mt) group.push(mt);
+    if(isReceipt(me)) linesOf(me.receipt).forEach(function(x){ group.push(x); });
+    fee=feeOf(me); if(fee&&fee.date===fromDay) group.push(fee); else fee=null;
+  }
+  var back=group.concat(seq).map(function(x){ return {t:x,date:x.date,sort:x.sort}; });
+  seq.splice(at,0,me);
+  if(fee) seq.splice(at+1,0,fee);
+  group.forEach(function(x){ x.date=day; });
+  var rn=renumberDay(seq);
+  prep(); render(true);
+  function undoLocal(){ back.forEach(function(b){ b.t.date=b.date; b.t.sort=b.sort; }); }
+  if(fromDay!==day){
+    var pl={items:[ref],date:day};
+    if(apiV()>=3) pl.order=rn.touched.map(orderRef);
+    bg('editMany',pl,null,undoLocal);
+  }else bg('reorderTx',{items:rn.touched.map(orderRef)},null,undoLocal);
 }
 function bg(fn,payload,cleanup,rollback){
   if(payload===undefined||payload===null) payload={};
@@ -2426,6 +2616,9 @@ function bg(fn,payload,cleanup,rollback){
   if(typeof payload==='object'&&!(payload instanceof Array)&&!payload.rid) payload.rid=newRid();
   var seq=++S.seq, settled=false, parked=false;
   var id='q'+(++S.qid);
+  /* an add is followed until it has landed: a move or a cancel made
+     meanwhile waits for it (whenSaved) */
+  var fl=flightStart(fn,payload);
   function park(msg){
     if(parked) return;
     parked=true;
@@ -2446,15 +2639,17 @@ function bg(fn,payload,cleanup,rollback){
     /* the answer came after all - the copy parked for a retry is not needed */
     if(parked){ qRemove(id); if(S.qcb) delete S.qcb[id]; }
     if(cleanup) cleanup();
-    if(err){ if(rollback) rollback(); prep(); render(true); toast(err,5000); return; }
-    if(res&&res.light){ lightApply(res); return; }
+    if(err){ if(rollback) rollback(); prep(); render(true); toast(err,5000); if(fl) flightEnd(payload,false); return; }
+    if(res&&res.light){ lightApply(res); if(fl) flightEnd(payload,true); return; }
     applyData(res,seq);
+    if(fl) flightEnd(payload,true);
     qFlush();
   }
   /* No answer for a minute. It may still have been written, so nothing is
      rolled back: it is parked and sent again, and its request id makes a
      second arrival a no-op if the first one did land. */
   var guard=setTimeout(function(){ park('No answer yet — it will be sent again by itself'); },60000);
+  if(fl) fl.sent=true;
   API.call(fn,payload,function(err,res){ done(err,res); });
 }
 function rateOf(cur){
@@ -2976,7 +3171,8 @@ function xferHidden(items){
   return out;
 }
 function visibleDay(date){
-  var day=D.tx.filter(function(x){ return x.date===date&&!x.pending; });
+  /* one still on its way up has a handle too, so it is part of its day */
+  var day=D.tx.filter(function(x){ return x.date===date&&(!x.pending||!!x.id); });
   var hid=xferHidden(day);
   return hid.length?day.filter(function(x){ return hid.indexOf(x)<0; }):day;
 }
@@ -3073,18 +3269,23 @@ function txRow(t,onclick,drag,sel){
   var amt=xf?bmoney(Math.abs(txAmount(t))):((e?'−':'+')+((e&&!cr)?money:bmoney)(Math.abs(txAmount(t))));
   var extra=(t.currency&&t.currency!=='UAH')?((PRIV.all||(!e&&PRIV.balance))?DOTS:(numStr(t.amount)+' '+t.currency)):'';
   if(t.pending) onclick="toast('Still saving\\u2026')";
-  /* a saved record can be swiped away; one still being written cannot */
+  /* a saved record can be swiped away - and so can one still being written,
+     which is then taken back (cancelPending) */
   /* while records are being picked, swiping and dragging step aside - the
      only thing a finger can do to a row is select it */
   var picking=sel!==undefined;
-  var sw=!t.pending&&t.row&&!picking;
-  return '<button class="row'+(drag?' txdrag':'')+(sw?' swipeable':'')+(cr?' corrrow':'')+
+  var pend=!!t.pending&&!!t.id;
+  var sw=!picking&&(t.pending?pend:!!t.row);
+  /* one still being written has no row yet: it is found by its own id */
+  var pid=pend?' data-cid="'+esc(t.cid||'')+'" data-id="'+esc(t.id)+'"':'';
+  return '<button class="row'+(drag?' txdrag':'')+(sw?' swipeable':'')+(cr?' corrrow':'')+(t.pending?' pendrow':'')+
     (grey?' txout':'')+(st==='owed'?' txowed':'')+(st==='refund'?' txref':'')+
     (picking?' selrow':'')+(sel?' selon':'')+'"'+
     (drag?' data-k="'+esc(t.k)+'" data-row="'+(t.row||0)+'"':'')+
-    (sw?' data-sk="'+esc(t.k)+'" data-sr="'+t.row+'"'+(canRepeat(t)?' data-rep="1"':''):'')+
+    (sw?' data-sk="'+esc(t.k)+'" data-sr="'+(t.row||0)+'"'+(canRepeat(t)?' data-rep="1"':''):'')+
+    ((drag||sw)?pid:'')+
     (!t.pending&&t.row?' data-pk="'+esc(t.k)+'" data-pr="'+t.row+'"':'')+
-    (t.pending?' style="opacity:.5"':'')+' onclick="'+onclick+'">'+
+    ' onclick="'+onclick+'">'+
     (picking?'<span class="selck">'+CHECK_ICON+'</span>':'')+
     (drag?'<span class="grip" onpointerdown="gripDown(event)" onclick="event.stopPropagation();event.preventDefault()">'+GRIP_ICON+'</span>':'')+
     (xf?icBadge('transfer',hueOf(t.main||'Transfer')):cr?icBadge('sliders',hueOf('Balance correction')):
@@ -3103,11 +3304,11 @@ function barFill(w,name,over){
 
 /* ================================================================ 1 · ACTIVITY */
 /* One row. The title says what the list is showing - All activity, Income
-   or Expenses - and is itself the switch: tap it for the three, for month
-   by month, and for whatever still needs finishing. Beside it the streak,
-   the magnifier (search and the filters together) and the ••• menu.
-   What needs finishing is also said in words at the top of the list, and
-   only when something does. */
+   or Expenses - and is itself the switch: tap it for the three and for
+   month by month. Beside it the streak, the magnifier (search and the
+   filters together) and the ••• menu. What needs finishing is said in words
+   at the top of the list, and only when something does - tap it for the
+   list. */
 var VIEWS=[['All','All activity','list'],['Income','Income','in'],['Expenses','Expenses','out']];
 function viewLabel(){
   for(var i=0;i<VIEWS.length;i++) if(VIEWS[i][0]===S.filter) return VIEWS[i][1];
@@ -3129,7 +3330,7 @@ function openViewMenu(btn){
   drawViewMenu();
 }
 function drawViewMenu(){
-  var at=S.viewAt||{top:80,left:12}, nBad=D.tx.filter(unbalanced).length, m=S.actMonth;
+  var at=S.viewAt||{top:80,left:12}, m=S.actMonth;
   var tick='<span class="tick">'+svgIc('check',18,2.4)+'</span>';
   var h=VIEWS.map(function(v){
     var on=S.filter===v[0]&&!S.fBad;
@@ -3140,10 +3341,6 @@ function drawViewMenu(){
     '<button class="prow" onclick="closeModal();openMonths()"><span class="mi">'+svgIc('calendar')+'</span>'+
     '<span class="t"><b>Browse by month</b><span>'+esc(m?('Showing '+monthName(m)):'Showing the last 30 days')+'</span></span>'+
     '<span class="chevr">›</span></button>';
-  if(nBad||S.fBad){
-    h+='<button class="prow'+(S.fBad?' cur':'')+'" onclick="closeModal();toggleBad()"><span class="mi warn">'+svgIc('alert')+'</span>'+
-      '<span class="t"><b>Needs attention</b><span>'+nBad+' record'+(nBad===1?'':'s')+'</span></span>'+(S.fBad?tick:'')+'</button>';
-  }
   document.getElementById('modal').innerHTML=
     '<div class="scrim" style="background:rgba(28,26,23,.10)" onclick="closeModal()"></div>'+
     '<div class="popover menu vmenu" style="top:'+at.top+'px;left:'+at.left+'px">'+h+'</div>';
@@ -3185,9 +3382,7 @@ function findPanel(){
 /* each list only offers what it can be narrowed by; onlySet leaves out the
    pills that are not doing anything */
 function filterPills(onlySet){
-  /* the month is one more way to narrow the list, so it sits with the rest -
-     the same choice as Browse by month under the title */
-  var h=onlySet?'':monthPill();
+  var h='';
   function add(label,arr,fn){ if(!onlySet||(arr&&arr.length)) h+=fpill(label,arr,fn); }
   if(S.filter==='Expenses'){
     add('Category',S.fCat,'openCatFilter()');
@@ -3203,12 +3398,6 @@ function filterPills(onlySet){
   add('Account',S.fAcc,'openAccFilter()');
   if(narrowed()) h+='<button class="fpill" onclick="clearFilters()"><span class="v">Clear</span><span class="x">✕</span></button>';
   return h;
-}
-function monthPill(){
-  var m=S.actMonth;
-  return '<button class="fpill mon'+(m?' set':'')+'" onclick="openMonths()">'+
-    (m?'<span class="fpi">'+svgIc('calendar',14,2)+'</span>':'')+
-    '<span class="v">'+esc(m?monthName(m):'Month')+'</span><span class="x">\u25BC</span></button>';
 }
 /* the old "!" chip, said in words */
 function attnRow(n){
@@ -3233,7 +3422,7 @@ function activityList(){
     (mo?txAll().filter(function(t){ return ym(t.date)===mo; }):D.tx.filter(function(t){ return t.date>=cutoff; })));
   if(searching){
     var toks=searchTokens(S.q); list=list.filter(function(t){ return !t.pending&&matchTx(t,toks); });
-    /* a month picked in the filters narrows a search too */
+    /* a month picked under the title narrows a search too */
     if(mo) list=list.filter(function(t){ return ym(t.date)===mo; });
   }
   /* transfers are money you still have, so neither tab claims them */
@@ -3351,7 +3540,7 @@ function activityList(){
        only what matched, and not while picking. */
     h+='<div class="glass list" data-day="'+esc(dstr)+'">'+items.map(function(t){
         var sel=pickMode?(selHas(t)?1:0):undefined;
-        var dr=!searching && !pickMode && !t.pending && !!t.row;
+        var dr=!searching && !pickMode && (t.pending ? !!t.id : !!t.row);
         if(isReceipt(t)) return receiptBlock(t, dr, sel);
         return txRow(t, pickMode?('selTap(\''+t.k+'\','+t.row+')'):('editTx(\''+t.k+'\','+t.row+')'), dr, sel);
       }).join('')+'</div>';
@@ -4326,7 +4515,8 @@ function quickPay(it,o,key){
                          function(){ if(qid) qRemove(qid); drop(); });
     },
     revert:function(){ drop(); rebuildTx(); prep(); render(true); },
-    edit:function(){ logOcc(it,o,key); }
+    edit:function(){ logOcc(it,o,key); },
+    cid:cid
   });
   return true;
 }
@@ -4955,7 +5145,8 @@ function rlineHtml(l){
 function splitEditor(s){
   var h='<div class="fieldlabel">Split <span class="opt">optional</span></div>';
   h+='<div class="rlines" id="rlines">'+(s.lines||[]).map(rlineHtml).join('')+
-    '<div class="rlbtns"><button class="rladd" onclick="rlAdd()">+ Add line</button>'+
+    '<div class="rlbtns"><button class="rladd" onclick="rlAdd()" aria-label="Add line">'+
+      '<span class="rlplus">'+svgIc('plus',15,2.6)+'</span><span class="rlrule"></span></button>'+
     '<label class="rlrest">Rest \u2192 category<select onchange="rlRest(this.value);this.selectedIndex=0" aria-label="Put the rest into a category">'+
       opt('','Put the rest into\u2026',true)+subOptions('','').replace(opt('','Choose subcategory\u2026',true),'')+markOptions('')+'</select></label></div></div>';
   h+='<p class="tiny" id="splitnote" style="margin:7px 2px 0">'+esc(splitNote(s))+'</p>';
@@ -6705,11 +6896,10 @@ document.addEventListener("click",function(e){
 },true);
 function swipeDelete(el){
   var row=el.closest(".swipeable"); if(!row) return;
-  var kind=row.getAttribute("data-sk"), r=Number(row.getAttribute("data-sr"))||0;
-  var gone=findTx(kind,r);
+  var gone=elTx(row);
   swClose();
   if(!gone) return;
-  if(gone.pending){ toast('Wait a moment — it is still saving'); return; }
+  if(gone.pending){ cancelPending(gone); return; }
   holdDelete([gone],"deleteTx",txRef(gone),"Deleted");
 }
 /* ---- the same again, today --------------------------------------------- */
@@ -6748,7 +6938,8 @@ function repeatTx(t){
       bg(fn,payload,function(){ if(qid) qRemove(qid); delete S.pending[cid]; },function(){ if(qid) qRemove(qid); drop(); });
     },
     revert:function(){ drop(); rebuildTx(); prep(); render(true); },
-    edit:function(){ openCopy(t,D.today); }
+    edit:function(){ openCopy(t,D.today); },
+    cid:cid
   });
 }
 /* A copy is a new record that starts where an old one left off - same shop,
@@ -6974,17 +7165,16 @@ function gripUp(){
   dropTarget(d,null);
   if(d.pill&&d.pill.parentNode) d.pill.parentNode.removeChild(d.pill);
   document.body.classList.remove('dragging');
-  var rowNum=Number(d.row.getAttribute('data-row'));
+  var me=elTx(d.row);
   if(!d.cancelled&&tgt&&!tgt.own){
     var before=tgt.mates[idx]?tgt.mates[idx].el:null;
-    dropOnDay(d.kind,rowNum,tgt.day,before?elRef(before):null);
+    dropOnDay(me,tgt.day,before?elTx(before):null);
   }else if(!d.cancelled&&d.to!==d.from){
     /* lands just above the row it was dropped on when moving up, just
        below it when moving down */
-    dropAt(d.kind,rowNum,elRef(d.mates[d.to]),d.to>d.from);
+    dropAt(me,elTx(d.mates[d.to]),d.to>d.from);
   }else if(d.rerender) render(d.rerender===1);
 }
-function elRef(el){ return {k:el.getAttribute('data-k'),row:Number(el.getAttribute('data-row'))||0}; }
 /* a day the way the list shows it: one row per payment, top to bottom - a
    receipt's lines and a transfer's income half ride inside their row */
 function dayOrder(date){
@@ -7009,8 +7199,7 @@ function orderRef(x){ return {k:x.k,row:(x.row>0?x.row:(x.srow||0)),id:x.id||''}
  * narrowed to expenses (with the day's income left out) still puts it in the
  * right place in the whole day.
  */
-function dropAt(kind,row,ref,after){
-  var me=findTx(kind,row), nb=ref&&findTx(ref.k,ref.row);
+function dropAt(me,nb,after){
   if(!me||!nb||me===nb){ render(true); return; }
   var seq=dayOrder(me.date).filter(function(x){ return x!==me; });
   var at=seq.indexOf(nb);
@@ -7018,6 +7207,10 @@ function dropAt(kind,row,ref,after){
   seq.splice(after?at+1:at,0,me);
   var rn=renumberDay(seq);
   prep(); render(true);
+  /* whatever in the day is still on its way up takes its place once the
+     sheet has it - and one of those being moved is all this was */
+  placeLater(seq,me.date);
+  if(me.pending) return;
   bg("reorderTx",{items:rn.touched.map(orderRef)},null,function(){
     rn.touched.forEach(function(x,i){ x.sort=rn.was[i]; });
   });
@@ -7032,17 +7225,16 @@ function dayWords(dstr){
  * a receipt's lines, a fee paid with it - exactly as the sheet script moves
  * them, and its new place in the day travels in the same request.
  */
-function dropOnDay(kind,row,day,ref){
-  var me=findTx(kind,row);
+function dropOnDay(me,day,nb){
   if(!me||me.date===day){ render(true); return; }
-  if(me.pending||!me.row){ toast('Wait a moment — it is still saving'); render(true); return; }
+  if(me.pending?!me.id:!me.row){ toast('Wait a moment — it is still saving'); render(true); return; }
   var refObj=txRef(me);                    /* where it is now, before the date moves */
   var fromDay=me.date, group=[me], mt=xferMate(me), fee=feeOf(me);
   if(mt) group.push(mt);
   if(isReceipt(me)) linesOf(me.receipt).forEach(function(x){ group.push(x); });
   if(fee&&fee.date===fromDay) group.push(fee); else fee=null;
   var back=group.map(function(x){ return {t:x,date:x.date,sort:x.sort}; });
-  var seq=dayOrder(day), nb=ref&&findTx(ref.k,ref.row), at=nb?seq.indexOf(nb):-1;
+  var seq=dayOrder(day), at=nb?seq.indexOf(nb):-1;
   if(at<0) at=seq.length;
   seq.splice(at,0,me);
   if(fee) seq.splice(at+1,0,fee);
@@ -7050,6 +7242,14 @@ function dropOnDay(kind,row,day,ref){
   var rn=renumberDay(seq);
   prep(); render(true);
   toast('Moved to '+dayWords(day));
+  if(me.pending){
+    /* still waiting in the outbox: it simply goes up with the new date */
+    var qe=queuedAdd(me.id);
+    if(qe){ qe.payload.date=day; qSave(); }
+    placeLater(seq,day);
+    return;
+  }
+  placeLater(seq,day);
   var p={items:[refObj],date:day};
   if(apiV()>=3) p.order=rn.touched.map(orderRef);
   bg('editMany',p,null,function(){ back.forEach(function(b){ b.t.date=b.date; b.t.sort=b.sort; }); });
@@ -8814,7 +9014,9 @@ function rcpOpen(id){
 function receiptBlock(t,drag,sel){
   var left=receiptLeft(t), open=rcpOpen(t.receipt), lines=linesOf(t.receipt);
   var picking=sel!==undefined;
-  var sw=!t.pending&&t.row&&!picking;
+  var pend=!!t.pending&&!!t.id;
+  var sw=!picking&&(t.pending?pend:!!t.row);
+  var pid=pend?' data-cid="'+esc(t.cid||'')+'" data-id="'+esc(t.id)+'"':'';
   /* the shop is the useful name here; the word Receipt only stands in when
      there is none. What is still unaccounted for leads the second line, so
      the '!' badge stays a badge and never has to carry a number. */
@@ -8827,12 +9029,12 @@ function receiptBlock(t,drag,sel){
      so reordering a day never leaves a receipt's parts in different places */
   var st=stateOf(t), grey=st==='refund'||st==='owedback';
   var h='<div class="rcp'+(open?' open':'')+(drag?' txdrag':'')+'"'+
-    (drag?' data-k="e" data-row="'+(t.row||0)+'"':'')+'>';
-  h+='<div class="row rcphead'+(sw?' swipeable':'')+(picking?' selrow':'')+(sel?' selon':'')+
+    (drag?' data-k="e" data-row="'+(t.row||0)+'"'+pid:'')+'>';
+  h+='<div class="row rcphead'+(sw?' swipeable':'')+(t.pending?' pendrow':'')+(picking?' selrow':'')+(sel?' selon':'')+
     (grey?' txout':'')+(st==='refund'?' txref':'')+'"'+
-    (sw?' data-sk="e" data-sr="'+t.row+'"':'')+
+    (sw?' data-sk="e" data-sr="'+(t.row||0)+'"'+pid:'')+
     (!t.pending&&t.row?' data-pk="e" data-pr="'+t.row+'"':'')+
-    (t.pending?' style="opacity:.5"':'')+'>'+
+    '>'+
     (drag?'<span class="grip" onpointerdown="gripDown(event)" onclick="event.stopPropagation();event.preventDefault()">'+GRIP_ICON+'</span>':'')+
     '<button class="rcpmain" onclick="'+(picking?'selTap(\'e\','+t.row+')':'rcpToggle('+q(t.receipt)+')')+'">'+
       (picking?'<span class="selck">'+CHECK_ICON+'</span>':'')+
@@ -9790,7 +9992,7 @@ window.__S=S;
    As a website, a small service worker keeps these files on the phone, so
    the app opens instantly and with no signal. A new version is fetched in
    the background; when it arrives, a note offers to switch to it. */
-var APP_VERSION='2026.09.30.4';
+var APP_VERSION='2026.09.30.5';
 (function(){
   try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persist(); }catch(e){}
   if(inGas()||!('serviceWorker' in navigator)) return;
@@ -10122,6 +10324,7 @@ try{ document.addEventListener('visibilitychange',function(){ if(document.visibi
 /* ══════ this round ════════════════════════════════════════════════════════ */
 /* an amount in its own currency - hryvnias the usual way */
 function curMoney(v,cur){ cur=cur||'UAH'; return cur==='UAH'?money(v):(PRIV.all?DOTS:numStr(v)+' '+cur); }
+IC.plus='<path d="M12 5v14"/><path d="M5 12h14"/>';
 IC.flag='<path d="M5 21V4"/><path d="M5 4.5h11.6a.6.6 0 0 1 .5.92L15 8.8l2.1 3.38a.6.6 0 0 1-.5.92H5"/>';
 
 /* ---- keep adding: a whole day in one go ------------------------------- */
@@ -10547,6 +10750,7 @@ function renameShopsNow(pairs,msg){
   return true;
 }
 /* ================================================================ boot */
+watchSheets();
 loadPriv();
 loadUI();
 goTabFromUrl();
