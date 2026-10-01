@@ -2403,6 +2403,12 @@ function expandDeletion(list){
    payment is in the same list on the same day; anywhere else (a search for
    fees, transfers hidden, a category picked) it is its own row again. */
 function feeParentId(t){ return (t&&t.k==='e'&&t.id&&/-f$/.test(t.id))?String(t.id).slice(0,-2):''; }
+/* the fee paid with a transfer or a withdrawal, wherever it now is */
+function isXferFee(t){
+  var pid=feeParentId(t); if(!pid) return false;
+  var par=txById('e',pid);
+  return !!(par&&isXferSub(par.sub));
+}
 /* the transfer or withdrawal it was paid with, on the same day and card -
    moved apart, it is its own row again, so the difference shows */
 function feeRides(f,par){
@@ -3611,12 +3617,14 @@ function activityList(){
      it just does not need saying twice. Income entered by hand is untouched. */
   var hid=xferHidden(list).concat(receiptHidden(list));
   if(hid.length) list=list.filter(function(t){ return hid.indexOf(t)<0; });
-  /* Settings → Display can keep transfers and balance corrections out of
-     the list. A search still finds them. */
+  /* Settings → Display can keep transfers (with their fees) and balance
+     corrections out of the list. A search still finds them. */
   if(!searching){
     var hx=pref('hideXfer',false)===true, hc=pref('hideCorr',false)===true;
     if(hx||hc) list=list.filter(function(t){
       if(hx&&(isXfer(t)||(t.k==='e'&&isXferSub(t.sub))||(t.k==='i'&&isXferSrc(t.source)))) return false;
+      /* and the fee paid with one goes with it */
+      if(hx&&isXferFee(t)) return false;
       if(hc&&isCorr(t)) return false;
       return true;
     });
@@ -11732,7 +11740,7 @@ window.__S=S;
    As a website, a small service worker keeps these files on the phone, so
    the app opens instantly and with no signal. A new version is fetched in
    the background; when it arrives, a note offers to switch to it. */
-var APP_VERSION='2026.10.01.2';
+var APP_VERSION='2026.10.01.3';
 (function(){
   try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persist(); }catch(e){}
   if(inGas()||!('serviceWorker' in navigator)) return;
