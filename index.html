@@ -1409,6 +1409,33 @@ button.actcard .chevr{flex:none;color:rgba(25,23,19,.28);font-size:19px}
 .catchip:active{transform:scale(.97)}
 .goalnone{padding:4px 4px 2px;font:400 12.5px/1.4 -apple-system,sans-serif;color:rgba(25,23,19,.5)}
 .newproj button+button{margin-left:0}
+/* ══════ people: whose record it is ══════
+   A record wears the colour of whoever added it, as its background. The
+   switch under each page's title shows one person's activity or all of it. */
+.row.pby:not(.selon):not(:active){background:var(--pb)}
+.rcp.pby,.owedrow.pby{background:var(--pb)}
+.rcp.pby .row.pby:not(.selon):not(:active){background:transparent}
+.page-head{flex-wrap:wrap}
+.whobar{order:9;flex-basis:100%;display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;margin:0 -2px;padding:2px}
+.whobar::-webkit-scrollbar{display:none}
+.whop{flex:none;display:inline-flex;align-items:center;gap:7px;padding:8px 14px 8px 11px;border:0;border-radius:16px;
+  background:rgba(25,23,19,.06);font:600 13.5px/1 -apple-system,sans-serif;color:rgba(25,23,19,.72)}
+.whop i{flex:none;width:11px;height:11px;border-radius:50%}
+.whop.on{background:#191713;color:#fff}
+.whop.on i{box-shadow:0 0 0 1.5px rgba(255,255,255,.9)}
+.whop.tot{padding-left:14px}
+.whonote{order:10;flex-basis:100%;margin:-2px 4px 0;font:400 12px/1.35 -apple-system,sans-serif;color:rgba(25,23,19,.48)}
+.pdot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:0}
+.meav{flex:none;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font:700 14px/1 -apple-system,sans-serif;color:#fff;box-shadow:inset 0 0 0 1px rgba(25,23,19,.06)}
+.meav.blank{color:rgba(25,23,19,.45);background:rgba(25,23,19,.07)}
+.mehero{display:flex;justify-content:center;padding:6px 0 2px}
+.mehero .meav{width:72px;height:72px;font-size:31px}
+.swatches{display:grid;grid-template-columns:repeat(6,1fr);gap:13px;padding:15px}
+.swatch{aspect-ratio:1;border:0;border-radius:50%;padding:0;box-shadow:inset 0 0 0 1px rgba(25,23,19,.10)}
+.swatch.none{background:repeating-linear-gradient(135deg,#fff 0 5px,rgba(25,23,19,.09) 5px 10px)}
+.swatch.on{box-shadow:0 0 0 3px #fff,0 0 0 5px #191713}
+.mejoin{margin:8px 4px 0;font:500 12.5px/1.4 -apple-system,sans-serif;color:#2F5BD8}
 /* a record whose category is no longer in Setup: why it needs attention */
 .gonepill{display:inline-flex;align-items:center;gap:3px;margin-right:6px;padding:2px 6px 2px 4px;border-radius:7px;vertical-align:1px;
   font:650 10.5px/1.25 -apple-system,sans-serif;color:#b23a1f;background:rgba(214,88,66,.14)}
@@ -1994,6 +2021,8 @@ var TAB_LABEL={Expectations:'Expected'};
 /* ================================================================ api */
 var API={
   call:function(fn,arg,cb){
+    /* which phone it came from - the sheet writes it on every record it adds */
+    if(arg&&typeof arg==='object'&&!(arg instanceof Array)&&arg.by===undefined){ try{ arg.by=meId(); }catch(e){} }
     if(inGas()){
       google.script.run.withSuccessHandler(function(r){cb(null,r);})
                        .withFailureHandler(function(e){cb(e&&e.message?e.message:String(e));})
@@ -2183,7 +2212,7 @@ function orderKey(t){
   return t.sort ? t.sort : -(t.row||0);
 }
 function prep(){
-  CATSETS=null;
+  CATSETS=null; PREG=null; PACT=null; PIX=null;
   /* Newest day first. Inside one day, the most recently ADDED entry sits on
      top: addTx always inserts at sheet row 2, so a newer record carries a
      SMALLER row number than an older one, and ascending row === newest first.
@@ -3191,7 +3220,7 @@ document.addEventListener("pointerdown",lensDown,true);
 function head(title,right,o){
   o=o||{};
   return '<div class="page-head'+(o.cls?' '+o.cls:'')+'"><div class="ph-l"><div class="ph-t">'+(o.titleHtml||('<h1>'+title+'</h1>'))+(o.after||'')+'</div>'+
-    (o.sub||'')+'</div><div class="right">'+(right||'')+moreBtn()+'</div></div>';
+    (o.sub||'')+'</div><div class="right">'+(right||'')+moreBtn()+'</div>'+whoBar()+'</div>';
 }
 function moreBtn(){
   var hid=anyHidden();
@@ -3487,14 +3516,16 @@ function txRow(t,onclick,drag,sel,fee){
   var sw=!picking&&(t.pending?pend:!!t.row);
   /* one still being written has no row yet: it is found by its own id */
   var pid=pend?' data-cid="'+esc(t.cid||'')+'" data-id="'+esc(t.id)+'"':'';
-  return '<button class="row'+(drag?' txdrag':'')+(sw?' swipeable':'')+(cr?' corrrow':'')+(t.pending?' pendrow':'')+
+  /* whoever added it: its background */
+  var pb=pbOf(t);
+  return '<button class="row'+(drag?' txdrag':'')+(sw?' swipeable':'')+(cr?' corrrow':'')+(t.pending?' pendrow':'')+(pb?' pby':'')+
     (grey?' txout':'')+(lk?' txback':'')+(st==='owed'?' txowed':'')+(st==='refund'?' txref':'')+
     (picking?' selrow':'')+(sel?' selon':'')+'"'+
     (drag?' data-k="'+esc(t.k)+'" data-row="'+(t.row||0)+'"':'')+
     (sw?' data-sk="'+esc(t.k)+'" data-sr="'+(t.row||0)+'"'+(canRepeat(t)?' data-rep="1"':''):'')+
     ((drag||sw)?pid:'')+
     (!t.pending&&t.row?' data-pk="'+esc(t.k)+'" data-pr="'+t.row+'"':'')+
-    ' onclick="'+onclick+'">'+
+    (pb?' style="--pb:'+pb+'"':'')+' onclick="'+onclick+'">'+
     (picking?'<span class="selck">'+CHECK_ICON+'</span>':'')+
     (drag?'<span class="grip" onpointerdown="gripDown(event)" onclick="event.stopPropagation();event.preventDefault()">'+GRIP_ICON+'</span>':'')+
     (xf?icBadge('transfer',hueOf(t.main||'Transfer')):cr?icBadge('sliders',hueOf('Balance correction')):
@@ -3566,7 +3597,7 @@ function findBtn(){
 function narrowed(){ return !!(S.fCat.length||S.fSub.length||S.fSrc.length||S.fAcc.length); }
 /* everything under the header */
 function actBody(){
-  var nBad=D.tx.filter(unbalanced).length;
+  var nBad=viewTx(D.tx).filter(unbalanced).length;
   var h=findPanel()+attnRow(nBad);
   /* the Calendar's payments for today and tomorrow, and on the 1st of the
      month the cards' cashback categories */
@@ -3633,6 +3664,8 @@ function activityList(){
   /* a search looks through everything that is loaded, not the last 30 days */
   var list=searching?txAll().slice():(S.fBad?D.tx.slice():
     (mo?txAll().filter(function(t){ return ym(t.date)===mo; }):D.tx.filter(function(t){ return t.date>=cutoff; })));
+  /* one person's, when one is picked */
+  list=viewTx(list);
   if(searching){
     var toks=searchTokens(S.q); list=list.filter(function(t){ return !t.pending&&matchTx(t,toks); });
     /* a month picked under the title narrows a search too */
@@ -3829,7 +3862,7 @@ function stepMonth(d){
 function openMonths(){
   S.monthsOpen=true;
   var by={}, first=D.thisMonth;
-  txAll().forEach(function(t){
+  viewTx(txAll()).forEach(function(t){
     var m=ym(t.date||'');
     if(!/^\d{4}-\d{2}$/.test(m)||m>D.thisMonth) return;
     if(m<first) first=m;
@@ -4055,7 +4088,7 @@ function rangeTo(){
 /* whether the window reaches back past the two years the phone keeps */
 function rangeOld(){ var r=rangeDef(); return !!(r.all||(r.custom&&r.from<=olderFrom())); }
 /* everything the window can see, older history included when it reaches it */
-function rangeTx(){ if(rangeOld()) ensureOlder(); return (rangeOld()?txAll():(D.tx||[])).filter(inRange); }
+function rangeTx(){ if(rangeOld()) ensureOlder(); return viewTx((rangeOld()?txAll():(D.tx||[])).filter(inRange)); }
 function rangeFrom(){
   var r=rangeDef();
   if(r.custom) return r.from+'-01';
@@ -4203,7 +4236,7 @@ function openRangeAcc(){
     }});
 }
 function monthAgg(m){
-  var tx=D.tx.filter(function(t){ return inMonth(t,m); });
+  var tx=viewTx(D.tx).filter(function(t){ return inMonth(t,m); });
   return {
     income:sum(tx.filter(realInc),function(t){return Math.abs(txAmount(t));}),
     spend:sum(tx.filter(realExp),function(t){return Math.abs(txAmount(t));}),
@@ -4283,7 +4316,7 @@ function pageSummary(){
   h+=foldersSection();
 
   // year block
-  var yr=D.tx.filter(function(t){ return accOk(t)&&String(t.date).slice(0,4)===D.thisYear; });
+  var yr=viewTx(D.tx).filter(function(t){ return accOk(t)&&String(t.date).slice(0,4)===D.thisYear; });
   var yIn=sum(yr.filter(realInc),function(t){return Math.abs(txAmount(t));});
   var yOut=sum(yr.filter(realExp),function(t){return Math.abs(txAmount(t));});
   var months={}; yr.forEach(function(t){ months[ym(t.date)]=1; });
@@ -4374,7 +4407,7 @@ function pageAnalytics(){
   for(var i=5;i>=0;i--){
     var d=new Date(base.getFullYear(),base.getMonth()-i,1);
     var key=d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2);
-    hist.push({m:MONS[d.getMonth()],key:key,v:sum(D.tx.filter(function(t){return realExp(t)&&accOk(t)&&inMonth(t,key);}),function(t){return Math.abs(txAmount(t));})});
+    hist.push({m:MONS[d.getMonth()],key:key,v:sum(viewTx(D.tx).filter(function(t){return realExp(t)&&accOk(t)&&inMonth(t,key);}),function(t){return Math.abs(txAmount(t));})});
   }
   var maxH=Math.max.apply(null,hist.map(function(x){return x.v;}))||1;
   h+='<div class="hero" style="padding:20px 18px 16px"><div class="eyebrow">Spending, last 6 months</div>'+
@@ -4696,7 +4729,7 @@ function planRow(it,occ,pm){
   if(occ){
     /* one particular payment - the day picked in the grid */
     when=occ;
-    if(from&&pm[schedKey(it,occ)]){ cls='done'; pill='<span class="pstat paid">Paid</span>'; }
+    if(from&&pm[schedKey(it,occ)]){ cls='done'; pill=paidPill(pm[schedKey(it,occ)]); }
     else if(from&&occ<D.today&&occ>=from){ cls='late'; pill='<span class="pstat late">Late</span>'; }
     else if(occ===D.today){ cls='due'; pill='<span class="pstat due">Today</span>'; }
     else if(!from&&occ<=D.today) cls='due';
@@ -4706,7 +4739,7 @@ function planRow(it,occ,pm){
     if(from){
       if(st.late){ cls='late'; pill='<span class="pstat late">'+(st.late>1?st.late+' late':'Late')+'</span>'; }
       else if(st.target===D.today){ cls='due'; pill='<span class="pstat due">Today</span>'; }
-      else if(st.paidPrev){ cls='done'; pill='<span class="pstat paid">Paid</span>'; }
+      else if(st.paidPrev){ cls='done'; pill=paidPill(st.paidRec); }
     }else if(it.next&&it.next<=D.today) cls='due';
   }
   /* the payment that was just ticked gets its little moment */
@@ -5236,7 +5269,7 @@ function openAccount(name){
     h+='<div class="glass empty">No cashback categories on this account yet \u2014 add them in the Cashback column of the Dashboard sheet.</div>';
   }
 
-  var mine=(D.tx||[]).filter(function(x){return x.account===a.name;});
+  var mine=viewTx(D.tx||[]).filter(function(x){return x.account===a.name;});
   var mtx=mine.filter(function(x){return inMonth(x,D.thisMonth);});
   /* refunded and owed purchases, and the money back for them, are left out */
   var spent=sum(mtx.filter(function(x){return isExp(x)&&!outOfStats(x);}),function(x){return Math.abs(txAmount(x));});
@@ -5710,6 +5743,240 @@ function unbalanced(t){
   return !s2_(t.sub)&&!s2_(t.main)&&!flagList(t).length;
 }
 function s2_(v){ return String(v==null?'':v).trim(); }
+/* ══════ who added what ══════════════════════════════════════════════════
+   Each phone is a person: a name and a colour, set in Settings and kept on
+   the phone itself - another phone can be someone else. Every record a phone
+   adds carries its person (the sheet keeps it in a "By" column, People.gs),
+   so every record wears the colour of whoever added it, and once more than
+   one person has records every tab can show one person's activity or all of
+   it. The names and colours are shared through the sheet's settings, so
+   every phone knows everyone's. Two phones with the same name are one
+   person. */
+var ME_KEY='budget.me', WHO_KEY='budget.who', ME_ID='';
+var PEOPLE_MSG='For the sheet to keep who added each record, add People.gs in Apps Script next to Код.gs, then Deploy → Manage deployments → Edit → Version: New version → Deploy.';
+var PCOL=[['none','None',null],['blue','Blue',255],['teal','Teal',200],['green','Green',150],['lime','Lime',125],
+  ['yellow','Yellow',95],['orange','Orange',60],['red','Red',25],['pink','Pink',350],['purple','Purple',310],
+  ['violet','Violet',282],['gray','Grey',-1]];
+function pcol(k){ for(var i=0;i<PCOL.length;i++) if(PCOL[i][0]===k) return PCOL[i]; return null; }
+/* the background a person's records wear, and the dot that stands for them */
+function pcolBg(k){ var c=pcol(k); if(!c||c[2]===null) return ''; return c[2]<0?ok(.93,0,0):ok(.935,.05,c[2]); }
+function pcolDot(k){ var c=pcol(k); if(!c||c[2]===null) return 'rgba(25,23,19,.25)'; return c[2]<0?ok(.6,0,0):ok(.64,.15,c[2]); }
+function pcolName(k){ var c=pcol(k); return c?c[1]:'None'; }
+function peopleOn(){ return !!(D&&D.people); }
+function meLocal(){ try{ var o=JSON.parse(localStorage.getItem(ME_KEY)||'null'); return (o&&typeof o==='object')?o:{}; }catch(e){ return {}; } }
+function meId(){
+  if(ME_ID) return ME_ID;
+  var o=meLocal();
+  if(!/^[a-z0-9]{6,24}$/.test(String(o.id||''))){
+    o.id='p'+Date.now().toString(36).slice(-5)+(Math.random().toString(36)+'000000').slice(2,8);
+    try{ localStorage.setItem(ME_KEY,JSON.stringify(o)); }catch(e){}
+  }
+  return (ME_ID=o.id);
+}
+/* Everyone the sheet knows, by phone - and the people they make: by name,
+   so two phones with one name are one person, in the colour the one saved
+   last chose. This phone's own name counts the moment it is typed. */
+var PREG=null, PREGN=0;
+function peopleReg(){
+  var p=(D&&D.prefs)||{}, me=meLocal(), sig=(me.n||'')+'|'+(me.c||'')+'|'+(me.t||0);
+  if(PREG&&PREG.p===p&&PREG.sig===sig) return PREG;
+  var ids={}, k;
+  for(k in p) if(p.hasOwnProperty(k)&&k.indexOf('who.')===0&&p[k]&&typeof p[k]==='object') ids[k.slice(4)]=p[k];
+  var mi=meId();
+  if(me.n||me.c) ids[mi]={n:me.n||'',c:me.c||'',t:me.t||0};
+  var people={}, keyOf={};
+  Object.keys(ids).forEach(function(id){
+    var e=ids[id], n=String(e.n||'').trim(), key=n?'n:'+n.toLowerCase():'d:'+id, t=Number(e.t)||0;
+    keyOf[id]=key;
+    var pp=people[key];
+    if(!pp||t>=pp.t) people[key]={name:n,c:String(e.c||''),t:t};
+  });
+  PREGN++;
+  return (PREG={p:p,sig:sig,ids:ids,people:people,keyOf:keyOf,n:PREGN});
+}
+function personKeyOfId(id){ if(!id) return ''; return peopleReg().keyOf[id]||('d:'+id); }
+function meKey(){ return personKeyOfId(meId()); }
+function personName(key){
+  var pp=peopleReg().people[key];
+  if(pp&&pp.name) return pp.name;
+  return key===meKey()?'Me':'Another phone';
+}
+function personColor(key){ var pp=peopleReg().people[key]; return pp?pp.c:''; }
+/* the phone that added it - a receipt's lines and the money that came back
+   for a purchase belong to whoever paid; one still on its way up is this
+   phone's */
+var PIX=null;
+function pIndex(){
+  var all=txAll(), v=TXV+'|'+all.length;
+  if(PIX&&PIX.v===v) return PIX;
+  var heads={}, ids={};
+  for(var i=0;i<all.length;i++){ var t=all[i]; if(isReceipt(t)) heads[t.receipt]=t; if(t.k==='e'&&t.id) ids[t.id]=t; }
+  return (PIX={v:v,heads:heads,ids:ids});
+}
+function recBy(t){
+  if(!t) return '';
+  if(isLine(t)){ var h=pIndex().heads[t.receipt]; if(h&&h!==t) return recBy(h); }
+  if(t.k==='i'&&isLinkedInc(t)){ var lp=pIndex().ids[String(t.id).slice(0,-2)]; if(lp) return recBy(lp); }
+  return t.by||(t.pending?meId():'');
+}
+function personOf(t){ var b=recBy(t); return b?personKeyOfId(b):''; }
+/* the people with records in Activity: this phone first, then by name */
+var PACT=null;
+function activePeople(){
+  if(!D) return [];
+  var r=peopleReg(), all=D.tx||[], v=TXV+'|'+all.length+'|'+r.n;
+  if(PACT&&PACT.v===v) return PACT.l;
+  var seen={}, l=[];
+  for(var i=0;i<all.length;i++){ var k=personOf(all[i]); if(k&&!seen[k]){ seen[k]=1; l.push(k); } }
+  var me=meKey();
+  l.sort(function(a,b){ if(a===me) return -1; if(b===me) return 1; return personName(a).localeCompare(personName(b)); });
+  return (PACT={v:v,l:l}).l;
+}
+function multiPeople(){ return activePeople().length>1; }
+/* whose activity the pages show: one person's key, or '' for everyone. Only
+   once there is more than one person - until then there is nothing to pick. */
+function whoView(){
+  if(S.who===undefined){ try{ S.who=localStorage.getItem(WHO_KEY)||'all'; }catch(e){ S.who='all'; } }
+  var w=S.who||'all';
+  if(w==='all'||!multiPeople()) return '';
+  return activePeople().indexOf(w)>-1?w:'';
+}
+function viewTx(list){
+  var w=whoView(); if(!w) return list;
+  return list.filter(function(t){ return personOf(t)===w; });
+}
+function setWho(k){
+  S.who=k||'all';
+  try{ localStorage.setItem(WHO_KEY,S.who); }catch(e){}
+  render(true);
+}
+/* the switch under every page's title */
+function whoBar(){
+  var L=activePeople(); if(L.length<2) return '';
+  var cur=whoView()||'all';
+  var h=L.map(function(k){
+    return '<button class="whop'+(cur===k?' on':'')+'" onclick="setWho('+q(k)+')"><i style="background:'+pcolDot(personColor(k))+'"></i>'+esc(personName(k))+'</button>';
+  }).join('')+'<button class="whop tot'+(cur==='all'?' on':'')+'" onclick="setWho(\'all\')">Total</button>';
+  var note='';
+  if(cur!=='all'&&S.tab==='Accounts') note='Balances belong to the accounts, so this page shows them whole.';
+  if(cur!=='all'&&S.tab==='Calendar') note='Payments here are shared: a tick from anyone counts.';
+  return '<div class="whobar" role="group" aria-label="Whose activity">'+h+'</div>'+(note?'<p class="whonote">'+esc(note)+'</p>':'');
+}
+/* a record's background, in its person's colour */
+function pbOf(t){ return pcolBg(personColor(personOf(t))); }
+/* the Calendar's Paid, with a dot for who paid - when there is more than one */
+function paidPill(rec){
+  var d=(rec&&multiPeople())?'<i class="pdot" style="background:'+pcolDot(personColor(personOf(rec)))+'"></i>':'';
+  return '<span class="pstat paid">'+d+'Paid</span>';
+}
+/* ---- Settings: you, on this phone ---- */
+function meAvatar(n,c){
+  n=String(n||'').trim();
+  var ch=n?n.charAt(0).toUpperCase():'?', blank=!c||c==='none';
+  return '<span class="meav'+(blank?' blank':'')+'"'+(blank?'':' style="background:'+pcolDot(c)+'"')+'>'+esc(ch)+'</span>';
+}
+function meRow(){
+  var me=meLocal(), n=String(me.n||'').trim(), c=me.c||'';
+  return '<button class="srow" onclick="openMe()">'+meAvatar(n,c)+
+    '<span class="stl">'+(n?esc(n):'Your name and colour')+'</span>'+
+    '<span class="sval">'+(n||c?esc(pcolName(c)):'Not set')+'</span><span class="chevr">›</span></button>';
+}
+/* records from before anyone had a name, that nobody has claimed */
+function unclaimed(){
+  return txAll().filter(function(t){ return !t.pending&&!recBy(t)&&(t.k==='e'||!isXferSrc(t.source)); });
+}
+function claimRow(){
+  if(!peopleOn()||!String(meLocal().n||'').trim()) return '';
+  var n=unclaimed().length; if(!n) return '';
+  return '<button class="srow" id="claimbtn" onclick="claimMine()">'+sIcon('users',150)+
+    '<span class="stl">Earlier records</span><span class="sval">'+n+' with no name</span></button>';
+}
+function openMe(){
+  var me=meLocal(), used={};
+  var reg=peopleReg(), mk=meKey();
+  Object.keys(reg.people).forEach(function(k){ if(k!==mk&&reg.people[k].c) used[reg.people[k].c]=1; });
+  /* a colour nobody has yet, to start with */
+  var free=PCOL.filter(function(c){ return c[2]!==null&&!used[c[0]]; })[0];
+  S.meD={n:me.n||'',c:me.c||(free?free[0]:'blue')};
+  drawMe();
+}
+function drawMe(){
+  var d=S.meD; if(!d) return;
+  var h=sheetTop('You on this phone','meSave()','drawSettings()','Save');
+  h+='<div class="mehero" id="mehero">'+meAvatar(d.n,d.c)+'</div>';
+  h+='<div class="fieldlabel">Your name</div><input class="tinput" id="me_name" maxlength="24" autocomplete="off" autocorrect="off" placeholder="Your name" value="'+esc(d.n)+'" oninput="meName(this.value)">';
+  h+='<div id="mejoin">'+meJoin(d.n)+'</div>';
+  h+='<div class="fieldlabel">Colour</div><div class="glass"><div class="swatches" id="meswatch">'+meSwatches(d.c)+'</div></div>';
+  h+='<div class="fieldlabel">Your records look like this</div><div class="glass list" id="meprev">'+mePreview(d.c)+'</div>';
+  h+='<p class="tiny" style="margin:10px 4px 0;line-height:1.45">Kept on this phone. Another phone can be someone else, with a name and colour of their own. Every record added from this phone wears this colour, on every phone.</p>';
+  if(!peopleOn()) h+='<p class="tiny" style="margin:8px 4px 0;line-height:1.45;color:#a8461f">'+esc(PEOPLE_MSG)+'</p>';
+  h+=sheetEnd();
+  document.getElementById('modal').innerHTML=h;
+}
+function meSwatches(cur){
+  return PCOL.map(function(c){
+    var on=(cur||'none')===c[0];
+    return '<button class="swatch'+(c[2]===null?' none':'')+(on?' on':'')+'"'+(c[2]===null?'':' style="background:'+pcolDot(c[0])+'"')+
+      ' onclick="meColor('+q(c[0])+')" aria-label="'+esc(c[1])+'" aria-pressed="'+on+'"></button>';
+  }).join('');
+}
+function mePreview(c){
+  var bg=pcolBg(c);
+  return '<div class="row'+(bg?' pby':'')+'"'+(bg?' style="--pb:'+bg+'"':'')+'>'+icBadge('coffee',hueOf('Coffee'))+
+    '<div class="rmain"><div class="rtitle">Coffee</div><div class="rmeta">Blue Cup</div></div>'+
+    '<div class="ramt">−65</div></div>';
+}
+/* the name of a person on another phone: saving makes this phone them too */
+function meJoin(n){
+  n=String(n||'').replace(/\s+/g,' ').trim(); if(!n) return '';
+  var key='n:'+n.toLowerCase(), reg=peopleReg(), mi=meId(), other=false;
+  Object.keys(reg.keyOf).forEach(function(id){ if(id!==mi&&reg.keyOf[id]===key) other=true; });
+  return other?'<p class="mejoin">'+esc(n)+' is on another phone too. Saving makes them one person, in the colour picked here.</p>':'';
+}
+function meName(v){
+  var d=S.meD; if(!d) return;
+  d.n=v;
+  var a=document.getElementById('mehero'); if(a) a.innerHTML=meAvatar(d.n,d.c);
+  var j=document.getElementById('mejoin'); if(j) j.innerHTML=meJoin(d.n);
+}
+function meColor(k){
+  var d=S.meD; if(!d) return;
+  d.c=k==='none'?'none':k;
+  var a=document.getElementById('mehero'); if(a) a.innerHTML=meAvatar(d.n,d.c);
+  var sw=document.getElementById('meswatch'); if(sw) sw.innerHTML=meSwatches(d.c);
+  var pv=document.getElementById('meprev'); if(pv) pv.innerHTML=mePreview(d.c);
+}
+function meSave(){
+  var d=S.meD; if(!d) return;
+  var n=String(d.n||'').replace(/\s+/g,' ').trim().slice(0,24);
+  var me=meLocal(), id=meId();
+  me.id=id; me.n=n; me.c=d.c||''; me.t=Date.now();
+  try{ localStorage.setItem(ME_KEY,JSON.stringify(me)); }catch(e){}
+  PREG=null; PACT=null;
+  setPref('who.'+id,{n:n,c:me.c,t:me.t});
+  S.meD=null;
+  drawSettings(); render(true);
+  toast(n?('Saved — this phone is '+n):'Saved');
+}
+/* the records nobody has claimed, made this phone's: asked once more first */
+function claimMine(){
+  if(!peopleOn()){ toast(PEOPLE_MSG,8000); return; }
+  var list=unclaimed(); if(!list.length) return;
+  var lab=document.querySelector('#claimbtn .sval');
+  if(!S.claimArm){
+    S.claimArm=true;
+    if(lab) lab.textContent='Tap again: they are mine';
+    clearTimeout(S._clT);
+    S._clT=setTimeout(function(){ S.claimArm=false; var x=document.querySelector('#claimbtn .sval'); if(x) x.textContent=list.length+' with no name'; },3500);
+    return;
+  }
+  S.claimArm=false; clearTimeout(S._clT);
+  var id=meId(), all=txAll().filter(function(t){ return !t.pending&&!t.by; });
+  all.forEach(function(t){ t.by=id; });
+  PACT=null; drawSettings(); render(true);
+  toast(list.length+' record'+(list.length===1?' is':'s are')+' yours now');
+  bg('claimRecords',{by:id},null,function(){ all.forEach(function(t){ delete t.by; }); PACT=null; render(true); });
+}
 /* The names Setup has now, as sets - made again whenever the data is
    (prep), or when the lists themselves were swapped for new ones. */
 var CATSETS=null;
@@ -5933,7 +6200,7 @@ function toggleSheetTrip(){
   var el=document.getElementById('f_trip'); if(el) el.innerHTML=tripSwitch(s);
 }
 function tripStats(name){
-  var list=txAll().filter(function(t){ return t.trip===name; });
+  var list=viewTx(txAll()).filter(function(t){ return t.trip===name; });
   var spend=list.filter(function(t){ return realExp(t)&&!isXfer(t)&&!isCorr(t); });
   var total=sum(spend,function(t){ return Math.abs(txAmount(t)); });
   var first='', last='';
@@ -8041,6 +8308,9 @@ function sGroup(head,rows,foot){
 function drawSettings(){
   var h=sheetTop('Settings','')+'<i id="setscr" hidden></i>';
   var ord=tabOrder(), off=tabsOff().length, orph=orphanCount(), tr=tripNow();
+  /* you, on this phone: a name and a colour every record from here wears */
+  h+=sGroup('You',meRow()+claimRow(),
+    '<p class="setfoot">'+(peopleOn()?'Kept on this phone. Another phone can have a name and colour of its own.':esc(PEOPLE_MSG))+'</p>');
   var tidy=shopGroups().length, rules=Object.keys(shopRules()).length;
   h+=sGroup('Categories',
     sRow('grid',45,'Main categories',String(S.catM.length),'catOpen(\'m\')')+
@@ -9445,7 +9715,7 @@ function quickBackFor(t){
   });
 }
 function owedList(){
-  return txAll().filter(function(t){ return t.k==='e'&&!t.pending&&stateOf(t)==='owed'; })
+  return viewTx(txAll()).filter(function(t){ return t.k==='e'&&!t.pending&&stateOf(t)==='owed'; })
     .sort(function(a,b){ return a.date<b.date?1:(a.date>b.date?-1:0); });
 }
 function owedCard(){
@@ -9461,7 +9731,8 @@ function owedRow(t){
   var bits=[fmtShort(t.date)];
   if(t.note) bits.push(t.note);
   if(t.account) bits.push(strip(t.account));
-  return '<div class="owedrow"><button class="row" onclick="closeModal();editTx(\'e\','+t.row+')">'+catBadge(t.sub||t.main,t.main)+
+  var pb=pbOf(t);
+  return '<div class="owedrow'+(pb?' pby':'')+'"'+(pb?' style="--pb:'+pb+'"':'')+'><button class="row" onclick="closeModal();editTx(\'e\','+t.row+')">'+catBadge(t.sub||t.main,t.main)+
     '<span class="rmain"><span class="rtitle" style="display:block">'+esc(strip(t.shop||t.sub||'Expense'))+'</span>'+
     '<span class="rmeta" style="display:block">'+esc(bits.join(' \u00b7 '))+'</span></span>'+
     '<span class="ramt">'+money(Math.abs(txAmount(t)),0)+'</span></button>'+
@@ -9521,7 +9792,7 @@ function stateBox(s){
    mark on the record (p:Name), so it shows under Marks, where it comes off
    again with one tap. */
 function projectStats(name){
-  var list=txAll().filter(function(t){ return t.k==='e'&&inProject(t,name); });
+  var list=viewTx(txAll()).filter(function(t){ return t.k==='e'&&inProject(t,name); });
   var spend=list.filter(function(t){ return realExp(t)&&!isXfer(t)&&!isCorr(t); });
   var total=sum(spend,function(t){ return Math.abs(txAmount(t)); });
   var first='', last='';
@@ -10679,9 +10950,10 @@ function receiptBlock(t,drag,sel){
   /* the whole block is the draggable unit, header and split lines together,
      so reordering a day never leaves a receipt's parts in different places */
   var st=stateOf(t), grey=st==='refund'||st==='owedback';
-  var h='<div class="rcp'+(open?' open':'')+(drag?' txdrag':'')+'"'+
+  var rpb=pbOf(t);
+  var h='<div class="rcp'+(open?' open':'')+(drag?' txdrag':'')+(rpb?' pby':'')+'"'+(rpb?' style="--pb:'+rpb+'"':'')+
     (drag?' data-k="e" data-row="'+(t.row||0)+'"'+pid:'')+'>';
-  h+='<div class="row rcphead'+(sw?' swipeable':'')+(t.pending?' pendrow':'')+(picking?' selrow':'')+(sel?' selon':'')+
+  h+='<div class="row rcphead'+(sw?' swipeable':'')+(t.pending?' pendrow':'')+(rpb?' pby':'')+(picking?' selrow':'')+(sel?' selon':'')+
     (grey?' txout':'')+(st==='refund'?' txref':'')+'"'+
     (sw?' data-sk="e" data-sr="'+(t.row||0)+'"'+pid:'')+
     (!t.pending&&t.row?' data-pk="e" data-pr="'+t.row+'"':'')+
@@ -12073,7 +12345,7 @@ window.__S=S;
    As a website, a small service worker keeps these files on the phone, so
    the app opens instantly and with no signal. A new version is fetched in
    the background; when it arrives, a note offers to switch to it. */
-var APP_VERSION='2026.10.01.4';
+var APP_VERSION='2026.10.02.1';
 (function(){
   try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persist(); }catch(e){}
   if(inGas()||!('serviceWorker' in navigator)) return;
