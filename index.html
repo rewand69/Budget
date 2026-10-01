@@ -1314,6 +1314,11 @@ body.stale .iconbtn.more::after,body.refreshing .iconbtn.more::after{opacity:1;a
 .rcpfix{flex:none;padding:7px 14px;border:0;border-radius:11px;font:600 13px/1 -apple-system,system-ui;color:#fff;
   background:linear-gradient(160deg,#4E9A5B,#3C7F49);-webkit-tap-highlight-color:transparent}
 .rcpfix:active{transform:scale(.96)}
+/* under the total: said, not alarmed */
+.rcpover.rcpunder{background:rgba(25,23,19,.045);color:rgba(25,23,19,.62)}
+/* a fee folded into its payment's row */
+.ramtw{flex:none;display:flex;flex-direction:column;align-items:flex-end}
+.rsub.rfee{color:rgba(176,65,44,.78)}
 .rcpfix.sm{padding:4px 10px;font-size:12px;border-radius:9px;vertical-align:1px;margin-left:4px}
 .mrgpair{padding:6px 0}
 .mrgside{display:flex;align-items:center;gap:12px;padding:10px 16px}
@@ -2391,6 +2396,28 @@ function expandDeletion(list){
   });
   return out;
 }
+/* ---- a fee on its payment's own row ----------------------------------------
+   The fee paid with a transfer or a withdrawal is an expense of its own in
+   the sheet - it is money spent - but on screen it belongs to the payment: a
+   small "−5 ₴ fee" under its amount, not a row of its own. Only where the
+   payment is in the same list on the same day; anywhere else (a search for
+   fees, transfers hidden, a category picked) it is its own row again. */
+function feeParentId(t){ return (t&&t.k==='e'&&t.id&&/-f$/.test(t.id))?String(t.id).slice(0,-2):''; }
+/* the transfer or withdrawal it was paid with, on the same day and card -
+   moved apart, it is its own row again, so the difference shows */
+function feeRides(f,par){
+  return !!(f&&par&&f!==par&&par.k==='e'&&par.date===f.date&&par.account===f.account&&
+            isXferSub(par.sub)&&!isReceipt(par)&&!isLine(par));
+}
+function feeFold(list){
+  var ids={}, out={hidden:[],on:{}};
+  list.forEach(function(t){ if(t&&t.k==='e'&&t.id) ids[t.id]=t; });
+  list.forEach(function(t){
+    var pid=feeParentId(t);
+    if(pid&&feeRides(t,ids[pid])){ out.hidden.push(t); out.on[pid]=t; }
+  });
+  return out;
+}
 /* the fee paid with a payment: its own expense, id + "-f" */
 function feeOf(t){
   if(!t||!t.id) return null;
@@ -3349,7 +3376,7 @@ function corrFmt(t,v,bare){
 var CORR_ICON=svgIc('sliders',19,1.9);
 
 var XFER_ICON=svgIc('transfer',19,1.9);
-function txRow(t,onclick,drag,sel){
+function txRow(t,onclick,drag,sel,fee){
   var e=isExp(t);
   var xf=isXfer(t);
   var cr=isCorr(t);
@@ -3413,8 +3440,12 @@ function txRow(t,onclick,drag,sel){
     (xf?icBadge('transfer',hueOf(t.main||'Transfer')):cr?icBadge('sliders',hueOf('Balance correction')):
       e?catBadge(key,t.main):srcBadge(key))+
     '<div class="rmain"><div class="rtitle">'+((xf||cr)?title:esc(title||'—'))+'</div><div class="rmeta">'+marks+esc(meta)+'</div></div>'+
+    /* a fee paid with it sits under the amount, outside the amount's own
+       tap: a tap on it opens the whole transfer, where the fee is */
+    (fee?'<div class="ramtw">':'')+
     '<div'+(amtEditable(t,picking)?' class="amttap" onclick="openAmt(event,\''+t.k+'\','+t.row+')"':'')+'><div class="ramt" style="color:'+((xf||cr||grey||st==='owed')?'rgba(25,23,19,.50)':(e?'#191713':GREEN))+'">'+amt+'</div>'+
     (extra?'<div class="rsub">'+esc(extra)+'</div>':'')+'</div>'+
+    (fee?'<div class="rsub rfee">\u2212'+esc(curAmt(Math.abs(Number(fee.amount)||0),fee.currency||'UAH'))+' fee</div></div>':'')+
     '</button>';
 }
 function barFill(w,name,over){
@@ -3595,7 +3626,9 @@ function activityList(){
     list.sort(function(a,b){ if(a.date!==b.date) return a.date<b.date?1:-1; return orderKey(b)-orderKey(a); });
   }
 
-  var h=mo?monthBar(mo,list):'';
+  /* a fee riding on its payment's row is not a row of its own */
+  var fold=feeFold(list), shownN=list.length-fold.hidden.length;
+  var h=mo?monthBar(mo,list,shownN):'';
   /* the running total means something once a tab or a filter has narrowed
      things down. On All the two kinds cancel, so it is a net, not a sum. */
   if(!mo&&(searching||S.filter!=='All'||anyFilter())){
@@ -3606,11 +3639,14 @@ function activityList(){
     var f=(S.filter==='Income')?bmoney:money;
     var what=searching?(S.older?'everything loaded':'last two years'+(S.olderAsked?' — loading older…':'')):(S.fBad?'all of them, oldest included':'last 30 days');
     h+='<div class="glass" style="margin-top:10px;padding:12px 16px;display:flex;align-items:baseline;justify-content:space-between;gap:10px">'+
-       '<span class="tiny">'+list.length+' record'+(list.length===1?'':'s')+' · '+what+'</span>'+
+       '<span class="tiny">'+shownN+' record'+(shownN===1?'':'s')+' · '+what+'</span>'+
        '<span style="flex:none;font:600 15px/1 -apple-system;letter-spacing:-.3px">'+
        (mixed?((tot>=0?'+':'−')+money(Math.abs(tot),2)):f(tot,2))+'</span></div>';
   }
 
+  /* a fee rides on its payment's row - and is still counted in its day */
+  if(fold.hidden.length) list=list.filter(function(t){ return fold.hidden.indexOf(t)<0; });
+  function feeOn(t){ return (t.k==='e'&&t.id&&fold.on[t.id])||null; }
   /* Every day, not only the ones with something on them: an empty day is
      room to drop a record into. Not in a search, the needs-attention list,
      the income list or a narrowed one, where an empty day says nothing. */
@@ -3654,10 +3690,11 @@ function activityList(){
       return;
     }
     var dayNet=sum(items,function(t){
-      if(isXfer(t)||isCorr(t)) return 0;
+      var fe=feeOn(t), fx=fe?-rowUah(fe):0;
+      if(isXfer(t)||isCorr(t)) return fx;
       /* the receipt's own row holds only what is still unsplit, and its lines
          are folded away under it - so the day counts the whole payment once */
-      return (t.k==='i'?1:-1)*rowUah(t);
+      return (t.k==='i'?1:-1)*rowUah(t)+fx;
     });
     var hasInc=false; items.forEach(function(t){ if(t.k==='i') hasInc=true; });
     /* the two little buttons around the day's number add straight to THAT day.
@@ -3675,7 +3712,7 @@ function activityList(){
         var sel=pickMode?(selHas(t)?1:0):undefined;
         var dr=!searching && !pickMode && (t.pending ? !!t.id : !!t.row);
         if(isReceipt(t)) return receiptBlock(t, dr, sel);
-        return txRow(t, pickMode?('selTap(\''+t.k+'\','+t.row+')'):('editTx(\''+t.k+'\','+t.row+')'), dr, sel);
+        return txRow(t, pickMode?('selTap(\''+t.k+'\','+t.row+')'):('editTx(\''+t.k+'\','+t.row+')'), dr, sel, feeOn(t));
       }).join('')+'</div>';
   });
   if(more) h+='<button class="moreres glass" style="margin-top:12px" onclick="moreResults()">Show more</button>';
@@ -3706,8 +3743,9 @@ function monthTotals(list){
   });
   return {out:out,inc:inc};
 }
-function monthBar(mo,list){
-  var tot=monthTotals(list), sub=[list.length+' record'+(list.length===1?'':'s')];
+function monthBar(mo,list,n){
+  if(n===undefined) n=list.length;
+  var tot=monthTotals(list), sub=[n+' record'+(n===1?'':'s')];
   if(S.filter!=='Income'&&tot.out) sub.push(money(-tot.out,0));
   if(S.filter!=='Expenses'&&tot.inc) sub.push('+'+bmoney(tot.inc,0));
   return '<div class="monthbar glass">'+
@@ -5347,12 +5385,12 @@ function splitNote(s){
   var used=0, d=decOfAcc(s.account);
   (s.lines||[]).forEach(function(l){ used+=amtOf(l.amount,d); });
   if(!used) return 'Split it now, or leave it for later';
-  var tot=amtOf(s.amount,d);
+  var tot=amtOf(s.amount,d), cur=currencyOf(s.account)||'UAH';
   /* nothing typed in the big number: then the lines are the receipt */
-  if(!tot) return 'Total from the lines: '+money(used,0);
-  var left=Math.round((tot-used)*100)/100;
-  if(Math.abs(left)<0.005) return 'Fully split';
-  return money(Math.abs(left),0)+(left>0?' still unsplit':' over the total');
+  if(!tot) return 'Total from the lines: '+curAmt(used,cur);
+  var p=Math.pow(10,d), left=Math.round((tot-used)*p)/p;
+  if(!left) return 'Fully split';
+  return curAmt(Math.abs(left),cur)+(left>0?' still unsplit':' over the total');
 }
 function splitSum(s){
   var used=0, d=decOfAcc(s.account), p=Math.pow(10,d);
@@ -5368,7 +5406,8 @@ function updateSplitNote(){
 /* over the total: Fix makes the total what the lines come to */
 function splitNoteHtml(s){
   var h=esc(splitNote(s)), d=decOfAcc(s.account), p=Math.pow(10,d), tot=amtOf(s.amount,d), used=splitSum(s);
-  if(tot&&Math.round((used-tot)*p)>0) h+=' <button class="rcpfix sm" onclick="splitFix()">Fix</button>';
+  /* over the total, or (with lines in it) under it: Fix makes the total the lines' sum */
+  if(tot&&used&&Math.round((used-tot)*p)!==0) h+=' <button class="rcpfix sm" onclick="splitFix()">Fix</button>';
   return h;
 }
 function splitFix(){
@@ -5903,9 +5942,11 @@ function openTripSum(name,back){
     if(a.date!==b.date) return a.date<b.date?1:-1;
     return orderKey(b)-orderKey(a);
   });
+  var tfold=feeFold(recs);
+  recs=recs.filter(function(t){ return tfold.hidden.indexOf(t)<0; });
   if(recs.length){
     h+='<div class="sect"><span>Records</span></div><div class="glass list">'+recs.map(function(t){
-      return isReceipt(t)?receiptBlock(t,false):txRow(t,'editTx('+q(t.k)+','+t.row+')');
+      return isReceipt(t)?receiptBlock(t,false):txRow(t,'editTx('+q(t.k)+','+t.row+')',false,undefined,(t.k==='e'&&t.id&&tfold.on[t.id])||null);
     }).join('')+'</div>';
   }else h+='<div class="glass" style="margin-top:12px"><div class="empty">Nothing in this trip yet.</div></div>';
   if(live) h+='<button class="delbtn" onclick="endTrip()">End trip</button>';
@@ -7107,6 +7148,14 @@ function repeatTx(t){
                main:s.main,sub:s.sub,source:s.source,shop:s.shop,note:s.note,flags:s.flags,sched:'',trip:s.trip,
                allFlags:true,rid:newRid()};
   var fn='addTx';
+  /* the fee paid with it is shown as part of it, so a repeat pays it again */
+  var fe=t.k==='e'?feeOf(t):null, fAmt=feeRides(fe,t)?Math.abs(Number(fe.amount)||0):0;
+  if(!(fAmt>0&&apiV()>=3&&feeSubName()&&String(fe.currency||'UAH')===String(cur))) fAmt=0;
+  if(fAmt){
+    payload.fee=fAmt; payload.feeSub=feeSubName();
+    payload.feeNote=fe.note||(isAtmName(t.sub)?'ATM fee':'Transfer fee');
+    payload.feeTrip=tripName()||'';
+  }
   if(xf){
     fn='addTransfer';
     var tc=mate?(mate.currency||'UAH'):(currencyOf(t.shop)||'UAH'), p=Math.pow(10,decOf(tc));
@@ -7114,16 +7163,20 @@ function repeatTx(t){
     payload.toAmount=mate?Math.abs(Number(mate.amount)||0):Math.round(amt*rateOf(cur)/(rateOf(tc)||1)*p)/p;
     payload.inSource=(mate&&mate.source)||xferWords(acc,t.shop).src;
   }
-  var cid='p'+(++S.cid), row=localTx(s,cur,cid);
+  var cid='p'+(++S.cid), row=localTx(s,cur,cid), fcid='';
   S.pending[cid]=row; D.tx.push(row);
+  if(fAmt){ fcid='p'+(++S.cid); var frow=feeLocal(s,fAmt,cur,id,fcid,payload.feeNote,payload.feeTrip); S.pending[fcid]=frow; D.tx.push(frow); }
   prep(); render(true);
-  function drop(){ delete S.pending[cid]; D.tx=D.tx.filter(function(x){ return x.cid!==cid; }); }
+  function drop(){
+    delete S.pending[cid]; if(fcid) delete S.pending[fcid];
+    D.tx=D.tx.filter(function(x){ return x.cid!==cid&&!(fcid&&x.cid===fcid); });
+  }
   var name=xf?(isAtmName(t.sub)?'Cash withdrawal':'Transfer'):strip(t.k==='e'?(t.shop||t.sub||'expense'):(t.source||'income'));
-  holdAction('Added again today · '+name,{
+  holdAction('Added again today · '+name+(fAmt?', fee too':''),{
     commit:function(leaving){
       var qid='';
       if(leaving===true){ qid='u'+payload.rid; qPush(qid,fn,payload); }
-      bg(fn,payload,function(){ if(qid) qRemove(qid); delete S.pending[cid]; },function(){ if(qid) qRemove(qid); drop(); });
+      bg(fn,payload,function(){ if(qid) qRemove(qid); delete S.pending[cid]; if(fcid) delete S.pending[fcid]; },function(){ if(qid) qRemove(qid); drop(); });
     },
     revert:function(){ drop(); rebuildTx(); prep(); render(true); },
     edit:function(){ openCopy(t,D.today); },
@@ -7147,6 +7200,9 @@ function openCopy(t,date){
        went anywhere, your cash */
     s.toAccount=(D.accMap&&D.accMap[t.shop])?t.shop:(isAtmName(t.sub)?cashAccountFor(s.account):'');
     s.trip='';
+    /* the fee it was paid with comes along, to keep or to clear */
+    var cf=feeOf(t);
+    if(feeRides(cf,t)&&String(cf.currency||'UAH')===String(t.currency||'UAH')) s.fee=numStr(Math.abs(Number(cf.amount)||0));
   }
   if(rcp&&!s.lines) s.lines=[];
   if(date) s.date=date;
@@ -7406,16 +7462,27 @@ function gripUp(){
 /* a day the way the list shows it: one row per payment, top to bottom - a
    receipt's lines and a transfer's income half ride inside their row */
 function dayOrder(date){
-  var day=visibleDay(date), heads={};
-  day.forEach(function(t){ if(isReceipt(t)) heads[t.receipt]=1; });
-  return day.filter(function(t){ return !(isLine(t)&&heads[t.receipt]); });
+  var day=visibleDay(date), heads={}, ids={};
+  day.forEach(function(t){ if(isReceipt(t)) heads[t.receipt]=1; if(t.k==='e'&&t.id) ids[t.id]=t; });
+  return day.filter(function(t){
+    if(isLine(t)&&heads[t.receipt]) return false;
+    /* and a fee rides on its payment's row */
+    var pid=feeParentId(t);
+    return !(pid&&feeRides(t,ids[pid]));
+  });
 }
 /* fresh descending numbers for a whole day, exactly what the sheet is then
    told to store. A transfer carries its hidden income half with it, so the
    pair stays together in the sheet and the halves never drift apart. */
 function renumberDay(seq){
   var touched=[];
-  seq.forEach(function(x){ touched.push(x); var mt=xferMate(x); if(mt) touched.push(mt); });
+  seq.forEach(function(x){
+    touched.push(x);
+    var mt=xferMate(x); if(mt) touched.push(mt);
+    /* the fee paid with it stays right under it */
+    var f=feeOf(x);
+    if(feeRides(f,x)&&seq.indexOf(f)<0&&touched.indexOf(f)<0) touched.push(f);
+  });
   var was=touched.map(function(x){ return x.sort; }), base=Date.now();
   touched.forEach(function(x,i){ x.sort=base-i; });
   return {touched:touched,was:was};
@@ -7431,6 +7498,9 @@ function dropAt(me,nb,after){
   if(!me||!nb||me===nb){ render(true); return; }
   var seq=dayOrder(me.date).filter(function(x){ return x!==me; });
   var at=seq.indexOf(nb);
+  /* dropped by a fee shown on its own (its transfer kept out of the list):
+     its place is its payment's */
+  if(at<0&&feeParentId(nb)) at=seq.indexOf(txById('e',feeParentId(nb)));
   if(at<0){ render(true); return; }
   seq.splice(after?at+1:at,0,me);
   var rn=renumberDay(seq);
@@ -7463,6 +7533,8 @@ function dropOnDay(me,day,nb){
   if(fee&&fee.date===fromDay) group.push(fee); else fee=null;
   var back=group.map(function(x){ return {t:x,date:x.date,sort:x.sort}; });
   var seq=dayOrder(day), at=nb?seq.indexOf(nb):-1;
+  /* dropped by a fee shown on its own: its place is its payment's */
+  if(at<0&&nb&&feeParentId(nb)) at=seq.indexOf(txById('e',feeParentId(nb)));
   if(at<0) at=seq.length;
   seq.splice(at,0,me);
   if(fee) seq.splice(at+1,0,fee);
@@ -9283,9 +9355,11 @@ function openProjectSum(name,back){
     if(a.date!==b.date) return a.date<b.date?1:-1;
     return orderKey(b)-orderKey(a);
   });
+  var pfold=feeFold(recs);
+  recs=recs.filter(function(t){ return pfold.hidden.indexOf(t)<0; });
   if(recs.length){
     h+='<div class="sect"><span>Records</span></div><div class="glass list">'+recs.map(function(t){
-      return isReceipt(t)?receiptBlock(t,false):txRow(t,'editTx('+q(t.k)+','+t.row+')');
+      return isReceipt(t)?receiptBlock(t,false):txRow(t,'editTx('+q(t.k)+','+t.row+')',false,undefined,(t.k==='e'&&t.id&&pfold.on[t.id])||null);
     }).join('')+'</div>';
   }else h+='<div class="glass" style="margin-top:12px"><div class="empty">Nothing in this project yet. Hold a record in Activity, then tap Project.</div></div>';
   h+='<div class="sect"><span>Name</span></div><div class="glass"><div class="newproj">'+
@@ -9372,7 +9446,7 @@ function feeName(s){
 }
 function feeField(s){
   if(!feeShown(s)) return '';
-  var hint=(s.edit&&s.feeWas)?'its own expense · clear it to remove':'optional · saved as its own expense';
+  var hint=(s.edit&&s.feeWas)?'clear it to remove':'optional';
   return '<div class="fieldlabel"><span id="f_feelab">'+feeName(s)+'</span> <span class="opt">'+hint+'</span></div>'+
     '<input class="tinput" id="f_fee" inputmode="decimal" autocomplete="off" placeholder="0" value="'+esc(s.fee||'')+'" oninput="shq(\'fee\',this.value)">';
 }
@@ -10315,9 +10389,13 @@ function receiptBlock(t,drag,sel){
       h+='<button class="rcpaddexp" onclick="openLine('+q(t.receipt)+')">'+svgIc('plus',15,2.6)+'Add expense</button>';
     else if(!lines.length) h+='<div class="rcpempty">Nothing split out yet</div>';
     /* the lines are what was actually bought, so when they come to more
-       than the receipt, one tap brings the total up to them */
+       than the receipt, one tap brings the total up to them - and when they
+       come to less, down to them */
     if(left<0&&!picking&&t.row&&!t.pending)
-      h+='<div class="rcpover"><span>The lines come to '+money(-left,0)+' more than the receipt</span>'+
+      h+='<div class="rcpover"><span>The lines come to '+esc(curAmt(-left,t.currency||'UAH'))+' more than the receipt</span>'+
+        '<button class="rcpfix" onclick="fixReceipt('+t.row+')">Fix</button></div>';
+    else if(left>0&&lines.length&&!picking&&t.row>0&&!t.pending)
+      h+='<div class="rcpover rcpunder"><span>The lines come to '+esc(curAmt(left,t.currency||'UAH'))+' less than the receipt</span>'+
         '<button class="rcpfix" onclick="fixReceipt('+t.row+')">Fix</button></div>';
     /* the total was a guess when it was typed, so it has to stay changeable:
        the receipt is the one row whose amount is not what it cost, and there
@@ -10327,11 +10405,13 @@ function receiptBlock(t,drag,sel){
   return h+'</div>';
 }
 
-/* The receipt's total becomes what its lines come to - the same edit as
-   typing that total into the receipt yourself. */
+/* The receipt's total becomes what its lines come to, up or down - the same
+   edit as typing that total into the receipt yourself. */
 function fixReceipt(row){
   var t=findTx('e',row); if(!t||!isReceipt(t)) return;
-  var left=receiptLeft(t); if(left>=0) return;
+  var left=receiptLeft(t); if(!left) return;
+  /* under the total with nothing split out, there is nothing to fix it to */
+  if(left>0&&!linesOf(t.receipt).length) return;
   var p=Math.pow(10,decOf(t.currency||'UAH'));
   var total=Math.round(((Number(t.rtotal)||0)-left)*p)/p;
   editTx('e',row);
@@ -11652,7 +11732,7 @@ window.__S=S;
    As a website, a small service worker keeps these files on the phone, so
    the app opens instantly and with no signal. A new version is fetched in
    the background; when it arrives, a note offers to switch to it. */
-var APP_VERSION='2026.10.01.1';
+var APP_VERSION='2026.10.01.2';
 (function(){
   try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persist(); }catch(e){}
   if(inGas()||!('serviceWorker' in navigator)) return;
