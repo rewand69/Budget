@@ -251,7 +251,7 @@ body.dragging .row.swipeable{touch-action:none}
 /* ------------------------------------------------------------ misc */
 .center{display:flex;align-items:center;justify-content:center}
 .spinner{width:26px;height:26px;border-radius:50%;border:2.5px solid rgba(25,23,19,.12);border-top-color:rgba(25,23,19,.45);animation:spin .8s linear infinite}
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:70;
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:70;pointer-events:none;
   padding:12px 18px;border-radius:20px;font:500 13px/1.3 -apple-system,sans-serif;max-width:88%;text-align:center;
   background:rgba(28,26,23,.88);color:#fff;box-shadow:0 10px 30px -10px rgba(30,26,22,.6);animation:pop .2s ease}
 .empty{padding:26px 18px;text-align:center;color:rgba(25,23,19,.4);font:400 13.5px/1.4 -apple-system,sans-serif}
@@ -832,21 +832,37 @@ select.expname{padding:9px 10px;font-size:14px;border-radius:13px}
 .pendrow>*:not(.swdel):not(.swrep){opacity:.5}
 /* keep adding: at the end of the form, where it scrolls with everything else */
 .ghostbtn.addmore{margin-top:18px}
-/* the foot of a split: a divider with a plus to add a line, and under it
-   the rest of the receipt in one tap */
-.rlbtns{display:flex;flex-direction:column;gap:8px;margin-top:2px}
-.rlbtns .rladd{display:flex;align-items:center;gap:10px;align-self:stretch;width:100%;margin:0;padding:7px 0;
-  border-radius:0;background:none;color:#2F6BFF}
+/* ---- an expense inside a receipt: its own window, over the receipt ---- */
+#modal3 .scrim{z-index:55}
+#modal3 .sheet{z-index:56}
+/* a little shorter, so the receipt's own top stays in sight behind it */
+.sheet.subsheet{max-height:calc(100% - 66px)}
+#modal>.sheet{transition:transform .32s cubic-bezier(.2,.9,.15,1),filter .32s ease}
+#modal>.sheet.behind{transform:scale(.94);transform-origin:50% 0;filter:brightness(.97)}
+.rlrestw{display:flex;justify-content:center;min-height:0;margin-top:12px}
+.rlrestw:empty{margin-top:0}
+.restpill{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border:0;border-radius:999px;
+  background:rgba(47,107,255,.10);color:#2F5BD8;font:600 14px/1 -apple-system,sans-serif;font-variant-numeric:tabular-nums;
+  transition:background .15s,transform .15s}
+.restpill:active{transform:scale(.96);background:rgba(47,107,255,.18)}
+.restpill.on{background:#2F6BFF;color:#fff}
+.restpill.off{background:rgba(25,23,19,.05);color:rgba(25,23,19,.38)}
+.rlctx{text-align:center;margin:10px 4px 0;transition:color .2s}
+.rlctx.flash{color:#1d7a46;font-weight:600}
+/* the receipt's list while it is written, and the button that adds to it */
+.rllist{margin-bottom:10px}
+.addexp{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border:0;border-radius:18px;
+  background:rgba(47,107,255,.09);color:#2F5BD8;font:600 15px/1 -apple-system,sans-serif;
+  box-shadow:inset 0 0 0 .5px rgba(47,107,255,.18);transition:background .15s,transform .15s}
+.addexp:active{transform:scale(.985);background:rgba(47,107,255,.16)}
+/* the same, under a saved receipt's lines in Activity */
+.rcpaddexp{display:flex;align-items:center;gap:8px;margin:6px 0 12px;padding:10px 14px;border:0;border-radius:13px;
+  background:rgba(47,107,255,.09);color:#2F5BD8;font:600 13.5px/1 -apple-system,sans-serif}
+.rcpaddexp:active{background:rgba(47,107,255,.16)}
+/* a divider with a plus on its left: adds one more where it stands */
 .rlplus{flex:none;display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;
   background:rgba(47,107,255,.10);color:#2F6BFF;transition:background .15s,transform .15s}
 .rlrule{flex:1;height:1px;background:rgba(25,23,19,.13)}
-.rlbtns .rladd:active .rlplus{background:rgba(47,107,255,.22);transform:scale(.92)}
-.rlrest{position:relative;display:flex;align-items:center;justify-content:center;border-radius:14px;
-  background:rgba(47,107,255,.08);color:#2F5BD8;font:600 14px/1 -apple-system,sans-serif;padding:13px 10px}
-.rlrest select{position:absolute;inset:0;opacity:0;width:100%;height:100%;font-size:16px}
-.restrow{display:flex;align-items:center;gap:12px;padding:10px 12px 10px 16px;margin-bottom:12px}
-.restrow .rt{flex:none;font:600 14px/1.2 -apple-system,sans-serif}
-.restrow .selwrap{flex:1;min-width:0}
 /* an amount changed where it is */
 .amttap{cursor:pointer;margin:-8px -6px -8px 0;padding:8px 6px 8px 10px;border-radius:12px}
 .amttap:active{background:rgba(47,107,255,.10)}
@@ -916,6 +932,7 @@ select.expname{padding:9px 10px;font-size:14px;border-radius:13px}
   font:600 12.5px/1.25 -apple-system,sans-serif;text-align:center;
   box-shadow:0 6px 18px rgba(28,26,23,.20)}
 .outbox:active{transform:scale(.98)}
+body.rlopen .outbox{display:none}
 .sw{flex:none;width:44px;height:26px;border-radius:13px;background:rgba(25,23,19,.14);
   position:relative;transition:background .18s}
 .sw>i{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;
@@ -936,15 +953,8 @@ select.expname{padding:9px 10px;font-size:14px;border-radius:13px}
   font:600 13.5px/1 -apple-system,sans-serif}
 .mchip .mglyph{font-size:14.5px;line-height:1}
 .mchip.on{background:rgba(51,123,208,.14);color:rgb(38,92,156)}
-.rlines{display:flex;flex-direction:column;gap:7px}
-.rline{display:flex;gap:7px;align-items:center}
-.rlamt{flex:0 0 96px;width:96px;text-align:right;font-variant-numeric:tabular-nums}
-.rlsub{flex:1;min-width:0}
-.rlsub .tinput{width:100%}
 .rlx{flex:none;width:30px;height:30px;padding:0;border:0;border-radius:50%;
   background:rgba(25,23,19,.06);color:rgba(25,23,19,.45);font-size:13px;line-height:1}
-.rladd{align-self:flex-start;margin-top:1px;padding:7px 13px;border:0;border-radius:11px;
-  background:rgba(25,23,19,.06);color:rgba(25,23,19,.62);font:600 13px/1 -apple-system,sans-serif}
 .fieldlabel .opt{margin-left:6px;font-weight:500;opacity:.55;text-transform:none;letter-spacing:0}
 
 /* the amount pad, now four wide, with the operators in their own column */
@@ -1420,6 +1430,7 @@ button.actcard .chevr{flex:none;color:rgba(25,23,19,.28);font-size:19px}
 </defs></svg>
 <nav class="tabbar"><div class="tabbar-in"><div class="tablens" id="tablens"><div class="lenscore" id="lenscore"></div></div><div class="tabs" id="tabs"></div></div></nav>
   <div id="modal"></div>
+  <div id="modal3"></div>
   <div id="modal2"></div>
   <div id="toast"></div>
   <div id="undo"></div>
@@ -1456,7 +1467,7 @@ button.actcard .chevr{flex:none;color:rgba(25,23,19,.28);font-size:19px}
    RENDERING
    render(true) repaints from D. Handlers that must NOT lose the
    keyboard, the caret or the scroll position patch their own node
-   instead of calling drawSheet() — see rlAdd/rlDel, toggleFlag,
+   instead of calling drawSheet() — see splitRepaint, toggleFlag,
    markShopChips. Break that rule and the sheet flickers and the
    iOS keyboard closes mid-entry.
 
@@ -2180,13 +2191,13 @@ function lockPage(on){
   }
 }
 function syncPageLock(){
-  var m=document.getElementById('modal'), m2=document.getElementById('modal2');
-  lockPage(!!((m&&m.firstChild)||(m2&&m2.firstChild)));
+  var m=document.getElementById('modal'), m2=document.getElementById('modal2'), m3=document.getElementById('modal3');
+  lockPage(!!((m&&m.firstChild)||(m2&&m2.firstChild)||(m3&&m3.firstChild)));
 }
 function watchSheets(){
   try{
     var mo=new MutationObserver(syncPageLock);
-    ['modal','modal2'].forEach(function(id){ var el=document.getElementById(id); if(el) mo.observe(el,{childList:true}); });
+    ['modal','modal2','modal3'].forEach(function(id){ var el=document.getElementById(id); if(el) mo.observe(el,{childList:true}); });
   }catch(e){}
 }
 function render(keepScroll){
@@ -2201,6 +2212,7 @@ function render(keepScroll){
   }[S.tab])();
   v.className=keepScroll?'':'fade';
   renderTabs(); renderFab();
+  if(S.rl) rlAmtPaint();
   fitNums(v);
   setPageY(keepScroll?y:0);
   if(S.justPaid){ if(S.justPaid.shown) S.justPaid=null; else S.justPaid.shown=true; }
@@ -2714,7 +2726,7 @@ function placeRun(k,id,day,above){
     bg('editMany',pl,null,undoLocal);
   }else bg('reorderTx',{items:rn.touched.map(orderRef)},null,undoLocal);
 }
-function bg(fn,payload,cleanup,rollback){
+function bg(fn,payload,cleanup,rollback,onPark){
   if(payload===undefined||payload===null) payload={};
   /* one id per request, kept across every retry: the server does a request
      once however many times it arrives */
@@ -2731,6 +2743,7 @@ function bg(fn,payload,cleanup,rollback){
     S.qcb[id]={cleanup:cleanup,rollback:rollback};
     qPush(id,fn,payload);
     toast(msg,4500);
+    if(onPark) onPark();
   }
   if(offline()){ park('No connection — it is kept here and goes up by itself'); return; }
   function done(err,res){
@@ -3182,8 +3195,8 @@ document.addEventListener('touchstart',function(e){
   PTR=null;
   if(!D||S.refreshing||DRAG||e.touches.length!==1) return;
   if((window.scrollY||window.pageYOffset||0)>0) return;
-  var m=document.getElementById('modal'), m2=document.getElementById('modal2');
-  if((m&&m.firstChild)||(m2&&m2.firstChild)||document.body.classList.contains('connecting')) return;
+  var m=document.getElementById('modal'), m2=document.getElementById('modal2'), m3=document.getElementById('modal3');
+  if((m&&m.firstChild)||(m2&&m2.firstChild)||(m3&&m3.firstChild)||document.body.classList.contains('connecting')) return;
   var t=e.target;
   if(!t.closest||t.closest('.tabbar,.fab,#fabwrap,.selbar,input,textarea,select,.grip')) return;
   PTR={x:e.touches[0].clientX,y:e.touches[0].clientY,d:0,on:false};
@@ -5274,6 +5287,7 @@ function defaultAccount(){
   return a?a.name:'';
 }
 function openSheet(kind,existing){
+  if(S.rl) rlClose();
   S.confirmDel=false;
   var acc=existing?existing.account:(lastAccount(kind)||defaultAccount());
   S.sheet=existing?{
@@ -5329,11 +5343,6 @@ function convertible(s){
 /* ---- the split, written while the receipt is being entered --------------
    A receipt may still arrive as one lump and be split later, so every line
    here is optional; whatever is filled in is written with the receipt. */
-function sheetLines(){
-  var s=S.sheet; if(!s) return [];
-  if(!s.lines) s.lines=[];
-  return s.lines;
-}
 function splitNote(s){
   var used=0, d=decOfAcc(s.account);
   (s.lines||[]).forEach(function(l){ used+=amtOf(l.amount,d); });
@@ -5349,67 +5358,6 @@ function splitSum(s){
   var used=0, d=decOfAcc(s.account), p=Math.pow(10,d);
   (s.lines||[]).forEach(function(l){ used+=amtOf(l.amount,d); });
   return Math.round(used*p)/p;
-}
-function newLine(){ return {id:'rl'+(++S.lid), amount:'', sub:'', flag:''}; }
-function lineById(id){
-  var a=sheetLines();
-  for(var i=0;i<a.length;i++) if(a[i].id===id) return a[i];
-  return null;
-}
-function rlineHtml(l){
-  return '<div class="rline" id="'+l.id+'">'+
-    '<input class="tinput rlamt" inputmode="decimal" placeholder="0" value="'+esc(l.amount)+'"'+
-      ' oninput="rlAmt('+q(l.id)+',this.value)">'+
-    '<div class="selwrap rlsub"><select class="tinput sel" onchange="rlSub('+q(l.id)+',this.value)">'+
-      subOptions('',l.sub)+markOptions(l.flag)+'</select><span class="chev">\u25BC</span></div>'+
-    '<button class="rlx" onclick="rlDel('+q(l.id)+')" aria-label="Remove this line">\u2715</button>'+
-  '</div>';
-}
-function splitEditor(s){
-  var h='<div class="fieldlabel">Split <span class="opt">optional</span></div>';
-  h+='<div class="rlines" id="rlines">'+(s.lines||[]).map(rlineHtml).join('')+
-    '<div class="rlbtns"><button class="rladd" onclick="rlAdd()" aria-label="Add line">'+
-      '<span class="rlplus">'+svgIc('plus',15,2.6)+'</span><span class="rlrule"></span></button>'+
-    '<label class="rlrest">Rest \u2192 category<select onchange="rlRest(this.value);this.selectedIndex=0" aria-label="Put the rest into a category">'+
-      opt('','Put the rest into\u2026',true)+subOptions('','').replace(opt('','Choose subcategory\u2026',true),'')+markOptions('')+'</select></label></div></div>';
-  h+='<p class="tiny" id="splitnote" style="margin:7px 2px 0">'+splitNoteHtml(s)+'</p>';
-  return h;
-}
-/* a line is added and taken away in place. Redrawing the whole sheet for it
-   would throw away the keyboard, the scroll position and whatever else was
-   half typed, which is why every line carries an id of its own. */
-function rlAdd(){
-  var l=newLine();
-  sheetLines().push(l);
-  var box=document.getElementById('rlines');
-  if(!box){ drawSheet(); return; }
-  var btn=box.querySelector('.rlbtns')||box.querySelector('.rladd');
-  btn.insertAdjacentHTML('beforebegin',rlineHtml(l));
-  updateSplitNote();
-  var el=document.getElementById(l.id);
-  if(el){ var inp=el.querySelector('.rlamt'); if(inp) inp.focus(); }
-}
-function rlDel(id){
-  var a=sheetLines();
-  for(var i=0;i<a.length;i++) if(a[i].id===id){ a.splice(i,1); break; }
-  var el=document.getElementById(id);
-  if(el&&el.parentNode) el.parentNode.removeChild(el); else drawSheet();
-  updateSplitNote();
-}
-function rlAmt(id,v){ var l=lineById(id); if(l){ l.amount=v; updateSplitNote(); } }
-/* the marks sit at the foot of the same list: a line is either something
-   from a category, or one of those, never both */
-function markOptions(cur){
-  /* only the ones that can turn up on a shop receipt */
-  var use=FLAGS.filter(function(f){ return f.key==='gift'||f.key===cur; });
-  return '<optgroup label="Marks">'+
-    use.map(function(f){ return opt('~'+f.key,strip(f.name),cur===f.key); }).join('')+
-    '</optgroup>';
-}
-function rlSub(id,v){
-  var l=lineById(id); if(!l) return;
-  if(v.charAt(0)==='~'){ l.flag=v.slice(1); l.sub=''; }
-  else { l.sub=v; l.flag=''; }
 }
 /* typing must not redraw the sheet - that would take the keyboard away -
    so only the line that says how much is left gets rewritten */
@@ -5440,10 +5388,8 @@ function setReceipt(v){
     if(!v&&t&&isReceipt(t)) s.amount=numStr(Math.abs(Number(t.rtotal)||0));
   }
   s.receipt=!!v;
-  /* a receipt almost always has more than one thing on it, so two lines are
-     already waiting rather than asking to be made first */
-  if(s.receipt){ s.main=''; s.sub=''; s.toAccount='';
-    if(!s.lines||!s.lines.length) s.lines=[newLine(),newLine()]; }
+  /* what was on it is added one expense at a time, in a window of its own */
+  if(s.receipt){ s.main=''; s.sub=''; s.toAccount=''; if(!s.lines) s.lines=[]; }
   else s.lines=[];
   drawSheet();
 }
@@ -5458,7 +5404,7 @@ function editTx(kind,row){
   var t=findTx(kind,row);
   if(t) openSheet(kind,t);
 }
-function closeSheet(){ S.sheet=null; closeAccPicker(); document.getElementById('modal').innerHTML=''; renderFab(); }
+function closeSheet(){ if(S.rl&&S.rl.mode==='draft') rlClose(); S.sheet=null; closeAccPicker(); document.getElementById('modal').innerHTML=''; renderFab(); }
 function shq(k,v){ if(S.sheet) S.sheet[k]=v; }
 function currencyOf(name){ var a=D.accMap[name]; return a?a.currency:'UAH'; }
 
@@ -6215,12 +6161,13 @@ function refreshCatFields(){
 /* The list the field opens: every category as a small tile with its icon,
    under its family, so most of them fit on one screen - and a search on top
    for the rest. */
-function openCatPicker(){
-  if(!S.sheet) return;
-  S.catPick={q:''};
+function catTgt(){ return (S.catPick&&S.catPick.rl)?S.rl:S.sheet; }
+function openCatPicker(forRl){
+  var tgt=forRl?S.rl:S.sheet; if(!tgt) return;
+  S.catPick={q:'',rl:!!forRl};
   var h='<div class="scrim" style="z-index:60" onclick="closePicker()"></div><div class="sheet" style="z-index:61">'+
     '<div class="sheet-head"><button class="xbtn" onclick="closePicker()">\u2715</button>'+
-    '<span class="sheet-title">'+(S.sheet.kind==='i'?'Source':'Category')+'</span><span style="width:32px"></span></div>'+
+    '<span class="sheet-title">'+(tgt.kind==='i'?'Source':'Category')+'</span><span style="width:32px"></span></div>'+
     '<div class="sheet-body" style="margin-top:12px">'+
     '<input class="tinput catq" id="catq" type="search" autocomplete="off" autocorrect="off" placeholder="Search" oninput="catSearch(this.value)">'+
     '<div id="catbody">'+catBody()+'</div><div style="height:12px"></div></div></div>';
@@ -6232,7 +6179,9 @@ function catChip(v,label,icon,hue,cur){
     '<span class="cg" style="'+icStyle(hue)+'">'+svgIc(icon,16,2)+'</span><span class="cn">'+esc(label)+'</span></button>';
 }
 function catBody(){
-  var s=S.sheet; if(!s||!S.catPick) return '';
+  var s=catTgt(); if(!s||!S.catPick) return '';
+  /* inside a receipt: what was bought, never a transfer or a correction */
+  var only=S.catPick.rl?rlCatOk:function(){ return true; };
   var want=String(S.catPick.q||'').trim().toLowerCase();
   function hit(label,fam){ return !want||String(label).toLowerCase().indexOf(want)>-1||String(fam||'').toLowerCase().indexOf(want)>-1; }
   if(s.kind==='i'){
@@ -6244,21 +6193,22 @@ function catBody(){
   function chips(list){ return '<div class="catgrid">'+list.map(function(x){ return catChip(x.name,subLabel(x.name),icKey(x.name,x.main),hueOf(x.main||x.name),cur); }).join('')+'</div>'; }
   function head(label,icon){ return '<div class="sect catsect"><span>'+(icon?'<span class="inic">'+svgIc(icon,16,2)+'</span>':'')+esc(label)+'</span></div>'; }
   if(!want){
-    var rec=recentSubs(6).map(function(n){ return D.subMap[n]; }).filter(Boolean);
+    var rec=recentSubs(6).filter(only).map(function(n){ return D.subMap[n]; }).filter(Boolean);
     if(rec.length>=3) h+=head('Used most lately','repeat')+chips(rec);
   }
   var fams=D.setup.mainCategories.slice(), any=false;
   fams.forEach(function(m){
-    var l=subs.filter(function(x){ return x.main===m&&catPickable(x,cur)&&hit(subLabel(x.name),strip(m)); });
+    var l=subs.filter(function(x){ return x.main===m&&catPickable(x,cur)&&only(x.name)&&hit(subLabel(x.name),strip(m)); });
     if(l.length){ any=true; h+=head(strip(m),icKey(m))+chips(l); }
   });
-  var rest=subs.filter(function(x){ return fams.indexOf(x.main)<0&&catPickable(x,cur)&&hit(subLabel(x.name)); });
+  var rest=subs.filter(function(x){ return fams.indexOf(x.main)<0&&catPickable(x,cur)&&only(x.name)&&hit(subLabel(x.name)); });
   if(rest.length){ any=true; h+=head('Other','tag')+chips(rest); }
   if(!any) h+='<div class="empty" style="padding:18px 6px">Nothing called that.</div>';
   return h;
 }
 function catPickGo(v){
-  var s=S.sheet; closePicker(); if(!s) return;
+  var rl=!!(S.catPick&&S.catPick.rl), s=catTgt(); closePicker(); if(!s) return;
+  if(rl){ rlSetSub(v); return; }
   if(s.kind==='i'){ s.source=v; refreshCatFields(); return; }
   onSubChange(v);
 }
@@ -6358,6 +6308,8 @@ function drawSheet(){
   h+='</div>';
   document.getElementById('modal').innerHTML=h;
   updateAmt();
+  /* drawn again while an expense of it is open on top: it stays behind */
+  if(S.rl&&S.rl.mode==='draft') rlBehind(true);
 }
 function q(v){ return "'"+String(v).replace(/\\/g,'\\\\').replace(/'/g,"\\'")
   .replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')+"'"; }
@@ -6387,6 +6339,7 @@ function updateAmt(){
     }
     ta.placeholder=numStr(estToAmt(s));
   }
+  if(s.receipt) updateSplitNote();
   drawGuesses();
 }
 /* none of these redraw the sheet, so the scroll position never jumps */
@@ -6664,8 +6617,8 @@ function amtOf(a,dec){
   return (v===null||isNaN(v))?0:Math.abs(v);
 }
 /* The pad drives whichever amount is on screen. It is handed its target
-   rather than reaching for one, so a panel left in S.line can never catch
-   keystrokes meant for the sheet behind it. */
+   rather than reaching for one, so a window left open over the sheet can
+   never catch keystrokes meant for the sheet behind it. */
 function closeAll(a){
   /* what the hand opened and did not close, the pad closes for it, so a sum
      still reads as a number while the brackets are half typed */
@@ -6744,15 +6697,6 @@ function amtHtml(raw,sign,cur){
     (sum?'<span class="amtsum">'+(val===null||isNaN(val)?'\u2026':'= '+formatTyped(String(Math.abs(val))))+'</span>':'');
 }
 function press(k){ pressInto(S.sheet,k,updateAmt,S.sheet?decOfAcc(S.sheet.account):2); }
-function pressLine(k){ pressInto(S.line,k,updateLineAmt,S.line?decOfAcc(S.line.account):2); }
-function updateLineAmt(){
-  var d=S.line; if(!d) return;
-  var node=document.getElementById('lineamt'); if(!node) return;
-  node.innerHTML=amtHtml(d.amount,'\u2212',currencyOf(d.account)||'UAH');
-  node.style.color=d.amount?'#191713':'rgba(25,23,19,.22)';
-  var b=document.getElementById('linesave');
-  if(b) b.style.opacity=amtOf(d.amount,decOfAcc(d.account))?1:.4;
-}
 /* the = key settles the sum in place, so the total can be checked before saving */
 function saveSheet(){
   var s=S.sheet; if(!s) return;
@@ -6938,11 +6882,12 @@ function saveSheet(){
        half filled in is a mistake worth stopping for, an empty one is not */
     var drafts=[], bad='';
     (s.lines||[]).forEach(function(l){
-      var la=amtOf(l.amount,sdec), what=l.sub||l.flag;
+      var fl=l.flags||[], la=amtOf(l.amount,sdec);
+      var what=l.sub||fl.some(function(k){ return String(k).slice(0,2)!=='g:'; });
       if(!la&&!what) return;
       if(!la) bad=bad||'One split line has no amount';
       else if(!what) bad=bad||'One split line has no category';
-      else drafts.push({id:newId(), amount:la, sub:l.sub||'', flags:l.flag?[l.flag]:[]});
+      else drafts.push({id:newId(), amount:la, sub:l.sub||'', flags:fl.slice(), note:String(l.note||'').trim()});
     });
     if(bad){ toast(bad); return; }
     payload.lines=drafts;
@@ -6962,7 +6907,7 @@ function saveSheet(){
       var lcid='p'+(++S.cid), sub=D.subMap[l.sub];
       var row={k:'e',row:0,id:l.id,cid:lcid,pending:true,date:s.date,amount:l.amount,
         currency:cur,account:s.account,main:sub?sub.main:'',sub:l.sub,
-        shop:s.shop,note:'',uah:l.amount*rateOf(cur),
+        shop:s.shop,note:l.note||'',uah:l.amount*rateOf(cur),
         real:sub?sub.real:true,receipt:payload.receipt,rtotal:null,trip:s.trip||'',
         flags:(l.flags||[]).join(',')};
       S.pending[lcid]=row; D.tx.push(row); kids.push(lcid);
@@ -7203,7 +7148,7 @@ function openCopy(t,date){
     s.toAccount=(D.accMap&&D.accMap[t.shop])?t.shop:(isAtmName(t.sub)?cashAccountFor(s.account):'');
     s.trip='';
   }
-  if(rcp&&(!s.lines||!s.lines.length)) s.lines=[newLine(),newLine()];
+  if(rcp&&!s.lines) s.lines=[];
   if(date) s.date=date;
   drawSheet();
 }
@@ -8718,18 +8663,33 @@ function expJoin(kind,name){
    has come back, a step given as a function is worked out only then, and a
    refusal stops the rest. */
 function bgChain(steps,done){
-  var i=0;
+  var i=0, handed=false;
+  /* A step parked in the outbox (no connection, or no answer) takes the
+     steps after it along, in order: the outbox outlives a reload, the chain
+     does not. Only plain steps go - one worked out from the answers before
+     it has to wait for them. */
+  function handOff(){
+    if(handed) return;
+    for(var j=i;j<steps.length;j++) if(typeof steps[j]==='function') return;
+    handed=true;
+    for(;i<steps.length;i++){
+      var st=steps[i]; if(!st) continue;
+      if(st.payload&&typeof st.payload==='object'&&!(st.payload instanceof Array)&&!st.payload.rid) st.payload.rid=newRid();
+      qPush('q'+(++S.qid),st.fn,st.payload);
+    }
+  }
   (function next(){
     var st=steps[i++];
     if(st===undefined){ if(done) done(true); return; }
     if(typeof st==='function') st=st();
     if(!st){ next(); return; }
     var bad=false, fired=false;
-    var undo=st.rollback;
+    var undo=st.rollback, after=st.cleanup;
     bg(st.fn,st.payload,
       /* a step sent again after a slow answer can come back twice */
-      function(){ if(fired) return; fired=true; setTimeout(function(){ if(bad){ if(done) done(false); } else next(); },0); },
-      function(){ bad=true; if(undo) undo(); });
+      function(){ if(fired) return; fired=true; if(after) after(); setTimeout(function(){ if(bad){ if(done) done(false); } else next(); },0); },
+      function(){ bad=true; if(undo) undo(); },
+      handOff);
   })();
 }
 function mergeDone(M,ok){
@@ -10066,7 +10026,7 @@ function goalsSection(){
   return h+l.map(goalCard).join('');
 }
 /* ---- in the add sheet: right under the category, once it is Savings transfer */
-function goalField(s){
+function goalField(s,fn){
   if(!s||s.kind!=='e'||s.receipt||!isSavingsSub(s.sub)||apiV()<3) return '';
   var l=goalsList(), cur=goalOfFlags(s.flags);
   var h='<div class="fieldlabel">Saving goal <span class="opt">optional</span></div><div class="mrow">';
@@ -10074,7 +10034,7 @@ function goalField(s){
   var names=l.map(function(g){ return g.name; });
   if(cur&&names.indexOf(cur)<0) names.push(cur);
   names.forEach(function(n){
-    h+='<button class="mchip'+(n===cur?' on':'')+'" onclick="sheetGoal('+q(n)+')"><span class="mglyph">'+svgIc('piggy',16,2)+'</span>'+esc(n)+'</button>';
+    h+='<button class="mchip'+(n===cur?' on':'')+'" onclick="'+(fn||'sheetGoal')+'('+q(n)+')"><span class="mglyph">'+svgIc('piggy',16,2)+'</span>'+esc(n)+'</button>';
   });
   return h+'</div>';
 }
@@ -10345,12 +10305,15 @@ function receiptBlock(t,drag,sel){
     '</div>';
   if(open){
     h+='<div class="rcpbody">';
-    h+=lines.length?lines.map(function(x){
+    h+=lines.map(function(x){
         return picking
           ? txRow(x,"selTap('e',"+x.row+")",false,selHas(x)?1:0)
           : txRow(x,"editTx('e',"+x.row+")",false);
-      }).join('')
-                   :'<div class="rcpempty">Nothing split out yet \u2014 tap + to add what was in it.</div>';
+      }).join('');
+    /* something still not split: the way to add it is right under the lines */
+    if(left>0&&!picking&&t.row>0&&!t.pending)
+      h+='<button class="rcpaddexp" onclick="openLine('+q(t.receipt)+')">'+svgIc('plus',15,2.6)+'Add expense</button>';
+    else if(!lines.length) h+='<div class="rcpempty">Nothing split out yet</div>';
     /* the lines are what was actually bought, so when they come to more
        than the receipt, one tap brings the total up to them */
     if(left<0&&!picking&&t.row&&!t.pending)
@@ -10526,75 +10489,300 @@ function doInto(){
     if(ok) toast(n===1?'It is part of the receipt now':n+' are part of the receipt now');
   });
 }
-/* Adding to a receipt only ever asks the two things it cannot know: how much,
-   and what kind. Shop, account, date and currency come from the receipt. */
-function openLine(id){
-  var t=(D.tx||[]).filter(function(x){ return isReceipt(x)&&x.receipt===id; })[0];
+/* ══════ an expense inside a receipt, in a window of its own ════════════════
+   The receipt already says where, when and with what it was paid: the
+   account, the shop, the date. This window asks for everything else an
+   expense has - how much (with the rest of the receipt one tap away), the
+   category, a goal for a Savings transfer, the marks, a note - and opens
+   over the receipt, which stays where it is underneath.
+   While a receipt is being written, what is added here waits in its list
+   and goes up with it. On a receipt already saved it goes up at once. */
+function rcpHeadOf(rid){
+  var all=D.tx||[];
+  for(var i=0;i<all.length;i++) if(isReceipt(all[i])&&all[i].receipt===rid) return all[i];
+  return null;
+}
+/* an amount the way its own currency writes it: no ".00" on whole hryvnias */
+function curAmt(v,cur){
+  cur=cur||'UAH';
+  var p=Math.pow(10,decOf(cur)), r=Math.round((Number(v)||0)*p)/p;
+  if(cur==='UAH') return money(r,Math.round(r*100)%100?2:0);
+  return PRIV.all?DOTS:numStr(r)+' '+cur;
+}
+function rlDec(){ return S.rl?decOfAcc(S.rl.account):2; }
+function rlLine(id){
+  var L=(S.sheet&&S.sheet.lines)||[];
+  for(var i=0;i<L.length;i++) if(L[i].id===id) return L[i];
+  return null;
+}
+/* what is still not split, rounded to the currency's own places - or null
+   when there is no total to count it from yet */
+function rlRestValue(){
+  var d=S.rl; if(!d) return null;
+  var dec=decOfAcc(d.account), p=Math.pow(10,dec);
+  if(d.mode==='draft'){
+    var s=S.sheet; if(!s) return null;
+    if(isSum(s.amount)&&isNaN(calcValue(s.amount,dec))) return null;
+    var tot=amtOf(s.amount,dec); if(!tot) return null;
+    /* the one being changed counts as not there: its own amount is part of the rest */
+    var used=0; (s.lines||[]).forEach(function(l){ if(l.id!==d.lid) used+=amtOf(l.amount,dec); });
+    return Math.round((tot-used)*p)/p;
+  }
+  var head=rcpHeadOf(d.rid);
+  return head?receiptLeft(head):null;
+}
+
+/* a new one, or one already in the list, while the receipt is being written */
+function rlOpenDraft(lid){
+  var s=S.sheet; if(!s||!s.receipt) return;
+  var l=lid?rlLine(lid):null;
+  S.rl={mode:'draft',lid:l?l.id:'',rid:'',kind:'e',account:s.account,shop:s.shop||'',date:s.date,
+        amount:l?String(l.amount||''):'',sub:l?l.sub||'':'',main:l?((D.subMap[l.sub]||{}).main||''):'',
+        note:l?l.note||'':'',flags:l?(l.flags||[]).slice():[]};
+  rlDraw();
+}
+/* one more into a receipt that is already saved: its + in Activity, or the
+   Add expense under its lines */
+function openLine(rid){
+  var t=rcpHeadOf(rid);
   if(!t){ toast('Receipt not found'); return; }
-  S.line={receipt:id, amount:'', sub:'', note:'', left:receiptLeft(t), shop:t.shop||'', account:t.account};
-  drawLine();
+  if(t.pending||!t.row){ toast('Wait a moment, the receipt is still saving'); return; }
+  /* from a trip's or a project's list: that list would be out of date under
+     it, so it makes way, the way it always has for the receipt's own sheet */
+  if(document.getElementById('modal').firstChild) closeModal();
+  S.rl={mode:'live',lid:'',rid:rid,kind:'e',account:t.account,shop:t.shop||'',date:t.date,
+        amount:'',sub:'',main:'',note:'',flags:[]};
+  rlDraw();
 }
-function drawLine(){
-  var d=S.line;
-  /* the same shape as the add-expense sheet: the amount is the headline and
-     the pad sits under it, so a split line is typed the same way as anything
-     else - sums included */
+function rlDraw(){
+  var d=S.rl; if(!d) return;
+  var edit=d.mode==='draft'&&!!d.lid;
   var grad='linear-gradient(160deg,'+ok(.74,.15,27)+','+ok(.62,.17,27)+')';
-  var h='<div class="scrim" onclick="closeModal()"></div><div class="sheet">';
-  h+='<div class="sheet-head">'+
-      '<button class="xbtn" onclick="closeModal()">\u2715</button>'+
-      '<span class="sheet-title">Add to receipt</span>'+
-      '<button class="savebtn" id="linesave" style="opacity:'+(amtOf(d.amount,decOfAcc(d.account))?1:.4)+
-        ';background:'+grad+'" onclick="saveLine()">Add</button>'+
-     '</div>';
-  h+='<div class="sheet-body">';
-  h+='<div class="amt" id="lineamt"></div>';
-  h+='<p class="tiny" style="margin:0 0 12px">'+esc(strip(d.account))+(d.shop?' \u00b7 '+esc(d.shop):'')+
-     (Math.abs(d.left)>0.005?' \u00b7 '+money(Math.abs(d.left),0)+(d.left>0?' still unsplit':' over the total'):' \u00b7 fully split')+'</p>';
-  /* what is still unsplit, into one category with one tap */
-  if(d.left>0.005) h+='<div class="restrow glass"><span class="rt">Rest \u00b7 '+money(d.left)+'</span>'+
-    '<div class="selwrap"><select class="tinput sel" onchange="lineRest(this.value)">'+opt('','Put it into\u2026',true)+
-      subOptions('','').replace(opt('','Choose subcategory\u2026',true),'')+'</select><span class="chev">\u25BC</span></div></div>';
-  h+='<div class="glass" style="padding:2px 0">'+
-    fRow('Category','<select class="tinput fin" onchange="S.line.sub=this.value">'+
-      subOptions('',d.sub)+'</select>')+
-    fRow('Comment','<input class="tinput fin" placeholder="none" value="'+esc(d.note)+'" oninput="S.line.note=this.value">')+
-    '</div>';
-  h+='<div style="height:6px"></div></div>';
-  h+=padKeys('pressLine');
-  h+='</div>';
-  document.getElementById('modal').innerHTML=h;
-  updateLineAmt();
+  var h='<div class="scrim" onclick="rlClose()"></div><div class="sheet subsheet">'+
+    '<div class="sheet-head"><button class="xbtn" onclick="rlClose()" aria-label="Close">✕</button>'+
+      '<span class="sheet-title">'+(edit?'Edit expense':'New expense')+'</span>'+
+      '<button class="savebtn" id="rlsave" style="background:'+grad+'" onclick="rlSave()">'+(edit?'Done':'Add')+'</button>'+
+    '</div>'+
+    '<div class="sheet-body" id="rlbody">'+rlBodyHtml()+'</div>'+
+    padKeys('rlPress')+
+  '</div>';
+  document.getElementById('modal3').innerHTML=h;
+  document.body.classList.add('rlopen');
+  rlBehind(true);
+  rlAmtPaint();
 }
-function saveLine(){
-  var d=S.line;
-  var ldec=decOfAcc(d.account);
-  if(isSum(d.amount)&&isNaN(calcValue(d.amount,ldec))){ toast('That sum is not finished'); return; }
-  var amt=amtOf(d.amount,ldec);
+/* where it was paid, said once: the receipt decides it, so it is not asked */
+function rlCtx(){
+  var d=S.rl, bits=[strip(d.account)];
+  if(String(d.shop||'').trim()) bits.push(String(d.shop).trim());
+  if(d.date) bits.push(fmtShort(d.date));
+  return 'In the receipt · '+bits.join(' · ');
+}
+function rlBodyHtml(){
+  var d=S.rl, edit=d.mode==='draft'&&!!d.lid, h='';
+  h+='<div class="amt" id="rlamt"></div>';
+  h+='<div class="rlrestw" id="rlrest"></div>';
+  h+='<p class="tiny rlctx">'+esc(rlCtx())+'</p>';
+  h+=field('Category','<button class="tinput accbtn catbtn" id="rl_cat" onclick="openCatPicker(1)">'+catFieldInner(d)+'</button>');
+  h+='<div id="rlgoal">'+goalField(d,'rlGoal')+'</div>';
+  h+='<div class="fieldlabel">Marks</div><div class="mrow">'+rlMarks()+'</div>';
+  h+='<div class="fieldlabel">Note</div><input class="tinput" id="rl_note" placeholder="Optional note" value="'+esc(d.note)+'" oninput="if(S.rl)S.rl.note=this.value">';
+  if(!edit) h+='<button class="ghostbtn addmore" onclick="rlSave(1)">Add &amp; another</button>';
+  else h+='<button class="delbtn" onclick="rlRemove()">Remove from the receipt</button>';
+  return h+'<div style="height:6px"></div>';
+}
+function rlPress(k){ pressInto(S.rl,k,rlAmtPaint,rlDec()); }
+function rlAmtPaint(){
+  var d=S.rl; if(!d) return;
+  var cur=currencyOf(d.account)||'UAH';
+  var n=document.getElementById('rlamt');
+  if(n){ n.innerHTML=amtHtml(d.amount,'−',cur); n.style.color=d.amount?'#191713':'rgba(25,23,19,.22)'; }
+  var b=document.getElementById('rlsave'); if(b) b.style.opacity=amtOf(d.amount,decOf(cur))?1:.4;
+  var r=document.getElementById('rlrest'); if(r) r.innerHTML=rlRestHtml();
+}
+/* the rest of the receipt in one tap, so nothing has to be counted */
+function rlRestHtml(){
+  var d=S.rl, v=rlRestValue();
+  if(v===null) return '';
+  var cur=currencyOf(d.account)||'UAH';
+  if(!(v>0)) return '<span class="restpill off">Nothing left to split</span>';
+  var on=!isSum(d.amount)&&Math.abs(amtOf(d.amount,decOf(cur))-v)<1e-9;
+  return '<button class="restpill'+(on?' on':'')+'" onclick="rlRest()">Rest · '+esc(curAmt(v,cur))+'</button>';
+}
+function rlRest(){
+  var d=S.rl, v=rlRestValue();
+  if(!d||!(v>0)) return;
+  d.amount=numStr(v);
+  rlAmtPaint();
+}
+function rlMarks(){
+  var f=S.rl.flags||[];
+  return FLAGS.map(function(fl){
+    var on=f.indexOf(fl.key)>-1;
+    return '<button class="mchip'+(on?' on':'')+'" id="rlmk_'+fl.key+'" onclick="rlFlag('+q(fl.key)+')">'+
+      '<span class="mglyph">'+svgIc(icKey(fl.name),16,2)+'</span>'+esc(strip(fl.name))+'</button>';
+  }).join('');
+}
+function rlFlag(k){
+  var d=S.rl; if(!d) return;
+  var i=d.flags.indexOf(k);
+  if(i<0) d.flags.push(k); else d.flags.splice(i,1);
+  var el=document.getElementById('rlmk_'+k);
+  if(el) el.className='mchip'+(i<0?' on':'');
+}
+function rlGoal(n){
+  var d=S.rl; if(!d) return;
+  var cur=goalOfFlags(d.flags);
+  d.flags=dropGoalFlags(d.flags);
+  if(cur!==n) d.flags.push('g:'+n);
+  var w=document.getElementById('rlgoal'); if(w) w.innerHTML=goalField(d,'rlGoal');
+}
+/* a transfer or a correction is never part of what was bought */
+function rlCatOk(n){ return !isXferSub(n)&&!isCorrName(n); }
+function rlSetSub(v){
+  var d=S.rl; if(!d) return;
+  d.sub=v;
+  var m=D.subMap[v]; d.main=m?m.main:'';
+  /* a goal belongs to a Savings transfer only */
+  if(!isSavingsSub(v)) d.flags=dropGoalFlags(d.flags);
+  var el=document.getElementById('rl_cat'); if(el) el.innerHTML=catFieldInner(d);
+  var w=document.getElementById('rlgoal'); if(w) w.innerHTML=goalField(d,'rlGoal');
+}
+function rlSave(next){
+  var d=S.rl; if(!d) return;
+  var dec=rlDec();
+  if(isSum(d.amount)&&isNaN(calcValue(d.amount,dec))){ toast('That sum is not finished'); return; }
+  var amt=amtOf(d.amount,dec);
   if(!amt){ toast('Enter an amount'); return; }
-  if(!d.sub){ toast('Pick a category'); return; }
-  var head=(D.tx||[]).filter(function(x){ return isReceipt(x)&&x.receipt===d.receipt; })[0];
-  if(!head){ toast('Receipt not found'); return; }
-  if(head.pending||!head.row){ toast('Wait a moment \u2014 the receipt is still saving'); return; }
-  /* show it at once and take it off the parent, so the receipt's own number
-     and the day's total both stay right while the sheet is still writing */
-  var cid='p'+(++S.cid), lid=newId();
-  var sub=D.subMap[d.sub];
+  /* a mark may stand in for the category - a gift bought in the same shop */
+  var marks=(d.flags||[]).filter(function(k){ return String(k).slice(0,2)!=='g:'; });
+  if(!d.sub&&!marks.length){ toast('Pick a category'); return; }
+  var note=String(d.note||'').trim(), cur=currencyOf(d.account)||'UAH';
+  var what=strip(d.sub)||strip((FLAGS.filter(function(f){ return marks.indexOf(f.key)>-1; })[0]||{}).name||'');
+  /* said inside the window when it stays open (a toast would sit on the keys) */
+  function said(){
+    var v=rlRestValue();
+    return 'Added '+what+(v>0?' · '+curAmt(v,cur)+' left':'');
+  }
+  if(d.mode==='draft'){
+    var s=S.sheet;
+    if(!s||!s.receipt){ rlClose(); return; }
+    var l=d.lid?rlLine(d.lid):null;
+    if(!l){ l={id:'rl'+(++S.lid)}; if(!s.lines) s.lines=[]; s.lines.push(l); }
+    l.amount=numStr(amt); l.sub=d.sub; l.flags=(d.flags||[]).slice(); l.note=note;
+    splitRepaint();
+    if(next){ var m=said(); rlReset(); rlFlash(m); } else rlClose();
+    return;
+  }
+  /* on a saved receipt: what it says goes first, so a "kept here, no
+     connection" from the request is the one that stays on screen */
+  rlSaveLive(d,amt,note,function(){
+    if(next){ var m=said(); rlReset(); rlFlash(m); }
+    else { rlClose(); toast('Added to the receipt'); }
+  });
+}
+/* a short note where the context line is, then the context line again */
+function rlFlash(msg){
+  var el=document.querySelector('#modal3 .rlctx'); if(!el) return;
+  el.textContent=msg; el.classList.add('flash');
+  clearTimeout(rlFlash._t);
+  rlFlash._t=setTimeout(function(){
+    var e2=document.querySelector('#modal3 .rlctx');
+    if(e2&&S.rl){ e2.textContent=rlCtx(); e2.classList.remove('flash'); }
+  },2400);
+}
+/* a fresh one in the same window, for the next thing on the receipt */
+function rlReset(){
+  var d=S.rl; if(!d) return;
+  d.amount=''; d.sub=''; d.main=''; d.note=''; d.flags=[]; d.lid='';
+  var b=document.getElementById('rlbody');
+  if(!b){ rlDraw(); return; }
+  b.innerHTML=rlBodyHtml(); b.scrollTop=0;
+  rlAmtPaint();
+}
+function rlRemove(){
+  var d=S.rl, s=S.sheet; if(!d||!s||!d.lid) return;
+  s.lines=(s.lines||[]).filter(function(l){ return l.id!==d.lid; });
+  rlClose();
+  splitRepaint();
+}
+function rlClose(){
+  var wasPick=S.catPick&&S.catPick.rl;
+  S.rl=null;
+  var m=document.getElementById('modal3'); if(m) m.innerHTML='';
+  document.body.classList.remove('rlopen');
+  rlBehind(false);
+  if(wasPick) closePicker();
+}
+/* the receipt underneath steps back a little while this is over it */
+function rlBehind(on){
+  var sh=document.querySelector('#modal > .sheet');
+  if(sh) sh.classList.toggle('behind',!!on);
+}
+/* Shown at once and taken off what the receipt still holds, so its own
+   number and the day's total stay right while the sheet is writing. The
+   marks go on once the line is there. */
+function rlSaveLive(d,amt,note,before){
+  var head=rcpHeadOf(d.rid);
+  if(!head){ toast('Receipt not found'); return false; }
+  if(head.pending||!head.row){ toast('Wait a moment, the receipt is still saving'); return false; }
+  var cid='p'+(++S.cid), lid=newId(), sub=D.subMap[d.sub], fl=(d.flags||[]).slice();
   var line={k:'e',row:0,id:lid,cid:cid,pending:true,date:head.date,amount:amt,
             currency:head.currency,account:head.account,
-            main:sub?sub.main:'',sub:d.sub,shop:head.shop,note:d.note,
+            main:sub?sub.main:'',sub:d.sub,shop:head.shop,note:note,
             uah:amt*rateOf(head.currency),real:sub?sub.real:true,
-            receipt:d.receipt,rtotal:null,trip:head.trip||''};
-  var wasAmt=head.amount, wasUah=head.uah;
+            receipt:d.rid,rtotal:null,trip:head.trip||'',flags:fl.join(',')};
   head.amount=Math.round((Number(head.amount)-amt)*1e8)/1e8;
   head.uah=head.amount*rateOf(head.currency);
   S.pending[cid]=line;
   D.tx.push(line);
-  closeModal(); prep(); render(true); toast('Added to receipt');
-  bg('addReceiptLine',{id:lid,receipt:d.receipt,amount:amt,sub:d.sub,note:d.note},
-    function(){ delete S.pending[cid]; },
-    function(){ D.tx=D.tx.filter(function(x){ return x.cid!==cid; });
-                head.amount=wasAmt; head.uah=wasUah; });
+  prep(); render(true);
+  /* everything the request needs is taken now: the window may start a fresh one */
+  var steps=[{fn:'addReceiptLine',payload:{id:lid,receipt:d.rid,amount:amt,sub:line.sub,note:note},
+    cleanup:function(){ delete S.pending[cid]; },
+    /* only this line's own part is given back: another added meanwhile keeps its */
+    rollback:function(){
+      D.tx=D.tx.filter(function(x){ return x.cid!==cid; });
+      head.amount=Math.round((Number(head.amount)+amt)*1e8)/1e8;
+      head.uah=head.amount*rateOf(head.currency);
+    }}];
+  if(fl.length) steps.push({fn:'editMany',payload:{items:[{kind:'e',id:lid,row:0}],flagAdd:fl}});
+  if(before) before();
+  bgChain(steps);
+  return true;
+}
+
+/* ---- the receipt's own list, while it is being written ------------------- */
+function splitEditor(s){
+  return '<div class="fieldlabel">Split <span class="opt">optional</span></div>'+
+    '<div id="splitbox">'+splitBoxHtml(s)+'</div>';
+}
+function splitBoxHtml(s){
+  var L=s.lines||[], h='';
+  if(L.length) h+='<div class="glass list rllist">'+L.map(function(l){ return rlRowHtml(l,s); }).join('')+'</div>';
+  h+='<button class="addexp" onclick="rlOpenDraft()">'+svgIc('plus',17,2.6)+'Add expense</button>';
+  h+='<p class="tiny" id="splitnote" style="margin:8px 2px 0">'+splitNoteHtml(s)+'</p>';
+  return h;
+}
+/* one line of the receipt, the way Activity will show it; a tap opens it */
+function rlRowHtml(l,s){
+  var cur=currencyOf(s.account)||'UAH';
+  var fl=FLAGS.filter(function(f){ return (l.flags||[]).indexOf(f.key)>-1; });
+  var key=l.sub, fam=(D.subMap[l.sub]||{}).main||'', title=strip(l.sub);
+  /* nothing but a mark on it: then the mark is what this line is */
+  if(!l.sub&&fl.length){ key=fl[0].name; fam=''; title=strip(fl[0].name); }
+  var marks=fl.filter(function(f){ return !!l.sub||f!==fl[0]; }).map(function(f){
+      return '<span class="mk">'+svgIc(icKey(f.name),13,2)+'</span>'; }).join('')+
+    (goalOfFlags(l.flags||[])?'<span class="mk">'+svgIc('piggy',13,2)+'</span>':'');
+  return '<button class="row" onclick="rlOpenDraft('+q(l.id)+')">'+catBadge(key,fam)+
+    '<div class="rmain"><div class="rtitle">'+esc(title||'—')+'</div>'+
+      ((marks||l.note)?'<div class="rmeta">'+marks+esc(l.note||'')+'</div>':'')+'</div>'+
+    '<div class="ramt">−'+esc(curAmt(amtOf(l.amount,decOf(cur)),cur))+'</div></button>';
+}
+function splitRepaint(){
+  if(!S.sheet) return;
+  var el=document.getElementById('splitbox');
+  if(el) el.innerHTML=splitBoxHtml(S.sheet); else drawSheet();
 }
 
 
@@ -11338,7 +11526,8 @@ function saveQuickOnce(){
 function closeModal(){
   /* the panels that own an amount let go of it here, so the pad can never
      be handed a target that is no longer on screen */
-  S.line=null; S.qonce=null; S.shop=null; S.menuOpen=false;
+  if(S.rl) rlClose();
+  S.qonce=null; S.shop=null; S.menuOpen=false;
   S.accOpen=null; S.monthsOpen=false; S.notifyOpen=false;
   S.owedOpen=false; S.back=null; S.cbEd=null; S.projOpen=null; S.ruleD=null; S.goalD=null;
   if(S.cardShown){ S.cardShown={}; clearTimeout(S.cardT); }
@@ -11463,7 +11652,7 @@ window.__S=S;
    As a website, a small service worker keeps these files on the phone, so
    the app opens instantly and with no signal. A new version is fetched in
    the background; when it arrives, a note offers to switch to it. */
-var APP_VERSION='2026.09.30.9';
+var APP_VERSION='2026.10.01.1';
 (function(){
   try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persist(); }catch(e){}
   if(inGas()||!('serviceWorker' in navigator)) return;
@@ -11814,28 +12003,6 @@ function saveAndNext(){
   if(keep.account&&D.accMap&&D.accMap[keep.account]) n.account=keep.account;
   drawSheet();
   toast('Saved — the next one, same day and account');
-}
-
-/* ---- the rest of a receipt, in one tap -------------------------------- */
-function rlRest(v){
-  var s=S.sheet; if(!s||!v) return;
-  var d=decOfAcc(s.account), p=Math.pow(10,d), total=amtOf(s.amount,d);
-  if(!total){ toast('Type the receipt total first'); return; }
-  var left=Math.round((total-splitSum(s))*p)/p;
-  if(!(left>0)){ toast('Nothing is left to split'); return; }
-  var L=sheetLines(), l=null;
-  /* an empty line waiting is used rather than adding one more */
-  for(var i=0;i<L.length;i++) if(!amtOf(L[i].amount,d)&&!L[i].sub&&!L[i].flag){ l=L[i]; break; }
-  if(!l){ l=newLine(); L.push(l); }
-  l.amount=numStr(left);
-  if(v.charAt(0)==='~'){ l.flag=v.slice(1); l.sub=''; } else { l.sub=v; l.flag=''; }
-  drawSheet();
-  toast('The rest → '+(v.charAt(0)==='~'?'marked':strip(v)));
-}
-function lineRest(v){
-  var d=S.line; if(!d||!v) return;
-  d.amount=numStr(Math.round(d.left*1e8)/1e8); d.sub=v;
-  saveLine();
 }
 
 /* ---- an amount changed where it is ------------------------------------ */
