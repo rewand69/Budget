@@ -1452,6 +1452,14 @@ button.actcard .chevr{flex:none;color:rgba(25,23,19,.28);font-size:19px}
 .cbempty b{display:block;font:600 14.5px/1.25 -apple-system,sans-serif;color:#191713}
 .cbempty i{display:block;margin-top:3px;font:400 12.5px/1.35 -apple-system,sans-serif;font-style:normal;color:rgba(25,23,19,.55)}
 .cbaddacc{display:block;width:100%;border:0;text-align:center}
+.cbtag{display:inline-block;margin-left:7px;padding:2px 6px;border-radius:6px;background:rgba(25,23,19,.06);
+  font:600 10.5px/1.2 -apple-system,sans-serif;letter-spacing:.2px;text-transform:uppercase;color:rgba(25,23,19,.5);vertical-align:2px}
+/* the Cashback button on Accounts, and the sheet it opens */
+.cbbtn .at>span{overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.cbbtn .nw{white-space:nowrap}
+#cbsheet+.glass{margin-top:12px}
+.cbnew{display:inline-block;margin-left:8px;padding:2px 7px;border-radius:7px;background:rgb(51,123,208);color:#fff;
+  font:600 10.5px/1.3 -apple-system,sans-serif;font-style:normal;letter-spacing:.2px;vertical-align:1px}
 
 /* ══════════════════════ icons you pick ══════════════════════ */
 .icpick{flex:none;display:flex;padding:0;border:0;background:none;border-radius:50%}
@@ -5361,8 +5369,6 @@ function pageAccounts(){
         (ov.daysUntil?' \u00b7 in '+ov.daysUntil+' day'+(ov.daysUntil==1?'':'s'):'')+'</div>':'')+
      '</div>';
 
-  /* which card to pay with: every category a card gives money back on */
-  h+=cbSection();
   /* what wants doing: money owed to you */
   h+=owedCard();
   h+='<div class="grid2">'+
@@ -5376,6 +5382,8 @@ function pageAccounts(){
      "what is mine". The daily figure has to be built from money actually
      held, or it reads as an allowance funded by debt. */
   h+=safeCard(inCash+inBank, debt);
+  /* which card to pay with: one button, the whole table a tap away */
+  h+=cbButton();
 
   var order=['\uD83D\uDCB5 Cash','\uD83D\uDCB3 Bank card','\uD83D\uDCB0 Savings','\uD83E\uDE99 Crypto'];
   /* empty accounts still count towards every total above — hiding them is
@@ -5444,8 +5452,11 @@ function cashbackList(a){
   parts.forEach(function(s){
     s=String(s).trim(); if(!s) return;
     var mm=s.match(/^(.*?)[\s\u00b7:\-\u2013\u2014]*([\d.,]+\s*%)$/);
-    if(mm&&mm[1].trim()) out.push({label:mm[1].trim(),rate:mm[2].replace(/\s+/g,'')});
-    else out.push({label:s,rate:''});
+    var c=(mm&&mm[1].trim())?{label:mm[1].trim(),rate:mm[2].replace(/\s+/g,'')}:{label:s,rate:''};
+    /* "Shop: Silpo - 10%" - money back at one shop, whatever is bought there */
+    var sm=c.label.match(/^(shop|store|магазин)\s*:\s*(.+)$/i);
+    if(sm){ c.label=sm[2].trim(); c.shop=true; }
+    out.push(c);
   });
   return out;
 }
@@ -5513,10 +5524,10 @@ function openAccount(name){
   h+='<div class="sect"><span>Cashback</span><button class="sectadd" onclick="closeModal();openCbEdit('+q(a.name)+')">'+(cb.length?'Edit':'Add')+'</button></div>';
   if(cb.length){
     h+='<div class="glass list">'+cb.map(function(c){
-      var lab=strip(c.label)||c.label, any=CB_ANY.test(lab);
+      var lab=strip(c.label)||c.label, any=!c.shop&&CB_ANY.test(lab), nm=c.shop?(shopCanon(c.label)||c.label):lab;
       return '<div class="row">'+
-        (any?icBadge('percent',155):catBadge(c.label))+
-        '<div class="rmain"><div class="rtitle">'+esc(any?'Everything':lab)+'</div></div>'+
+        (any?icBadge('percent',155):(c.shop?icBadge('bag',hueOf(nm)):catBadge(c.label)))+
+        '<div class="rmain"><div class="rtitle">'+esc(any?'Everything':nm)+(c.shop?'<span class="cbtag">shop</span>':'')+'</div></div>'+
         '<div class="cbrate">'+esc(c.rate||'\u2014')+'</div></div>';
     }).join('')+'</div>';
   }else{
@@ -7000,7 +7011,7 @@ function openCats(cfg){
     '<span class="sheet-title">'+esc(cfg.title||'Category')+'</span>'+
     (cfg.multi?'<button class="xbtn" onclick="closePicker()" aria-label="Done">✓</button>':'<span style="width:32px"></span>')+'</div>'+
     '<div class="sheet-body" style="margin-top:12px">'+
-    '<input class="tinput catq" id="catq" type="search" autocomplete="off" autocorrect="off" placeholder="Search" oninput="catSearch(this.value)">'+
+    '<input class="tinput catq" id="catq" type="search" autocomplete="off" autocorrect="off" placeholder="'+esc(cfg.ph||'Search')+'" oninput="catSearch(this.value)">'+
     '<div id="catbody">'+catBody()+'</div><div style="height:12px"></div></div></div>';
   document.getElementById('modal2').innerHTML=h;
 }
@@ -7115,6 +7126,16 @@ function catBody(){
   if(P.mode==='what'){
     var sl2=srcList();
     if(sl2.length){ any=true; h+=catHead(P,'Income','','banknote',HUE_IN)+srcChips(sl2); }
+  }
+  /* the shops a search finds - cashback at one shop */
+  if(P.shops&&want){
+    var sm=shopMatches(String(P.q).trim(),8);
+    if(sm.length){
+      any=true;
+      h=catHead(P,'Shops','','bag',330)+'<div class="catgrid">'+sm.map(function(n){
+        return catChip(P,'h',n,n,'bag',hueOf(n));
+      }).join('')+'</div>'+h;
+    }
   }
   /* a name of its own, typed in the search - the way a bank calls it */
   if(P.custom&&want){
@@ -8306,8 +8327,9 @@ function saveSheet(){
         flags:(l.flags||[]).join(',')};
       S.pending[lcid]=row; D.tx.push(row); kids.push(lcid);
     });
+    var rnudge=cbNudge(s);
     closeSheet(); prep(); render(false);
-    toast(drafts.length?('Receipt added with '+drafts.length+' line'+(drafts.length===1?'':'s')):'Receipt added');
+    toast((drafts.length?('Receipt added with '+drafts.length+' line'+(drafts.length===1?'':'s')):'Receipt added')+(rnudge?' — '+rnudge:''),rnudge?6000:undefined);
     bg('addReceipt',payload,function(){ kids.forEach(function(k){ delete S.pending[k]; }); },function(){
       D.tx=D.tx.filter(function(x){ return kids.indexOf(x.cid)<0; });
     });
@@ -8317,7 +8339,9 @@ function saveSheet(){
   S.pending[cid]=row;
   D.tx.push(row);
   if(s.sched) S.justPaid={key:s.sched,t:Date.now()};
-  closeSheet(); prep(); render(false); toast(s.sched?'Paid':(fee>0?'Added, fee too':'Added'));
+  var nudge=cbNudge(s);
+  closeSheet(); prep(); render(false);
+  toast((s.sched?'Paid':(fee>0?'Added, fee too':'Added'))+(nudge?' — '+nudge:''),nudge?6000:undefined);
   bgThen('addTx',payload,sendFee,function(){
     D.tx=D.tx.filter(function(x){ return x.cid!==cid; }); dropFee();
   },cleanMain);
@@ -9053,6 +9077,19 @@ function sheetTop(title,save,back,label){
     '</div><div class="sheet-body">';
 }
 function sheetEnd(){ return '<div style="height:24px"></div></div></div>'; }
+/* A sheet drawn again while it is in use - a line taken off or added, a
+   rate picked - stays put: no slide up, no fade, the same scroll. Only the
+   same sheet (the mark inside it) is kept; anything else opens as usual. */
+function sheetPaint(html,mark,box){
+  var m=document.getElementById(box||'modal'), el=mark&&document.getElementById(mark);
+  var b=el&&m.contains(el)&&el.closest('.sheet-body'), y=b?b.scrollTop:0;
+  m.innerHTML=html;
+  if(!b) return;
+  var sc=m.querySelector('.scrim'), sh=m.querySelector('.sheet'), nb=m.querySelector('.sheet-body');
+  if(sc) sc.style.animation='none';
+  if(sh) sh.style.animation='none';
+  if(nb) nb.scrollTop=y;
+}
 function fRow(label,inner){ return '<div class="frow"><span class="flab">'+esc(label)+'</span>'+inner+'</div>'; }
 function navRow(title,sub,go){
   return '<button class="setrow" onclick="'+go+'"><span class="setmain"><b>'+title+'</b>'+
@@ -9290,8 +9327,16 @@ function drawSrcs(){ drawCatScreen('i'); }
 function drawSubs(){ drawCatScreen('s'); }
 var CAT_TITLE={m:'Main categories',s:'Subcategories',i:'Income sources'};
 function drawCatScreen(k){
+  var y=(S.catY&&S.catY.k===k)?S.catY.y:0; S.catY=null;
   document.getElementById('modal').innerHTML=sheetTop(CAT_TITLE[k],'saveCats()','catBack(\''+k+'\')','Save')+
     catBodyHtml(k)+sheetEnd()+mergeFab(k);
+  if(y){ var el=document.getElementById('catscr'), b=el&&el.closest('.sheet-body'); if(b) b.scrollTop=y; }
+}
+/* The list keeps its place: left for one of its entries, or for a new one,
+   it opens again where it was - after a save, a delete or Back alike. */
+function catKeepY(){
+  var el=document.getElementById('catscr'), b=el&&el.closest('.sheet-body');
+  S.catY=b?{k:el.getAttribute('data-k'),y:b.scrollTop}:null;
 }
 /* what is inside the sheet, drawn again in place: no slide, same scroll */
 function catRepaint(k){
@@ -9531,6 +9576,7 @@ function catMove(k,x,g,before){
 
 /* ---- the editors ---------------------------------------------------------- */
 function openMainEdit(i){
+  catKeepY();
   S.mainI=i; S.mainDelArm=false;
   var x=i<0?null:S.catM[i];
   S.mainD=x?{row:x.row,name:x.name,orig:x.orig||'',icon:x.icon||''}:{row:0,name:'',orig:'',icon:''};
@@ -9588,6 +9634,7 @@ function mainRemove(){
   catDrop('m',i);
 }
 function openSrcEdit(i){
+  catKeepY();
   S.srcI=i;
   var x=i<0?null:S.catI[i];
   S.srcD=x?{row:x.row,name:x.name,real:x.real!==false,orig:x.orig||'',icon:x.icon||''}:{row:0,name:'',real:true,orig:'',icon:''};
@@ -9619,6 +9666,7 @@ function srcRemove(){
   S.srcD=null; catDrop('i',i);
 }
 function openSubEdit(i,main){
+  catKeepY();
   S.subI=i;
   S.subD=i<0?{row:0,name:'',main:main||(S.catM[0]||{}).name||'',real:true,limit:'',shop:'',orig:'',icon:''}
             :{row:S.catS[i].row,name:S.catS[i].name,main:S.catS[i].main,real:S.catS[i].real,
@@ -10902,40 +10950,76 @@ var CB_GROUP={cart:'groc',basket:'groc',carrot:'groc',croissant:'groc',candy:'gr
   cap:'edu',presentation:'edu',university:'edu',package:'post'};
 var CB_ANY=/^(all|any|every|everything|other|anything|усі|всі|будь|все|інше|любые|прочее)/i;
 function cbRate(r){ var n=parseFloat(String(r||'').replace(',','.')); return isNaN(n)?0:n; }
-function cbFor(a,sub,main){
+/* A shop is the same shop however it is typed: by its key, after the
+   Shops sheet (or a merged spelling) has turned it into its name */
+function cbShopKey(v){ var c=shopCanon(v); return c?shopStrict(c):''; }
+function cbShopKeys(shop){ return shopParts(shop||'').map(cbShopKey).filter(Boolean); }
+/* a cashback line written without "Shop:" that is the name of a shop you
+   buy at counts as that shop too */
+var CBS_=null;
+function cbIsShop(label){
+  var ix=shopIndex();
+  if(!CBS_||CBS_.ix!==ix){ var set={}; ix.forEach(function(x){ set[shopStrict(x.n)]=1; }); CBS_={ix:ix,set:set}; }
+  var k=cbShopKey(label);
+  return !!(k&&CBS_.set[k]);
+}
+function cbFor(a,sub,main,shop){
   if(!a) return null;
   var keys=[], groups=[];
   [icKey(sub,main,1),icKey(main,'',1)].forEach(function(k){
     if(k&&k!=='tag'&&keys.indexOf(k)<0){ keys.push(k); if(CB_GROUP[k]) groups.push(CB_GROUP[k]); }
   });
   var words=[shopStrict(strip(sub)),shopStrict(strip(main))].filter(function(w){ return w.length>=3; });
+  var shops=cbShopKeys(shop);
   var best=null;
   cashbackList(a).forEach(function(c){
     var r=cbRate(c.rate); if(!(r>0)) return;
-    var lab=strip(c.label)||c.label, k=icKey(lab,'',1), L=shopStrict(lab);
-    var hit=CB_ANY.test(lab)||keys.indexOf(k)>-1||(CB_GROUP[k]&&groups.indexOf(CB_GROUP[k])>-1)||
-      (L.length>=4&&words.some(function(w){ return w.indexOf(L)>-1||L.indexOf(w)>-1; }));
-    if(hit&&(!best||r>best.rate)) best={rate:r,label:lab};
+    var lab=strip(c.label)||c.label, hit=false, atShop=false;
+    if(c.shop){
+      hit=atShop=shops.length>0&&shops.indexOf(cbShopKey(c.label))>-1;
+    }else{
+      var k=icKey(lab,'',1), L=shopStrict(lab);
+      hit=CB_ANY.test(lab)||keys.indexOf(k)>-1||(CB_GROUP[k]&&groups.indexOf(CB_GROUP[k])>-1)||
+        (L.length>=4&&words.some(function(w){ return w.indexOf(L)>-1||L.indexOf(w)>-1; }));
+      if(!hit&&shops.length&&shops.indexOf(cbShopKey(c.label))>-1&&cbIsShop(c.label)) hit=atShop=true;
+    }
+    if(hit&&(!best||r>best.rate)) best={rate:r,label:atShop?(shopCanon(c.label)||lab):lab,shop:atShop};
   });
   return best;
 }
-function cbBest(sub,main){
+function cbBest(sub,main,shop){
   var out=null;
-  (D.accounts||[]).forEach(function(a){
-    var c=cbFor(a,sub,main);
-    if(c&&(!out||c.rate>out.rate)) out={acc:a.name,rate:c.rate,label:c.label};
+  accsInOrder(D.accounts||[]).forEach(function(a){
+    var c=cbFor(a,sub,main,shop);
+    if(c&&(!out||c.rate>out.rate)) out={acc:a.name,rate:c.rate,label:c.label,shop:c.shop};
   });
   return out;
 }
+/* what is being entered, for cashback: a receipt has no category of its
+   own, but is paid at its shop with its card */
+function cbWhat(s){
+  if(!s||s.kind!=='e'||isXferSub(s.sub)||isCorrName(s.sub)||xferForm(s)) return null;
+  var w={sub:s.receipt?'':(s.sub||''), main:s.receipt?'':(s.main||''), shop:String(s.shop||'').trim()};
+  return (w.sub||w.main||w.shop)?w:null;
+}
 function cbHintHtml(s){
-  if(!s||s.kind!=='e'||s.receipt||isXferSub(s.sub)||isCorrName(s.sub)||(!s.sub&&!s.main)) return '';
-  var best=cbBest(s.sub,s.main); if(!best) return '';
-  var cur=cbFor(D.accMap[s.account],s.sub,s.main);
+  var w=cbWhat(s); if(!w) return '';
+  var best=cbBest(w.sub,w.main,w.shop); if(!best) return '';
+  var cur=cbFor(D.accMap[s.account],w.sub,w.main,w.shop);
   if(cur&&cur.rate>=best.rate) return '<div class="cbhint have" id="cbhint">'+svgIc('percent',13,2)+
-    '<span><b>'+esc(numStr(cur.rate))+'% back</b> with this card · '+esc(cur.label)+'</span></div>';
+    '<span><b>'+esc(numStr(cur.rate))+'% back</b> with this card · '+esc(cur.shop?'at '+cur.label:cur.label)+'</span></div>';
   /* a tip, not a question: the card stays the one you picked */
   return '<div class="cbhint" id="cbhint">'+svgIc('percent',13,2)+'<span><b>'+esc(strip(best.acc))+'</b> gives '+
-    esc(numStr(best.rate))+'% back here'+(cur?' (this card '+esc(numStr(cur.rate))+'%)':'')+'</span></div>';
+    esc(numStr(best.rate))+'% back '+(best.shop?'at '+esc(best.label):'here')+(cur?' (this card '+esc(numStr(cur.rate))+'%)':'')+'</span></div>';
+}
+/* said once more as it is added: paid with a card that gives less back
+   than another one would have */
+function cbNudge(s){
+  var w=cbWhat(s); if(!w) return '';
+  var best=cbBest(w.sub,w.main,w.shop); if(!best||best.acc===s.account) return '';
+  var cur=cbFor(D.accMap[s.account],w.sub,w.main,w.shop);
+  if(cur&&cur.rate>=best.rate) return '';
+  return strip(best.acc)+' would have given '+numStr(best.rate)+'% back'+(best.shop?' at '+best.label:'');
 }
 function updateCbHint(){
   var el=document.getElementById('cbhint'); if(!el||!S.sheet) return;
@@ -10944,7 +11028,17 @@ function updateCbHint(){
 /* The cards' categories change every month. From the 1st a card at the
    top of Activity asks for them, until they are updated here or the card
    is closed - either way it is done for that month. */
-function cbAccounts(){ return (D.accounts||[]).filter(function(a){ return cashbackList(a).length; }); }
+/* where Accounts lists an account: by kind - cash, cards, savings, crypto,
+   then the rest - and as in the sheet within each. Cashback keeps the
+   cards in that order too. */
+function accRank(){
+  var keys=[bankType('cash'),bankType('card'),bankType('saving'),bankType('crypto')], all=D.accounts||[], pos={};
+  all.forEach(function(a){ var k=bankType(a.type); if(keys.indexOf(k)<0) keys.push(k); });
+  all.forEach(function(a,i){ if(pos[a.name]===undefined) pos[a.name]=keys.indexOf(bankType(a.type))*100000+i; });
+  return function(name){ var v=pos[name]; return v===undefined?1e9:v; };
+}
+function accsInOrder(list){ var r=accRank(); return list.slice().sort(function(x,y){ return r(x.name)-r(y.name); }); }
+function cbAccounts(){ return accsInOrder((D.accounts||[]).filter(function(a){ return cashbackList(a).length; })); }
 function cbMonthDue(){
   return pref('cbMonth','')!==D.thisMonth&&Number(String(D.today).slice(8,10))<=10;
 }
@@ -11031,30 +11125,32 @@ function upcPay(row,occ){
   setTimeout(function(){ if(document.getElementById('upcsheet')) drawUpcoming(); },60);
 }
 /* ══════ cashback: which card to pay with ═════════════════════════════════
-   Accounts opens with it: every category a card gives money back on this
-   month, the best card for it and how much, and the others after it - what
-   is wanted at the till. The same category on two cards shares a row - the
-   names are compared, not guessed at, so two of a bank's own categories
-   never fold into one; Everything comes last, as it only counts where
-   nothing better does. */
+   One button on Accounts, under Free to spend a day, with the best few at a
+   glance. It opens the whole table: every category (or shop) a card gives
+   money back on this month, the best card for it and how much, and the
+   others after it - what is wanted at the till. The same category on two
+   cards shares a row - the names are compared, not guessed at, so two of a
+   bank's own categories never fold into one; Everything comes last, as it
+   only counts where nothing better does. Cards that give the same are in
+   the order Accounts lists them. */
 function cbKey(lab){
   if(CB_ANY.test(lab)) return 'any';
   return 'w:'+String(strip(lab)||lab).toLowerCase().replace(/\s+/g,' ').trim();
 }
 function cbTable(){
-  var by={}, rows=[];
+  var by={}, rows=[], rank=accRank();
   (D.accounts||[]).forEach(function(a){
     cashbackList(a).forEach(function(c){
       var r=cbRate(c.rate); if(!(r>0)) return;
-      var lab=strip(c.label)||c.label, key=cbKey(lab), row=by[key];
-      if(!row){ row=by[key]={key:key,any:key==='any',cards:[]}; rows.push(row); }
+      var lab=strip(c.label)||c.label, key=c.shop?'s:'+(cbShopKey(c.label)||cbKey(lab)):cbKey(lab), row=by[key];
+      if(!row){ row=by[key]={key:key,any:key==='any',shop:!!c.shop,cards:[]}; rows.push(row); }
       var have=row.cards.filter(function(x){ return x.acc===a.name; })[0];
       if(have){ if(r>have.rate){ have.rate=r; have.label=c.label; } return; }
       row.cards.push({acc:a.name,rate:r,label:c.label});
     });
   });
   rows.forEach(function(row){
-    row.cards.sort(function(x,y){ return y.rate-x.rate; });
+    row.cards.sort(function(x,y){ return (y.rate-x.rate)||(rank(x.acc)-rank(y.acc)); });
     row.best=row.cards[0].rate; row.label=row.cards[0].label;
   });
   return rows.sort(function(x,y){
@@ -11062,24 +11158,51 @@ function cbTable(){
   });
 }
 function cbMonthWord(){ return MON[Number(String(D.today).slice(5,7))-1]||''; }
-function cbSection(){
-  var rows=cbTable();
-  var h='<div class="sect"><span><span class="inic">'+svgIc('percent',16,2)+'</span>Cashback · '+esc(cbMonthWord())+'</span>'+
-    '<button class="sectadd" onclick="openCbEdit()">'+(rows.length?'Edit':'Add')+'</button></div>';
-  if(!rows.length){
-    return h+'<button class="glass cbempty" onclick="openCbEdit()">'+icBadge('percent',155)+
-      '<span><b>Which card to pay with</b><i>Put in this month’s cashback categories of your cards: they show here, and the app says which card gives the most back as you add an expense.</i></span></button>';
+function cbTitle(r){ return r.any?'Everything else':(r.shop?(shopCanon(r.label)||r.label):(strip(r.label)||r.label)); }
+/* on Accounts: the button, the best few on it */
+function cbButton(){
+  var rows=cbTable(), due=rows.length&&cbMonthDue(), sub;
+  if(!rows.length) sub='Which card to pay with — put in this month’s categories';
+  else{
+    /* a line breaks between them, never inside one */
+    var top=rows.filter(function(r){ return !r.any; }).slice(0,3);
+    if(!top.length) top=rows.slice(0,1);
+    var more=rows.length-top.length;
+    sub=top.map(function(r,i){
+      return '<span class="nw">'+esc(cbTitle(r)+' '+numStr(r.best)+'%')+(more&&i===top.length-1?' +'+more:'')+'</span>';
+    }).join(' · ');
   }
-  if(cbMonthDue()) h+='<div class="glass cbdue"><span><b>New month</b><i>Have the categories changed?</i></span>'+
-    '<button class="cbsame" onclick="cbSame()">Still the same</button><button class="cbupd" onclick="openCbEdit()">Update</button></div>';
-  return h+'<div class="glass list cbtab">'+rows.map(cbRowHtml).join('')+'</div>';
+  return '<button class="glass actcard cbbtn" onclick="openCbSheet()" style="'+icStyle(155)+'">'+
+    '<span class="ai">'+svgIc('percent',18,2)+'</span>'+
+    '<span class="at"><b>Cashback'+(rows.length?' · '+esc(cbMonthWord()):'')+(due?'<em class="cbnew">New month</em>':'')+'</b>'+
+    '<span>'+(rows.length?sub:esc(sub))+'</span></span><span class="chevr">›</span></button>';
 }
+/* behind it: the whole table, with Edit at the top */
+function openCbSheet(){ drawCbSheet(); }
+function drawCbSheet(){
+  var rows=cbTable();
+  var h=sheetTop('Cashback · '+cbMonthWord(),'cbSheetEdit()','',rows.length?'Edit':'Add')+'<i id="cbsheet" hidden></i>';
+  if(!rows.length){
+    h+='<button class="glass cbempty" onclick="cbSheetEdit()">'+icBadge('percent',155)+
+      '<span><b>Which card to pay with</b><i>Put in this month’s cashback categories of your cards: they show here, and the app says which card gives the most back as you add an expense.</i></span></button>';
+  }else{
+    if(cbMonthDue()) h+='<div class="glass cbdue"><span><b>New month</b><i>Have the categories changed?</i></span>'+
+      '<button class="cbsame" onclick="cbSheetSame()">Still the same</button><button class="cbupd" onclick="cbSheetEdit()">Update</button></div>';
+    h+='<div class="glass list cbtab">'+rows.map(cbRowHtml).join('')+'</div>'+
+      '<p class="tiny" style="margin:12px 4px 0;line-height:1.45">The best card for each comes first. As you add an expense, the app says when another card gives more back - at a shop too.</p>';
+  }
+  h+=sheetEnd();
+  sheetPaint(h,'cbsheet');
+}
+function cbSheetEdit(){ openCbEdit(null,true); }
+function cbSheetSame(){ cbSame(); toast('Kept for '+cbMonthWord()); if(document.getElementById('cbsheet')) drawCbSheet(); }
 function cbRowHtml(r){
   var best=r.cards[0], a=D.accMap[best.acc]||{name:best.acc,type:''};
   var tie=r.cards.length>1&&r.cards[1].rate===best.rate;
   var also=r.cards.slice(1).map(function(c){ return esc(strip(c.acc))+' '+esc(numStr(c.rate))+'%'; }).join(' · ');
-  return '<div class="row">'+(r.any?icBadge('percent',155):catBadge(r.label))+
-    '<div class="rmain"><div class="rtitle">'+esc(r.any?'Everything else':(strip(r.label)||r.label))+'</div>'+
+  var title=cbTitle(r);
+  return '<div class="row">'+(r.any?icBadge('percent',155):(r.shop?icBadge('bag',hueOf(title)):catBadge(r.label)))+
+    '<div class="rmain"><div class="rtitle">'+esc(title)+(r.shop?'<span class="cbtag">shop</span>':'')+'</div>'+
       '<div class="cbwho">'+accLogo(a,'cblogo')+'<b>'+esc(strip(best.acc))+'</b></div>'+
       (also?'<div class="cbalso">'+(tie?'or ':'then ')+also+'</div>':'')+'</div>'+
     '<div class="cbbig" style="color:'+GREEN+'">'+esc(numStr(best.rate))+'%</div></div>';
@@ -11092,31 +11215,33 @@ function cbRowHtml(r){
    the bank calls them); a rate is one tap from a row of the usual ones.
    Saved to the Cashback column of the Dashboard sheet, a category a line. */
 var CB_RATES=[1,2,3,5,7,10,15,20];
-function cbCards(){ return (D.accounts||[]).filter(function(a){ return /card|credit|debit/i.test(a.type||''); }); }
-function cbLinesOf(a){ return cashbackList(a).map(function(c){ return {label:c.label,rate:String(c.rate||'').replace(/[%\s]/g,'')}; }); }
-function openCbEdit(focus){
+function cbCards(){ return accsInOrder((D.accounts||[]).filter(function(a){ return /card|credit|debit/i.test(a.type||''); })); }
+function cbLinesOf(a){ return cashbackList(a).map(function(c){ return {label:c.label,rate:String(c.rate||'').replace(/[%\s]/g,''),shop:!!c.shop}; }); }
+/* back: opened from the Cashback sheet, and back to it when done */
+function openCbEdit(focus,back){
   var accs=cbAccounts().map(function(a){ return {row:a.row||0,name:a.name,orig:String(a.cashback||''),lines:cbLinesOf(a)}; });
   var f=focus&&D.accMap[focus];
   if(f&&!accs.some(function(x){ return x.name===focus; })) accs.push({row:f.row||0,name:f.name,orig:String(f.cashback||''),lines:[]});
   if(!accs.length){ var c0=cbCards()[0]; if(c0) accs.push({row:c0.row||0,name:c0.name,orig:'',lines:[]}); }
-  S.cbEd={accs:accs,rate:null};
+  S.cbEd={accs:accsInOrder(accs),rate:null,back:!!back};
+  accs=S.cbEd.accs;
   drawCbEdit();
   /* a card with nothing on it yet: straight to its categories */
   for(var i=0;i<accs.length;i++) if(!accs[i].lines.length&&(accs[i].name===focus||accs.length===1)){ cbPickCats(i); break; }
 }
 function drawCbEdit(){
   var E=S.cbEd; if(!E) return;
-  var h=sheetTop('Cashback · '+cbMonthWord(),'saveCbEdit()');
+  var h=sheetTop('Cashback · '+cbMonthWord(),'saveCbEdit()',E.back?'cbEditBack()':'','Save')+'<i id="cbedscr" hidden></i>';
   if(cbMonthDue()&&cbAccounts().length) h+='<button class="ghostbtn" onclick="cbKeep()">Still the same as last month</button>';
   E.accs.forEach(function(x,ai){
     var a=D.accMap[x.name]||{name:x.name,type:''};
     h+='<div class="glass cbed"><div class="cbacc">'+accLogo(a,'badge')+'<span class="cban">'+esc(strip(x.name))+'</span>'+
       (x.lines.length?'<button class="cbclr" onclick="cbClearAcc('+ai+')">Clear</button>':'')+'</div>';
     x.lines.forEach(function(l,li){
-      var lab=strip(l.label)||l.label, any=CB_ANY.test(lab), r=String(l.rate||'').trim();
-      var on=!!(E.rate&&E.rate[0]===ai&&E.rate[1]===li);
-      h+='<div class="cbline"><span class="cbcat">'+(any?icBadge('percent',155):catBadge(l.label))+
-          '<span>'+esc(any?'Everything':lab)+'</span></span>'+
+      var lab=strip(l.label)||l.label, any=!l.shop&&CB_ANY.test(lab), r=String(l.rate||'').trim();
+      var on=!!(E.rate&&E.rate[0]===ai&&E.rate[1]===li), nm=l.shop?(shopCanon(l.label)||l.label):lab;
+      h+='<div class="cbline"><span class="cbcat">'+(any?icBadge('percent',155):(l.shop?icBadge('bag',hueOf(nm)):catBadge(l.label)))+
+          '<span>'+esc(any?'Everything':nm)+(l.shop?'<span class="cbtag">shop</span>':'')+'</span></span>'+
         '<button class="cbpct'+(r?'':' unset')+(on?' on':'')+'" onclick="cbRateOpen('+ai+','+li+')">'+(r?esc(r)+'%':'Set %')+'</button>'+
         '<button class="rlx" onclick="cbDropLine('+ai+','+li+')" aria-label="Remove">✕</button></div>';
       if(on){
@@ -11135,30 +11260,37 @@ function drawCbEdit(){
   if(others.length) h+='<div class="fieldlabel">Another card</div><div class="cbmore">'+others.map(function(a){
       return '<button class="cbmorec" onclick="cbAddAcc('+q(a.name)+')">'+accLogo(a,'cblogo')+esc(strip(a.name))+'</button>';
     }).join('')+'</div>';
-  h+='<p class="tiny" style="margin:14px 4px 0;line-height:1.45">A category counts by what it means: “Supermarkets” covers Groceries, “Restaurants” a café, Everything every purchase. Saved to the Cashback column of the Dashboard sheet.</p>';
+  h+='<p class="tiny" style="margin:14px 4px 0;line-height:1.45">Cashback at one shop: type its name in Categories. A category counts by what it means: “Supermarkets” covers Groceries, “Restaurants” a café, Everything every purchase. Saved to the Cashback column of the Dashboard sheet.</p>';
   h+=sheetEnd();
-  document.getElementById('modal').innerHTML=h;
+  /* a line taken off or added, a rate picked: the sheet stays where it is */
+  sheetPaint(h,'cbedscr');
+  /* and the rates, when they open, are in sight */
+  var pr=E.rate&&document.querySelector('#modal .cbpresets');
+  if(pr&&pr.scrollIntoView){ try{ pr.scrollIntoView({block:'nearest'}); }catch(e){} }
 }
+function cbEditBack(){ S.cbEd=null; drawCbSheet(); }
 /* the same category, however it is written */
 function cbSame2(x,y){ return String(strip(x)||x||'').toLowerCase().replace(/\s+/g,' ').trim()===String(strip(y)||y||'').toLowerCase().replace(/\s+/g,' ').trim(); }
-function cbIdx(x,label){
-  var any=CB_ANY.test(strip(label)||label);
+function cbIdx(x,label,shop){
+  var any=!shop&&CB_ANY.test(strip(label)||label), k=shop?cbShopKey(label):'';
   for(var i=0;i<x.lines.length;i++){
-    var lab=strip(x.lines[i].label)||x.lines[i].label;
-    if(any?CB_ANY.test(lab):cbSame2(x.lines[i].label,label)) return i;
+    var l=x.lines[i], lab=strip(l.label)||l.label;
+    if(!!l.shop!==!!shop) continue;
+    if(shop?cbShopKey(l.label)===k:(any?CB_ANY.test(lab):cbSame2(l.label,label))) return i;
   }
   return -1;
 }
 /* several at once: tap them on and off, then close */
 function cbPickCats(ai){
   var E=S.cbEd, x=E&&E.accs[ai]; if(!x) return;
-  openCats({title:'Cashback on', mode:'sub', mainOk:true, multi:true, custom:true,
+  openCats({title:'Cashback on', mode:'sub', mainOk:true, multi:true, custom:true, shops:true,
+    ph:'Search a category, or type a shop',
     none:{label:'Everything',icon:'percent'},
     only:function(n,k){ return k!=='s'||(!isXferSub(n)&&!isCorrName(n)); },
-    isOn:function(k,v){ return cbIdx(x,k===''?'Everything':v)>-1; },
+    isOn:function(k,v){ return cbIdx(x,k===''?'Everything':v,k==='h')>-1; },
     pick:function(k,v){
-      var label=k===''?'Everything':v, i=cbIdx(x,label);
-      if(i>-1) x.lines.splice(i,1); else if(String(label).trim()) x.lines.push({label:String(label).trim(),rate:''});
+      var label=k===''?'Everything':v, shop=k==='h', i=cbIdx(x,label,shop);
+      if(i>-1) x.lines.splice(i,1); else if(String(label).trim()) x.lines.push({label:String(label).trim(),rate:'',shop:shop});
     },
     after:function(){ cbRateNext(); drawCbEdit(); }});
 }
@@ -11187,14 +11319,21 @@ function cbRateSet(ai,li,v){
 }
 function cbDropLine(ai,li){ var E=S.cbEd; if(!E) return; E.accs[ai].lines.splice(li,1); E.rate=null; drawCbEdit(); }
 function cbClearAcc(ai){ var E=S.cbEd; if(!E) return; E.accs[ai].lines=[]; E.rate=null; drawCbEdit(); }
+/* in its place among the others - the order Accounts has them in */
 function cbAddAcc(name){
   var E=S.cbEd, a=D.accMap[name]; if(!E||!a) return;
   E.accs.push({row:a.row||0,name:name,orig:String(a.cashback||''),lines:[]});
+  E.accs=accsInOrder(E.accs); E.rate=null;
   drawCbEdit();
-  cbPickCats(E.accs.length-1);
+  cbPickCats(E.accs.map(function(x){ return x.name; }).indexOf(name));
 }
 /* nothing changed this month: said once, and done until the next */
-function cbKeep(){ S.cbEd=null; closeModal(); cbSame(); toast('Kept for '+cbMonthWord()); }
+function cbKeep(){
+  var back=!!(S.cbEd&&S.cbEd.back);
+  S.cbEd=null; closeModal(); cbSame();
+  if(back) openCbSheet();
+  toast('Kept for '+cbMonthWord());
+}
 function saveCbEdit(){
   var E=S.cbEd; if(!E) return;
   /* a category without its percent is not cashback yet */
@@ -11211,20 +11350,25 @@ function saveCbEdit(){
   E.accs.forEach(function(x){
     var txt=x.lines.filter(function(l){ return String(l.label).trim(); }).map(function(l){
       var r=String(l.rate).replace(/[%\s]/g,'').replace(',','.');
-      return String(l.label).replace(/[\r\n;]+/g,' ').trim()+(r?' - '+r+'%':'');
+      return (l.shop?'Shop: ':'')+String(l.label).replace(/[\r\n;]+/g,' ').trim()+(r?' - '+r+'%':'');
     }).join('\n');
     if(x.row&&txt!==x.orig.replace(/\r/g,'').trim()) edits.push({row:x.row,cashback:txt});
   });
   setPref('cbMonth',D.thisMonth);
+  /* opened from the Cashback sheet: back to it, with the new table */
+  var back=!!E.back;
   S.cbEd=null; closeModal();
-  if(!edits.length){ render(true); toast('Nothing changed'); return; }
+  if(!edits.length){ render(true); if(back) openCbSheet(); toast('Nothing changed'); return; }
   var was=[];
   edits.forEach(function(e){
     var a=(D.accounts||[]).filter(function(x){ return x.row===e.row; })[0];
     if(a){ was.push({a:a,c:a.cashback}); a.cashback=e.cashback; }
   });
-  render(true); toast('Cashback updated');
-  bg('saveAccounts',{edits:edits},null,function(){ was.forEach(function(w){ w.a.cashback=w.c; }); });
+  render(true); if(back) openCbSheet(); toast('Cashback updated');
+  bg('saveAccounts',{edits:edits},null,function(){
+    was.forEach(function(w){ w.a.cashback=w.c; });
+    if(document.getElementById('cbsheet')) drawCbSheet();
+  });
 }
 
 /* ══════ credit cards: how much, by when ══════════════════════════════════
@@ -13326,7 +13470,7 @@ function closeModal(){
   if(S.rl) rlClose();
   S.qonce=null; S.shop=null; S.menuOpen=false;
   S.accOpen=null; S.monthsOpen=false; S.notifyOpen=false;
-  S.owedOpen=false; S.back=null; S.cbEd=null; S.projOpen=null; S.ruleD=null; S.goalD=null;
+  S.owedOpen=false; S.back=null; S.cbEd=null; S.projOpen=null; S.ruleD=null; S.goalD=null; S.catY=null;
   if(S.cardShown){ S.cardShown={}; clearTimeout(S.cardT); }
   document.getElementById('modal').innerHTML='';
 }
@@ -13455,7 +13599,7 @@ window.__S=S;
    As a website, a small service worker keeps these files on the phone, so
    the app opens instantly and with no signal. A new version is fetched in
    the background; when it arrives, a note offers to switch to it. */
-var APP_VERSION='2026.10.02.8';
+var APP_VERSION='2026.10.02.9';
 (function(){
   try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persist(); }catch(e){}
   if(inGas()||!('serviceWorker' in navigator)) return;
