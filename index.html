@@ -1447,6 +1447,13 @@ button.actcard .chevr{flex:none;color:rgba(25,23,19,.28);font-size:19px}
 .cbcard.top .cbr{font-weight:700}
 /* the shops, apart */
 .cbdiv{height:1px;margin:20px 8px 2px;background:rgba(25,23,19,.13)}
+/* the shops that count as the category, under its name */
+.cbvia{display:flex;align-items:center;gap:5px;margin-top:3px;font:500 12px/1.25 -apple-system,sans-serif;color:rgba(25,23,19,.48)}
+.cbvia .ic{flex:none;width:12px;height:12px}
+.cbvia span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cbmap .rmeta{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cbmapadd{padding:14px 16px;line-height:1.35}
+.cbshdel{margin-top:16px;color:rgb(196,64,52)}
 .cbdue{display:flex;align-items:center;gap:8px;padding:11px 12px 11px 14px;margin-bottom:10px}
 .cbdue>span{flex:1;min-width:0}
 .cbdue b{display:block;font:600 14px/1.2 -apple-system,sans-serif}
@@ -10970,6 +10977,40 @@ function cbIsShop(label){
   var k=cbShopKey(label);
   return !!(k&&CBS_.set[k]);
 }
+/* ── a shop that counts as categories ─────────────────────────────────────
+   A bank goes by what a shop is, not by what you file a purchase under: a
+   ride with a taxi app is Taxi to the bank, a scooter from the same app
+   may be Scooters. So a shop can be given the categories it counts as, and
+   a card's cashback on any of them counts at that shop, however the
+   purchase is filed. Kept with the app's settings (every device has it),
+   under the shop's name in any of its spellings. */
+function cbShopMap(){ var m=pref('cbShops',null); return (m&&typeof m==='object'&&!(m instanceof Array))?m:{}; }
+/* the categories the shops on a record count as, and which shop said so */
+function cbShopCats(shop){
+  var m=cbShopMap(), out=[];
+  cbShopKeys(shop).forEach(function(k){
+    var e=m[k]; if(e&&e.c) e.c.forEach(function(c){ out.push({cat:c,shop:e.n||k}); });
+  });
+  return out;
+}
+/* what a category line is read against: the icons, their families and the
+   words of the names given - a subcategory's own category with it */
+function cbCtx(names){
+  var X={keys:[],groups:[],words:[]};
+  names.forEach(function(n){
+    var sm=D.subMap&&D.subMap[n], m=sm?(sm.main||''):'';
+    [icKey(n,m,1),m?icKey(m,'',1):''].forEach(function(k){
+      if(k&&k!=='tag'&&X.keys.indexOf(k)<0){ X.keys.push(k); if(CB_GROUP[k]) X.groups.push(CB_GROUP[k]); }
+    });
+    [strip(n)||n,m?(strip(m)||m):''].forEach(function(w){ w=shopStrict(w); if(w.length>=3&&X.words.indexOf(w)<0) X.words.push(w); });
+  });
+  return X;
+}
+function cbCatHit(lab,X){
+  var k=icKey(lab,'',1), L=shopStrict(lab);
+  return X.keys.indexOf(k)>-1||!!(CB_GROUP[k]&&X.groups.indexOf(CB_GROUP[k])>-1)||
+    (L.length>=4&&X.words.some(function(w){ return w.indexOf(L)>-1||L.indexOf(w)>-1; }));
+}
 function cbFor(a,sub,main,shop){
   if(!a) return null;
   var keys=[], groups=[];
@@ -10978,10 +11019,12 @@ function cbFor(a,sub,main,shop){
   });
   var words=[shopStrict(strip(sub)),shopStrict(strip(main))].filter(function(w){ return w.length>=3; });
   var shops=cbShopKeys(shop);
+  /* the categories the shop counts as, one by one, to say which one it was */
+  var via=cbShopCats(shop).map(function(v){ return {shop:v.shop,X:cbCtx([v.cat])}; });
   var best=null;
   cashbackList(a).forEach(function(c){
     var r=cbRate(c.rate); if(!(r>0)) return;
-    var lab=strip(c.label)||c.label, hit=false, atShop=false;
+    var lab=strip(c.label)||c.label, hit=false, atShop=false, thru='';
     if(c.shop){
       hit=atShop=shops.length>0&&shops.indexOf(cbShopKey(c.label))>-1;
     }else{
@@ -10989,8 +11032,9 @@ function cbFor(a,sub,main,shop){
       hit=CB_ANY.test(lab)||keys.indexOf(k)>-1||(CB_GROUP[k]&&groups.indexOf(CB_GROUP[k])>-1)||
         (L.length>=4&&words.some(function(w){ return w.indexOf(L)>-1||L.indexOf(w)>-1; }));
       if(!hit&&shops.length&&shops.indexOf(cbShopKey(c.label))>-1&&cbIsShop(c.label)) hit=atShop=true;
+      if(!hit) for(var i=0;i<via.length;i++) if(cbCatHit(lab,via[i].X)){ hit=true; thru=via[i].shop; break; }
     }
-    if(hit&&(!best||r>best.rate)) best={rate:r,label:atShop?(shopCanon(c.label)||lab):lab,shop:atShop};
+    if(hit&&(!best||r>best.rate)) best={rate:r,label:atShop?(shopCanon(c.label)||lab):lab,shop:atShop,via:thru};
   });
   return best;
 }
@@ -10998,10 +11042,12 @@ function cbBest(sub,main,shop){
   var out=null;
   accsInOrder(D.accounts||[]).forEach(function(a){
     var c=cbFor(a,sub,main,shop);
-    if(c&&(!out||c.rate>out.rate)) out={acc:a.name,rate:c.rate,label:c.label,shop:c.shop};
+    if(c&&(!out||c.rate>out.rate)) out={acc:a.name,rate:c.rate,label:c.label,shop:c.shop,via:c.via};
   });
   return out;
 }
+/* how a match is said: at a shop, at a shop as one of its categories, or here */
+function cbWhere(b){ return b.shop?'at '+b.label:(b.via?'at '+b.via+' ('+b.label+')':''); }
 /* what is being entered, for cashback: a receipt has no category of its
    own, but is paid at its shop with its card */
 function cbWhat(s){
@@ -11014,10 +11060,10 @@ function cbHintHtml(s){
   var best=cbBest(w.sub,w.main,w.shop); if(!best) return '';
   var cur=cbFor(D.accMap[s.account],w.sub,w.main,w.shop);
   if(cur&&cur.rate>=best.rate) return '<div class="cbhint have" id="cbhint">'+svgIc('percent',13,2)+
-    '<span><b>'+esc(numStr(cur.rate))+'% back</b> with this card · '+esc(cur.shop?'at '+cur.label:cur.label)+'</span></div>';
+    '<span><b>'+esc(numStr(cur.rate))+'% back</b> with this card · '+esc(cur.shop?'at '+cur.label:(cur.via?cur.label+' at '+cur.via:cur.label))+'</span></div>';
   /* a tip, not a question: the card stays the one you picked */
   return '<div class="cbhint" id="cbhint">'+svgIc('percent',13,2)+'<span><b>'+esc(strip(best.acc))+'</b> gives '+
-    esc(numStr(best.rate))+'% back '+(best.shop?'at '+esc(best.label):'here')+(cur?' (this card '+esc(numStr(cur.rate))+'%)':'')+'</span></div>';
+    esc(numStr(best.rate))+'% back '+esc(cbWhere(best)||'here')+(cur?' (this card '+esc(numStr(cur.rate))+'%)':'')+'</span></div>';
 }
 /* said once more as it is added: paid with a card that gives less back
    than another one would have */
@@ -11026,7 +11072,7 @@ function cbNudge(s){
   var best=cbBest(w.sub,w.main,w.shop); if(!best||best.acc===s.account) return '';
   var cur=cbFor(D.accMap[s.account],w.sub,w.main,w.shop);
   if(cur&&cur.rate>=best.rate) return '';
-  return strip(best.acc)+' would have given '+numStr(best.rate)+'% back'+(best.shop?' at '+best.label:'');
+  return strip(best.acc)+' would have given '+numStr(best.rate)+'% back'+(cbWhere(best)?' '+cbWhere(best):'');
 }
 function updateCbHint(){
   var el=document.getElementById('cbhint'); if(!el||!S.sheet) return;
@@ -11229,29 +11275,125 @@ function drawCbSheet(){
     if(cbMonthDue()) h+='<div class="glass cbdue"><span><b>New month</b><i>Have the categories changed?</i></span>'+
       '<button class="cbsame" onclick="cbSheetSame()">Still the same</button><button class="cbupd" onclick="cbSheetEdit()">Update</button></div>';
     if(R.cats.length) h+='<div class="glass list cbtab">'+R.cats.map(cbRowHtml).join('')+'</div>';
-    if(R.shops.length){
-      if(R.cats.length) h+='<div class="cbdiv"></div>';
-      h+='<div class="sect cbsect"><span><span class="inic">'+svgIc('bag',16,2)+'</span>Shops</span></div>'+
-        '<div class="glass list cbtab cbshops">'+R.shops.map(cbRowHtml).join('')+'</div>';
-    }
+    /* under a line: cashback at one shop, then the shops that count as a category */
+    if(R.cats.length) h+='<div class="cbdiv"></div>';
+    if(R.shops.length) h+='<div class="sect cbsect"><span><span class="inic">'+svgIc('bag',16,2)+'</span>Shops</span></div>'+
+      '<div class="glass list cbtab cbshops">'+R.shops.map(cbRowHtml).join('')+'</div>';
+    h+=cbMapSection();
     h+='<p class="tiny" style="margin:12px 4px 0;line-height:1.45">In the order of your Categories list; the most back is in green. As you add an expense, the app says when another card gives more back.</p>';
   }
   h+=sheetEnd();
   sheetPaint(h,'cbsheet');
+}
+/* the shops given categories: each with what it counts as, and Add */
+function cbMapSection(){
+  var M=cbShopMap(), ks=Object.keys(M).filter(function(k){ return M[k]&&M[k].c&&M[k].c.length; })
+    .sort(function(x,y){ return String(M[x].n||x).localeCompare(String(M[y].n||y)); });
+  var h='<div class="sect cbsect"><span><span class="inic">'+svgIc('tag',16,2)+'</span>Shops as categories</span>'+
+    '<button class="sectadd" onclick="cbShOpen(\'\')">Add</button></div>';
+  if(!ks.length) return h+'<button class="glass empty cbaddacc cbmapadd" onclick="cbShOpen(\'\')">A shop that counts as a category for cashback — say, a taxi app as Taxi</button>';
+  return h+'<div class="glass list cbmap">'+ks.map(function(k){
+    var e=M[k], n=e.n||k;
+    return '<button class="row" onclick="cbShOpen('+q(k)+')">'+icBadge('bag',hueOf(n))+
+      '<span class="rmain"><span class="rtitle" style="display:block">'+esc(n)+'</span>'+
+      '<span class="rmeta" style="display:block">counts as '+esc(e.c.map(function(c){ return strip(c)||c; }).join(' · '))+'</span></span>'+
+      '<span class="chevr">›</span></button>';
+  }).join('')+'</div>';
 }
 function cbSheetEdit(){ openCbEdit(null,true); }
 function cbSheetSame(){ cbSame(); toast('Kept for '+cbMonthWord()); if(document.getElementById('cbsheet')) drawCbSheet(); }
 /* one category or shop: its name, then a line for each card that gives
    something there, the one that gives the most in green */
 function cbRowHtml(r){
-  var title=cbTitle(r);
+  var title=cbTitle(r), at=cbRowShops(r);
   return '<div class="row cbblk">'+(r.any?icBadge('percent',155):(r.shop?icBadge('bag',hueOf(title)):catBadge(r.label)))+
     '<div class="rmain"><div class="rtitle">'+esc(title)+'</div>'+
+    (at.length?'<div class="cbvia">'+svgIc('bag',12,2)+'<span>'+esc(at.join(', '))+'</span></div>':'')+
     r.cards.map(function(c){
       var a=D.accMap[c.acc]||{name:c.acc,type:''}, top=c.rate===r.best;
       return '<div class="cbcard'+(top?' top':'')+'">'+accLogo(a,'cblogo')+'<span class="cbn">'+esc(strip(c.acc))+'</span>'+
         '<b class="cbr"'+(top?' style="color:'+GREEN+'"':'')+'>'+esc(numStr(c.rate))+'%</b></div>';
     }).join('')+'</div></div>';
+}
+/* the shops that count as this category - a taxi app under Taxi */
+function cbRowShops(r){
+  if(r.shop||r.any) return [];
+  var M=cbShopMap(), lab=strip(r.label)||r.label, out=[];
+  Object.keys(M).forEach(function(k){
+    var e=M[k]; if(!e||!e.c||!e.c.length) return;
+    if(cbCatHit(lab,cbCtx(e.c))) out.push(e.n||k);
+  });
+  return out.sort(function(x,y){ return x.localeCompare(y); });
+}
+/* ── a shop as categories: which shop, and what it counts as ── */
+function cbShOpen(key){
+  var e=key?cbShopMap()[key]:null;
+  S.cbSh={key:e?key:'',name:e?(e.n||key):'',cats:e?e.c.slice():[]};
+  drawCbSh();
+  if(!e) setTimeout(function(){ var i=document.getElementById('cbsh_name'); if(i) try{ i.focus(); }catch(x){} },380);
+}
+function drawCbSh(){
+  var E=S.cbSh; if(!E) return;
+  var h=sheetTop(E.key?(E.name||'Shop'):'A shop as categories','cbShSave()','cbShBack()','Save')+'<i id="cbshscr" hidden></i>';
+  h+='<div class="fieldlabel">Shop</div>'+
+    '<input class="tinput" id="cbsh_name" autocomplete="off" autocorrect="off" placeholder="Its name" value="'+esc(E.name)+'" oninput="cbShTyped(this.value)">'+
+    '<div class="shopchips" id="cbsh_chips">'+cbShChips()+'</div>';
+  h+='<div class="fieldlabel">Counts for cashback as</div><div class="glass cbed">'+E.cats.map(function(c,i){
+      return '<div class="cbline"><span class="cbcat">'+catBadge(c)+'<span>'+esc(strip(c)||c)+'</span></span>'+
+        '<button class="rlx" onclick="cbShDrop('+i+')" aria-label="Remove">✕</button></div>';
+    }).join('')+
+    '<button class="expadd cbadd" onclick="cbShCats()">'+svgIc('plus',15,2.6)+(E.cats.length?'Categories':'Pick categories')+'</button></div>';
+  h+='<p class="tiny" style="margin:12px 4px 0;line-height:1.45">A card’s cashback on any of these counts at this shop, whatever the purchase is filed under. Pick your own categories, or type the name your bank uses.</p>';
+  if(E.key) h+='<button class="ghostbtn cbshdel" onclick="cbShDel()">Remove</button>';
+  h+=sheetEnd();
+  sheetPaint(h,'cbshscr');
+}
+/* the shops it could be: the ones found as it is typed, the most used before */
+function cbShChips(){
+  var E=S.cbSh, v=String((E&&E.name)||'').trim(), c=shopStrict(v);
+  var list=v?shopMatches(v,6):shopIndex().slice(0,6).map(function(x){ return x.n; });
+  return list.map(function(n){
+    return '<button class="shopchip'+(c&&shopStrict(n)===c?' on':'')+'" onclick="cbShPick('+q(n)+')">'+esc(n)+'</button>';
+  }).join('');
+}
+function cbShTyped(v){ var E=S.cbSh; if(!E) return; E.name=v; var b=document.getElementById('cbsh_chips'); if(b) b.innerHTML=cbShChips(); }
+function cbShPick(n){ var i=document.getElementById('cbsh_name'); if(i) i.value=n; cbShTyped(n); }
+function cbShIdx(v){ var E=S.cbSh; for(var i=0;i<E.cats.length;i++) if(cbSame2(E.cats[i],v)) return i; return -1; }
+function cbShCats(){
+  var E=S.cbSh; if(!E) return;
+  openCats({title:'Counts as', mode:'sub', mainOk:true, multi:true, custom:true,
+    ph:'Search a category, or type your bank’s name for it',
+    only:function(n,k){ return k!=='s'||(!isXferSub(n)&&!isCorrName(n)); },
+    isOn:function(k,v){ return !!v&&cbShIdx(v)>-1; },
+    pick:function(k,v){
+      v=String(v||'').trim(); if(!v) return;
+      var i=cbShIdx(v); if(i>-1) E.cats.splice(i,1); else if(E.cats.length<12) E.cats.push(v);
+    },
+    after:function(){ drawCbSh(); }});
+}
+function cbShDrop(i){ var E=S.cbSh; if(!E) return; E.cats.splice(i,1); drawCbSh(); }
+function cbShBack(){ S.cbSh=null; drawCbSheet(); }
+function cbShSave(){
+  var E=S.cbSh; if(!E) return;
+  var name=String(E.name||'').replace(/\s+/g,' ').trim();
+  if(!name){ toast('Which shop?'); return; }
+  if(!E.cats.length){ toast('Pick what it counts as'); return; }
+  var n=shopCanon(name)||name, key=cbShopKey(n);
+  if(!key){ toast('Which shop?'); return; }
+  var m=JSON.parse(JSON.stringify(cbShopMap())), cats=E.cats.slice();
+  /* the same shop given again: what it had stays, the new ones join it */
+  if(m[key]&&key!==E.key) (m[key].c||[]).forEach(function(c){ if(!cats.some(function(x){ return cbSame2(x,c); })) cats.push(c); });
+  if(E.key&&E.key!==key) delete m[E.key];
+  if(!m[key]&&Object.keys(m).length>=40){ toast('That list is full — remove a shop first'); return; }
+  m[key]={n:n,c:cats.slice(0,12)};
+  setPref('cbShops',m);
+  S.cbSh=null; drawCbSheet(); toast('Saved');
+}
+function cbShDel(){
+  var E=S.cbSh; if(!E||!E.key) return;
+  var m=JSON.parse(JSON.stringify(cbShopMap())); delete m[E.key];
+  setPref('cbShops',m);
+  S.cbSh=null; drawCbSheet(); toast('Removed');
 }
 
 /* ══════ this month's cashback, card by card ══════════════════════════════
@@ -13516,7 +13658,7 @@ function closeModal(){
   if(S.rl) rlClose();
   S.qonce=null; S.shop=null; S.menuOpen=false;
   S.accOpen=null; S.monthsOpen=false; S.notifyOpen=false;
-  S.owedOpen=false; S.back=null; S.cbEd=null; S.projOpen=null; S.ruleD=null; S.goalD=null; S.catY=null;
+  S.owedOpen=false; S.back=null; S.cbEd=null; S.cbSh=null; S.projOpen=null; S.ruleD=null; S.goalD=null; S.catY=null;
   if(S.cardShown){ S.cardShown={}; clearTimeout(S.cardT); }
   document.getElementById('modal').innerHTML='';
 }
