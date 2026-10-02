@@ -687,6 +687,8 @@ select.expname{padding:9px 10px;font-size:14px;border-radius:13px}
   transition:background .18s,color .18s,transform .16s}
 .shopchip:active{transform:scale(.95)}
 .shopchip.on{color:#fff;background:rgba(25,23,19,.72);border-color:transparent;box-shadow:none}
+.daychips{flex-wrap:nowrap}
+.daychip{flex:1 1 auto;max-width:none;padding:9px 8px;text-align:center}
 /* found by another of its spellings: which one, after the name */
 .shopvia{font-style:normal;margin-left:5px;opacity:.55}
 
@@ -817,6 +819,10 @@ select.expname{padding:9px 10px;font-size:14px;border-radius:13px}
 .spadd{display:flex;gap:8px;margin-top:8px}
 .spadd .tinput{flex:1;min-width:0}
 .spaddb{flex:none;padding:0 16px;border:0;border-radius:14px;background:rgba(25,23,19,.07);font:600 14px/1 -apple-system,sans-serif;color:#191713}
+.sppicks .shopchip{max-width:100%}
+.sppicks .shopchip i{font-style:normal;margin-left:6px;opacity:.5;font-size:11.5px}
+.splang{padding:0 14px 14px}
+.splang button{font-size:13px}
 .splink{display:inline-flex;align-items:center;gap:6px;margin:12px 2px 0;padding:6px 2px;border:0;background:none;font:600 13.5px/1 -apple-system,sans-serif;color:#2F5BD8}
 .tidygrp{padding:6px 0 12px;margin-top:12px}
 .tidyopt{display:flex;align-items:center;gap:12px;width:100%;padding:12px 16px;text-align:left;background:none}
@@ -7018,7 +7024,8 @@ function drawSheet(){
   }
 
   h+='<div class="fieldlabel">Note</div><input class="tinput" id="f_note" placeholder="Optional note" value="'+esc(s.note)+'" oninput="shq(\'note\',this.value)">';
-  h+='<div class="fieldlabel">Date</div><input class="tinput" type="date" id="f_date" value="'+esc(s.date)+'" onchange="shq(\'date\',this.value)">';
+  h+='<div class="fieldlabel">Date</div><input class="tinput" type="date" id="f_date" value="'+esc(s.date)+'" onchange="shq(\'date\',this.value);markDays(\'f_days\',this.value)">'+
+    dayChips('f_days',s.date,'pickDay');
 
   /* the payment from the Calendar this record settles */
   if(!inc&&s.sched&&D.sched){
@@ -12829,7 +12836,8 @@ function drawQuickOnce(){
   if(has('to'))
     h+=qfield('To account','<select class="tinput sel" onchange="qonce(\'to\',this.value)">'+qaccOptions(o.to,'Choose…',o.account)+'</select>',true);
   if(has('date'))
-    h+=qfield('Date','<input type="date" class="tinput" value="'+esc(o.date)+'" onchange="qonce(\'date\',this.value)">');
+    h+=qfield('Date','<input type="date" class="tinput" id="q_date" value="'+esc(o.date)+'" onchange="qonce(\'date\',this.value);markDays(\'q_days\',this.value)">'+
+      dayChips('q_days',o.date,'qoDay'));
   h+='</div>';
   h+='<button class="paybtn qsave" onclick="saveQuickOnce()">Add</button>';
   h+=sheetEnd();
@@ -12978,7 +12986,7 @@ window.__S=S;
    As a website, a small service worker keeps these files on the phone, so
    the app opens instantly and with no signal. A new version is fetched in
    the background; when it arrives, a note offers to switch to it. */
-var APP_VERSION='2026.10.02.3';
+var APP_VERSION='2026.10.02.5';
 (function(){
   try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persist(); }catch(e){}
   if(inGas()||!('serviceWorker' in navigator)) return;
@@ -13562,6 +13570,35 @@ IC.infinity="<path d=\"M6 16c5 0 7-8 12-8a4 4 0 0 1 0 8c-5 0-7-8-12-8a4 4 0 1 0 
 /* the icon list, in groups - every icon there is, the new ones and the old */
 var IC_GROUPS=[["Food & drinks",["cart", "basket", "store", "croissant", "carrot", "apple", "citrus", "banana", "cherry", "grape", "leafy", "wheat", "nut", "egg", "eggfried", "milk", "fish", "beef", "drumstick", "ham", "sandwich", "soup", "salad", "cookingpot", "chefhat", "utensils", "utensilsx", "burger", "pizza", "popcorn", "candy", "candycane", "lollipop", "cookie", "donut", "icecream", "cake", "cakeslice", "coffee", "cupsoda", "glasswater", "wine", "winebottle", "martini", "beer", "zap"]],["Shopping",["bag", "handbag", "backpack", "shirt", "shoe", "watch", "glasses", "gem", "diamond", "crown", "umbrella", "gift", "flower", "package", "tag", "tags", "barcode", "ticketpercent", "badgepercent", "sticker"]],["Home & bills",["house", "building", "key", "keyround", "dooropen", "lock", "houseplug", "bulb", "plug", "plugzap", "droplet", "droplets", "flame", "thermometer", "heater", "fan", "airvent", "snowflake", "sun", "sofa", "armchair", "lamp", "lampdesk", "lampfloor", "bed", "fridge", "microwave", "washer", "bath", "shower", "toilet", "trash", "recycle", "wrench", "hammer", "drill", "toolbox", "paintroller", "paintbrush", "fence", "shovel", "sprout", "trees", "flower2", "router", "cctv"]],["Transport",["bus", "busfront", "metro", "tram", "tramfront", "train", "trainfront", "taxi", "taxifront", "car", "carfront", "van", "truck", "caravan", "moped", "motorbike", "scooter", "bike", "fuel", "evcharger", "batterycharge", "parking", "gauge", "construction", "route", "navigation", "signpost", "mappin", "ship", "sailboat", "cablecar", "rocket"]],["Travel",["plane", "takeoff", "landing", "ticketsplane", "luggage", "hotel", "tent", "tenttree", "map", "mappinned", "compass", "globe", "earth", "mountain", "mountainsnow", "palm", "castle", "camera", "binoculars"]],["Health & beauty",["heartpulse", "activity", "heartplus", "hospital", "medkit", "cross", "stethoscope", "pill", "pillbottle", "tablets", "syringe", "bandage", "testtube", "microscope", "dna", "brain", "tooth", "ear", "accessibility", "heart", "scissors", "perfume", "brush", "sparkles", "sparkle", "footprints"]],["Sport & hobbies",["dumbbell", "run", "trophy", "medal", "target", "goal", "volleyball", "bowling", "fishing", "swords", "dice", "dices", "spade", "club", "chess", "puzzle", "gamepad", "gamepad2", "joystick", "palette", "pencilruler", "guitar", "piano", "drum", "book"]],["Going out",["party", "ferris", "clapper", "film", "ticket", "tickets", "theater", "drama", "mic", "micvocal", "music", "headphones", "disc", "radio", "tv", "monitorplay", "bookopen", "library", "newspaper", "cigarette"]],["Education & work",["cap", "school", "university", "presentation", "notebook", "notebookpen", "booktext", "pencil", "pen", "ruler", "calculator", "languages", "briefcase", "laptop", "laptop2", "printer", "folder", "filetext", "clipboard", "idcard", "award", "stamp", "scale", "gavel"]],["Money",["cash", "banknote", "cashin", "cashout", "coins", "wallet", "walletcards", "card", "piggy", "vault", "landmark", "handcoins", "handheart", "handshake", "dollar", "circledollar", "badgedollar", "euro", "bitcoin", "percent", "fee", "receipt", "receipttext", "exchange", "transfer", "arrows", "refund", "undo", "trend", "trendup", "trenddown", "chartline", "chartbar", "chartpie", "shield", "shieldcheck", "hourglass", "calendarclock", "signature", "sliders"]],["Tech & subscriptions",["phone", "smartphone", "tablet", "monitor", "keyboard", "mouse", "cpu", "harddrive", "cable", "usb", "battery", "speaker", "tvmini", "wifi", "satellite", "cloud", "server", "appwindow", "code", "bot", "mail", "message", "send", "repeat"]],["Family & pets",["users", "user", "person", "baby", "toy", "toybrick", "blocks", "hearthands", "church", "rose", "paw", "dog", "cat", "bone", "bird", "rabbit", "turtle", "squirrel"]],["Other",["pin", "star", "bookmark", "flag", "bell", "calendar", "clock", "box", "archive", "leaf", "moon", "infinity", "alert"]]];
 
+/* ---- the days most records are written for: one tap, not the picker ----
+   Today, yesterday and the two days before it, under the date field. The
+   date field itself still takes any other day. */
+function dayChips(id,cur,fn){
+  var t=parseD(D.today), h='';
+  for(var i=0;i<4;i++){
+    var d=new Date(t.getFullYear(),t.getMonth(),t.getDate()-i), v=iso(d);
+    var lab=i===0?'Today':i===1?'Yesterday':(DAYS[d.getDay()].slice(0,3)+' '+d.getDate());
+    h+='<button class="shopchip daychip'+(cur===v?' on':'')+'" data-dv="'+v+'" onclick="'+fn+'('+q(v)+')">'+lab+'</button>';
+  }
+  return '<div class="shopchips daychips" id="'+id+'">'+h+'</div>';
+}
+function markDays(id,v){
+  var box=document.getElementById(id); if(!box) return;
+  var b=box.querySelectorAll('.daychip');
+  for(var i=0;i<b.length;i++) b[i].classList.toggle('on',b[i].getAttribute('data-dv')===v);
+}
+function pickDay(v){
+  var s=S.sheet; if(!s) return;
+  s.date=v;
+  var el=document.getElementById('f_date'); if(el) el.value=v;
+  markDays('f_days',v);
+}
+function qoDay(v){
+  if(!S.qonce) return;
+  S.qonce.date=v;
+  var el=document.getElementById('q_date'); if(el) el.value=v;
+  markDays('q_days',v);
+}
 /* ---- keep adding: a whole day in one go ------------------------------- */
 function saveAndNext(){
   var s=S.sheet; if(!s||s.edit) return;
@@ -13846,7 +13883,7 @@ function drawShops(){
   var h=sheetTop('Shops','','shopsBack()');
   h+='<div class="glass" style="padding:4px 0">'+
     navRow('Tidy up spellings',g.length?(g.length+' shop'+(g.length===1?' is':'s are')+' written more than one way'):'Every shop has one spelling','drawTidy()')+'</div>';
-  h+='<div id="spcard">'+spellCard(rows)+'</div>';
+  h+='<div id="spcard">'+spellCard(rows)+'</div><div id="splang">'+langCard(rows)+'</div>';
   h+='<div class="fieldlabel">Shops <span class="opt">'+rows.length+'</span></div>'+
     '<input class="tinput" id="shopq" type="search" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Find a shop, any spelling" value="'+esc(qv)+'" oninput="S.shopQ=this.value;drawShopList()">';
   h+='<div class="glass" id="shoplist" style="margin-top:10px;padding:0">'+shopListHtml(shopFind(rows,qv))+'</div>';
@@ -13862,7 +13899,7 @@ function spellCard(rows){
   rows.forEach(function(r){ if(r.e) other+=r.other; });
   var h='';
   if(miss) h+='<div class="sprow"><span class="spt"><b>'+miss+' shop'+(miss===1?' has':'s have')+' no spellings yet</b>'+
-    '<i>An English name, Ukrainian and Russian are made for each, to check after</i></span>'+
+    '<i>Each gets a name and its English, Ukrainian and Russian spellings, to check after</i></span>'+
     '<button class="spgo" id="spfill"'+(S.spBusy?' disabled':'')+' onclick="spellFill()">'+(S.spBusy?'Filling…':'Fill in')+'</button></div>';
   if(other) h+='<div class="sprow"><span class="spt"><b>'+recWord(other)+' '+(other===1?'is':'are')+' saved under another spelling</b>'+
     '<i>Renamed to their shops\u2019 names, older ones too</i></span>'+
@@ -13871,6 +13908,84 @@ function spellCard(rows){
   return '<div class="glass spcard">'+h+'</div>';
 }
 function spCardRedraw(){ var el=document.getElementById('spcard'); if(el) el.innerHTML=spellCard(shopRowsAll()); }
+/* ---- every shop's name in one language at once ----------------------- */
+var SP_LANGS=[['en','English'],['uk','Ukrainian'],['ru','Russian']];
+/* a shop's spelling in a language, or '' */
+function spellIn(e,lang){
+  if(lang==='uk') return shopTrim(e.uk);
+  if(lang==='ru') return shopTrim(e.ru);
+  var all=[e.name].concat(e.alt||[]);
+  for(var i=0;i<all.length;i++) if(SP_LAT.test(all[i])&&!SP_CYR.test(all[i])) return shopTrim(all[i]);
+  return '';
+}
+/* which language most of the shops' names are in now */
+function shopLangNow(){
+  var c={en:0,uk:0,ru:0};
+  shopBook().forEach(function(e){
+    var n=String(e.name).toLowerCase();
+    if(e.uk&&n===String(e.uk).toLowerCase()) c.uk++;
+    else if(e.ru&&n===String(e.ru).toLowerCase()) c.ru++;
+    else if(SP_LAT.test(e.name)&&!SP_CYR.test(e.name)) c.en++;
+  });
+  var best='en';
+  ['uk','ru'].forEach(function(k){ if(c[k]>c[best]) best=k; });
+  return best;
+}
+/* what switching to a language changes: the shops given another name, and
+   the records renamed with them */
+function shopLangPlan(lang,rows){
+  var cnt={}, out={set:[],del:[],pairs:[],n:0};
+  (rows||shopRowsAll()).forEach(function(r){ cnt[r.name]=r; });
+  shopBook().forEach(function(e){
+    var to=spellIn(e,lang);
+    if(!to||to===e.name) return;
+    var lt=to.toLowerCase();
+    out.set.push({name:to,uk:e.uk,ru:e.ru,alt:(e.alt||[]).filter(function(x){ return String(x).toLowerCase()!==lt; }).concat([e.name])});
+    if(lt!==String(e.name).toLowerCase()) out.del.push(e.name);
+    var r=cnt[e.name];
+    if(r){
+      var from=r.raw.concat([e.name]).filter(function(x,i,a){ return x!==to&&a.indexOf(x)===i; });
+      if(from.length) out.pairs.push({from:from,to:to});
+      out.n+=r.n;
+    }
+  });
+  return out;
+}
+function langCard(rows){
+  if(!shopsOn()||!shopBook().length) return '';
+  var now=shopLangNow(), pick=S.spLangPick||now;
+  var h='<div class="glass spcard"><div class="sprow"><span class="spt"><b>Names shown</b>'+
+    '<i>The spelling every shop shows and is saved under. One shop on its own: tap it below.</i></span></div>'+
+    '<div class="segrow splang">'+SP_LANGS.map(function(l){
+      return '<button class="'+(pick===l[0]?'on':'')+'" onclick="shopLangPick(\''+l[0]+'\')">'+l[1]+'</button>';
+    }).join('')+'</div>';
+  if(S.spLangPick&&S.spLangPick!==now){
+    var plan=shopLangPlan(S.spLangPick,rows), lab=SP_LANGS.filter(function(l){ return l[0]===S.spLangPick; })[0][1];
+    h+=plan.set.length
+      ?'<div class="sprow"><span class="spt"><b>'+plan.set.length+' shop'+(plan.set.length===1?' takes its':'s take their')+' '+lab+' name'+(plan.set.length===1?'':'s')+'</b>'+
+        '<i>'+(plan.n?recWord(plan.n)+' renamed to match, older ones too':'No records to rename')+'</i></span>'+
+        '<button class="spgo armed" id="splanggo" onclick="shopLangGo()">Rename</button></div>'
+      :'<div class="sprow done"><span class="spt"><b>No shop has a '+lab+' spelling to show</b></span></div>';
+  }
+  return h+'</div>';
+}
+function shopLangPick(l){
+  S.spLangPick=(l===shopLangNow())?null:l;
+  var el=document.getElementById('splang'); if(el) el.innerHTML=langCard(shopRowsAll());
+}
+function shopLangGo(){
+  var lang=S.spLangPick; if(!lang||!shopsOn()) return;
+  var b=document.getElementById('splanggo'); if(b){ b.disabled=true; b.textContent='Renaming\u2026'; }
+  loadOlderThen(function(){
+    var plan=shopLangPlan(lang), lab=SP_LANGS.filter(function(l){ return l[0]===lang; })[0][1];
+    S.spLangPick=null;
+    if(plan.pairs.length&&!renameShopsNow(plan.pairs,'Shops are shown in '+lab+' now',{noAlias:true})){ drawShops(); return; }
+    if(plan.set.length) bookPut(plan.set,plan.del);
+    if(!plan.pairs.length) toast('Shops are shown in '+lab+' now');
+    setPref('shopLang',lang);
+    if(document.getElementById('splang')) drawShops();
+  },function(){ S.spLangPick=null; drawShops(); toast('Could not load the older records. Try again.'); });
+}
 function shopListHtml(list){
   if(!list.length) return '<div class="empty" style="padding:16px">No shop like that.</div>';
   var sel=!!S.ssel;
@@ -13934,6 +14049,9 @@ function spellFillNow(auto){
     var names=[];
     g.forEach(function(r){ r.raw.forEach(function(x){ if(names.indexOf(x)<0) names.push(x); }); });
     var e=spellGroup(names); if(!e||!e.name) return;
+    /* the language you show shops in, if it has a spelling for this one */
+    var pl=pref('shopLang','en'), want=(pl==='uk'||pl==='ru')?shopTrim(e[pl]):'';
+    if(want&&want!==e.name) e={name:want,uk:e.uk,ru:e.ru,alt:[e.name].concat(e.alt||[])};
     var k=e.name.toLowerCase(), old=have[k];
     /* a shop of that name is there already: these are more of its spellings */
     if(old) e={name:old.name,uk:old.uk||e.uk,ru:old.ru||e.ru,alt:(old.alt||[]).concat([e.uk,e.ru],e.alt||[],names)};
@@ -14075,8 +14193,13 @@ function drawShopEdit(){
   var d=S.shopEd; if(!d) return;
   var n=shopCount(d.orig), to=shopTrim(d.name);
   var h=sheetTop('Shop','','shopEdBack()');
-  h+='<div class="fieldlabel">Name <span class="opt">records are saved under it</span></div><input class="tinput" id="shopname" autocomplete="off" autocorrect="off" value="'+esc(d.name)+'" oninput="S.shopEd.name=this.value;shopEdNote()">';
+  h+='<div class="fieldlabel">Name <span class="opt">shown in the app, records are saved under it</span></div><input class="tinput" id="shopname" autocomplete="off" autocorrect="off" value="'+esc(d.name)+'" oninput="S.shopEd.name=this.value;shopEdNote()">';
   h+='<p class="tiny" id="shopednote" style="margin:8px 4px 0;line-height:1.45">'+shopEdNoteText(d,n,to,shopEdOther(d,to))+'</p>';
+  var picks=shopsOn()?shopEdPicks(d):[];
+  if(picks.length){
+    h+='<div class="fieldlabel">Show it as <span class="opt">tap one to make it the name</span></div><div class="shopchips sppicks" id="se_picks">'+
+      picks.map(function(p){ return '<button class="shopchip" onclick="shopEdPick('+q(p.v)+')">'+esc(p.v)+(p.lab?'<i>'+esc(p.lab)+'</i>':'')+'</button>'; }).join('')+'</div>';
+  }
   if(shopsOn()){
     h+='<div class="fieldlabel">Ukrainian</div><input class="tinput" id="se_uk" autocomplete="off" autocorrect="off" value="'+esc(d.uk)+'" oninput="S.shopEd.uk=this.value">';
     h+='<div class="fieldlabel">Russian</div><input class="tinput" id="se_ru" autocomplete="off" autocorrect="off" value="'+esc(d.ru)+'" oninput="S.shopEd.ru=this.value">';
@@ -14094,6 +14217,36 @@ function drawShopEdit(){
   document.getElementById('modal').innerHTML=h;
 }
 function shopEdBack(){ S.shopEd=null; drawShops(); }
+/* which language a spelling of a shop is, as far as can be told */
+function spellLab(v,e){
+  var lv=String(v||'').toLowerCase(), uk=String(e.uk||'').toLowerCase(), ru=String(e.ru||'').toLowerCase();
+  if(lv&&lv===uk&&lv===ru) return 'Ukrainian, Russian';
+  if(lv&&lv===uk) return 'Ukrainian';
+  if(lv&&lv===ru) return 'Russian';
+  if(SP_LAT.test(v)&&!SP_CYR.test(v)) return 'English';
+  return '';
+}
+/* every other way the shop is written - the name it had among them - to
+   be shown as instead */
+function shopEdPicks(d){
+  var name=shopTrim(d.name).toLowerCase(), seen={}, out=[];
+  [d.orig,d.uk,d.ru].concat(d.alt).forEach(function(v){
+    v=shopTrim(v); var k=v.toLowerCase();
+    if(!v||k===name||seen[k]) return;
+    seen[k]=1; out.push({v:v,lab:spellLab(v,d)});
+  });
+  return out;
+}
+/* a spelling becomes the name; the name it replaces stays a spelling */
+function shopEdPick(v){
+  var d=S.shopEd; if(!d) return;
+  var old=shopTrim(d.name), lo=old.toLowerCase(), lv=v.toLowerCase();
+  d.name=v;
+  d.alt=d.alt.filter(function(x){ return shopTrim(x).toLowerCase()!==lv; });
+  if(old&&lo!==lv&&lo!==String(d.uk||'').toLowerCase()&&lo!==String(d.ru||'').toLowerCase()&&
+     !d.alt.some(function(x){ return shopTrim(x).toLowerCase()===lo; })) d.alt.push(old);
+  drawShopEdit();
+}
 function shopEdAltHtml(d){
   if(!d.alt.length) return '<p class="tiny" style="margin:2px 4px 0">None yet.</p>';
   return '<div class="spchips">'+d.alt.map(function(a,i){
