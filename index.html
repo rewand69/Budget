@@ -1404,6 +1404,54 @@ button.actcard .chevr{flex:none;color:rgba(25,23,19,.28);font-size:19px}
 .cbline .cbr{flex:0 0 70px;width:70px;text-align:right}
 .cbacc{display:flex;align-items:center;gap:10px;padding:12px 14px 6px;font:600 14px/1.2 -apple-system,sans-serif}
 .cbacc .badge{width:30px;height:30px}
+/* the month's editor: a card, its categories, a rate one tap away */
+.cbed{margin-top:12px}
+.cbacc .cban{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cbclr{flex:none;padding:6px 2px;border:0;background:none;font:600 13px/1 -apple-system,sans-serif;color:rgba(25,23,19,.45)}
+.cbline .cbcat{flex:1;min-width:0;display:flex;align-items:center;gap:10px;font:560 14.5px/1.2 -apple-system,sans-serif;letter-spacing:-.2px}
+.cbline .cbcat .badge{width:30px;height:30px;border-radius:10px}
+.cbline .cbcat>span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cbpct{flex:none;min-width:62px;height:36px;padding:0 10px;border:0;border-radius:12px;background:rgba(25,23,19,.06);
+  font:650 15px/1 -apple-system,sans-serif;letter-spacing:-.2px;color:#191713}
+.cbpct.unset{background:rgba(51,123,208,.10);color:rgb(51,123,208);font-size:13px}
+.cbpct.on{box-shadow:inset 0 0 0 2px rgb(51,123,208)}
+.cbpresets{display:flex;flex-wrap:wrap;gap:6px;padding:4px 12px 10px 52px}
+.cbpresets button{min-width:46px;height:36px;padding:0 10px;border:0;border-radius:11px;background:rgba(25,23,19,.06);
+  font:620 14px/1 -apple-system,sans-serif;color:#191713}
+.cbpresets button.on{background:#191713;color:#fff}
+.cbpresets .cbo{display:flex;gap:6px;flex:1 1 150px;min-width:150px}
+.cbpresets .cbother{flex:1;min-width:0;height:36px;margin:0;padding:0 10px;border:0;border-radius:11px;background:rgba(25,23,19,.06);
+  font:600 14px/1 -apple-system,sans-serif}
+.cbpresets button.cbok{background:rgba(51,123,208,.12);color:rgb(51,123,208)}
+.cbadd{display:flex;align-items:center;gap:7px;color:rgb(51,123,208)}
+.cbadd .ic{width:15px;height:15px}
+.cbmore{display:flex;flex-wrap:wrap;gap:8px}
+.cbmorec{display:inline-flex;align-items:center;gap:7px;padding:7px 12px 7px 7px;border:0;border-radius:13px;background:rgba(255,255,255,.62);
+  box-shadow:0 1px 2px rgba(30,26,22,.06);font:560 13.5px/1 -apple-system,sans-serif;color:#191713}
+.cblogo{flex:none;width:18px;height:18px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;overflow:hidden}
+.cblogo img{width:100%;height:100%;object-fit:cover}
+.cblogo .ic{width:12px;height:12px}
+.cbmorec .cblogo{width:24px;height:24px;border-radius:8px}
+.cbmorec .cblogo .ic{width:15px;height:15px}
+/* Accounts: which card to pay with */
+.cbtab .row{padding:11px 14px 11px 12px;gap:12px}
+.cbtab .badge{width:36px;height:36px;border-radius:12px}
+.cbwho{display:flex;align-items:center;gap:6px;margin-top:4px;min-width:0;font:500 13px/1.2 -apple-system,sans-serif;color:#191713}
+.cbwho b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cbalso{margin-top:3px;font:400 12px/1.25 -apple-system,sans-serif;color:rgba(25,23,19,.45);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cbbig{flex:none;font:700 19px/1 -apple-system,sans-serif;letter-spacing:-.5px}
+.cbdue{display:flex;align-items:center;gap:8px;padding:11px 12px 11px 14px;margin-bottom:10px}
+.cbdue>span{flex:1;min-width:0}
+.cbdue b{display:block;font:600 14px/1.2 -apple-system,sans-serif}
+.cbdue i{display:block;margin-top:2px;font:400 12.5px/1.3 -apple-system,sans-serif;font-style:normal;color:rgba(25,23,19,.5)}
+.cbdue button{flex:none;height:34px;padding:0 12px;border:0;border-radius:11px;font:600 13px/1 -apple-system,sans-serif}
+.cbsame{background:rgba(25,23,19,.06);color:#191713}
+.cbupd{background:rgb(51,123,208);color:#fff}
+.cbempty{display:flex;align-items:center;gap:13px;width:100%;padding:14px 16px;border:0;text-align:left}
+.cbempty>span:last-child{flex:1;min-width:0}
+.cbempty b{display:block;font:600 14.5px/1.25 -apple-system,sans-serif;color:#191713}
+.cbempty i{display:block;margin-top:3px;font:400 12.5px/1.35 -apple-system,sans-serif;font-style:normal;color:rgba(25,23,19,.55)}
+.cbaddacc{display:block;width:100%;border:0;text-align:center}
 
 /* ══════════════════════ icons you pick ══════════════════════ */
 .icpick{flex:none;display:flex;padding:0;border:0;background:none;border-radius:50%}
@@ -5313,7 +5361,9 @@ function pageAccounts(){
         (ov.daysUntil?' \u00b7 in '+ov.daysUntil+' day'+(ov.daysUntil==1?'':'s'):'')+'</div>':'')+
      '</div>';
 
-  /* what wants doing: this month's cashback categories, money owed to you */
+  /* which card to pay with: every category a card gives money back on */
+  h+=cbSection();
+  /* what wants doing: money owed to you */
   h+=owedCard();
   h+='<div class="grid2">'+
      tile('Available to spend',bmoney(available,0),'#191713')+
@@ -5369,8 +5419,6 @@ function accountRow(a){
   if((a.creditLimit||0)>0) right+='<div class="rsub">'+bmoney(Math.floor(Number(a.available)||0),0)+' free of '+bmoney(Math.floor(Number(a.creditLimit)||0),0)+'</div>';
   else if(a.currency&&a.currency!=='UAH') right+='<div class="rsub">'+(anyHidden()?DOTS:esc(a.balance+' '+a.currency))+'</div>';
 
-  var cb=cashbackList(a);
-  var cbHtml=cb.length?'<div class="cbrow">'+cb.map(cbChip).join('')+'</div>':'';
   var pay=payLine(a);
 
   return '<button class="row acc-row" onclick="openAccount('+q(a.name)+')">'+
@@ -5379,7 +5427,7 @@ function accountRow(a){
       '<div class="rmeta">'+esc(sub.join(' \u00b7 '))+((a.payBy&&!pay)?' \u00b7 due '+fmtShort(a.payBy):'')+'</div></div>'+
       '<div class="accright">'+right+'</div>'+
       '<span class="accchev">\u203A</span></div>'+
-    pay+cbHtml+'</button>';
+    pay+'</button>';
 }
 
 /* ----------------------------------------------------------- cashback */
@@ -5462,17 +5510,17 @@ function openAccount(name){
   }
 
   var cb=cashbackList(a);
-  h+='<div class="sect"><span>Cashback</span>'+
-     (cb.length?'<span class="r">'+cb.length+'</span>':'')+'</div>';
+  h+='<div class="sect"><span>Cashback</span><button class="sectadd" onclick="closeModal();openCbEdit('+q(a.name)+')">'+(cb.length?'Edit':'Add')+'</button></div>';
   if(cb.length){
     h+='<div class="glass list">'+cb.map(function(c){
+      var lab=strip(c.label)||c.label, any=CB_ANY.test(lab);
       return '<div class="row">'+
-        catBadge(c.label)+
-        '<div class="rmain"><div class="rtitle">'+esc(c.label)+'</div></div>'+
+        (any?icBadge('percent',155):catBadge(c.label))+
+        '<div class="rmain"><div class="rtitle">'+esc(any?'Everything':lab)+'</div></div>'+
         '<div class="cbrate">'+esc(c.rate||'\u2014')+'</div></div>';
     }).join('')+'</div>';
   }else{
-    h+='<div class="glass empty">No cashback categories on this account yet \u2014 add them in the Cashback column of the Dashboard sheet.</div>';
+    h+='<button class="glass empty cbaddacc" onclick="closeModal();openCbEdit('+q(a.name)+')">No cashback on this card this month — tap to add its categories</button>';
   }
 
   var mine=viewTx(D.tx||[]).filter(function(x){return x.account===a.name;});
@@ -7068,6 +7116,13 @@ function catBody(){
     var sl2=srcList();
     if(sl2.length){ any=true; h+=catHead(P,'Income','','banknote',HUE_IN)+srcChips(sl2); }
   }
+  /* a name of its own, typed in the search - the way a bank calls it */
+  if(P.custom&&want){
+    var raw=String(P.q).replace(/[\r\n;]+/g,' ').trim().slice(0,60);
+    h='<div class="catgrid catnone"><button class="catchip'+(catOn(P,'c',raw)?' on':'')+'" onclick="catTap(\'c\','+q(raw)+')">'+
+      '<span class="cg">'+svgIc('plus',16,2)+'</span><span class="cn">'+esc('“'+raw+'”')+'</span></button></div>'+h;
+    any=true;
+  }
   return h+(any?'':empty);
 }
 function catTap(k,v){
@@ -7185,9 +7240,9 @@ function drawSheet(){
     h+='<div id="stwrap">'+stateBox(s)+'</div>';
     /* something to come back to: it waits in the "!" list */
     h+='<div id="chkwrap">'+checkRow(s)+'</div>';
-    /* a receipt can be taken apart into expenses of their own */
-    var rhead=s.receipt?findTx('e',s.row):null;
-    if(rhead&&isReceipt(rhead)&&rhead.row) h+='<button class="refbtn" onclick="closeSheet();openUnform('+rhead.row+')">'+svgIc('list',17,2)+'Split into separate expenses</button>';
+    /* one into the other: an expense into a receipt, a receipt back into
+       an expense - or into expenses of their own */
+    h+=convertBtns(s);
     /* deleting a receipt takes its split lines with it, so say how many */
     var nl=s.receipt?linesOf((findTx('e',s.row)||{}).receipt).length:0;
     h+='<button class="delbtn" id="delbtn" onclick="deleteSheet()">'+
@@ -10975,51 +11030,183 @@ function upcPay(row,occ){
   calPay(row,occ);
   setTimeout(function(){ if(document.getElementById('upcsheet')) drawUpcoming(); },60);
 }
-function openCbEdit(){
-  S.cbEd={accs:cbAccounts().map(function(a){
-    return {row:a.row||0,name:a.name,orig:String(a.cashback||''),
-            lines:cashbackList(a).map(function(c){ return {label:c.label,rate:String(c.rate||'').replace('%','')}; })};
-  })};
-  if(!S.cbEd.accs.length){
-    var first=(D.accounts||[]).filter(function(a){ return /card|credit|debit/i.test(a.type||''); })[0];
-    if(first) S.cbEd.accs.push({row:first.row||0,name:first.name,orig:'',lines:[{label:'',rate:''}]});
+/* ══════ cashback: which card to pay with ═════════════════════════════════
+   Accounts opens with it: every category a card gives money back on this
+   month, the best card for it and how much, and the others after it - what
+   is wanted at the till. The same category on two cards shares a row - the
+   names are compared, not guessed at, so two of a bank's own categories
+   never fold into one; Everything comes last, as it only counts where
+   nothing better does. */
+function cbKey(lab){
+  if(CB_ANY.test(lab)) return 'any';
+  return 'w:'+String(strip(lab)||lab).toLowerCase().replace(/\s+/g,' ').trim();
+}
+function cbTable(){
+  var by={}, rows=[];
+  (D.accounts||[]).forEach(function(a){
+    cashbackList(a).forEach(function(c){
+      var r=cbRate(c.rate); if(!(r>0)) return;
+      var lab=strip(c.label)||c.label, key=cbKey(lab), row=by[key];
+      if(!row){ row=by[key]={key:key,any:key==='any',cards:[]}; rows.push(row); }
+      var have=row.cards.filter(function(x){ return x.acc===a.name; })[0];
+      if(have){ if(r>have.rate){ have.rate=r; have.label=c.label; } return; }
+      row.cards.push({acc:a.name,rate:r,label:c.label});
+    });
+  });
+  rows.forEach(function(row){
+    row.cards.sort(function(x,y){ return y.rate-x.rate; });
+    row.best=row.cards[0].rate; row.label=row.cards[0].label;
+  });
+  return rows.sort(function(x,y){
+    return (x.any-y.any)||(y.best-x.best)||strip(x.label).localeCompare(strip(y.label));
+  });
+}
+function cbMonthWord(){ return MON[Number(String(D.today).slice(5,7))-1]||''; }
+function cbSection(){
+  var rows=cbTable();
+  var h='<div class="sect"><span><span class="inic">'+svgIc('percent',16,2)+'</span>Cashback · '+esc(cbMonthWord())+'</span>'+
+    '<button class="sectadd" onclick="openCbEdit()">'+(rows.length?'Edit':'Add')+'</button></div>';
+  if(!rows.length){
+    return h+'<button class="glass cbempty" onclick="openCbEdit()">'+icBadge('percent',155)+
+      '<span><b>Which card to pay with</b><i>Put in this month’s cashback categories of your cards: they show here, and the app says which card gives the most back as you add an expense.</i></span></button>';
   }
+  if(cbMonthDue()) h+='<div class="glass cbdue"><span><b>New month</b><i>Have the categories changed?</i></span>'+
+    '<button class="cbsame" onclick="cbSame()">Still the same</button><button class="cbupd" onclick="openCbEdit()">Update</button></div>';
+  return h+'<div class="glass list cbtab">'+rows.map(cbRowHtml).join('')+'</div>';
+}
+function cbRowHtml(r){
+  var best=r.cards[0], a=D.accMap[best.acc]||{name:best.acc,type:''};
+  var tie=r.cards.length>1&&r.cards[1].rate===best.rate;
+  var also=r.cards.slice(1).map(function(c){ return esc(strip(c.acc))+' '+esc(numStr(c.rate))+'%'; }).join(' · ');
+  return '<div class="row">'+(r.any?icBadge('percent',155):catBadge(r.label))+
+    '<div class="rmain"><div class="rtitle">'+esc(r.any?'Everything else':(strip(r.label)||r.label))+'</div>'+
+      '<div class="cbwho">'+accLogo(a,'cblogo')+'<b>'+esc(strip(best.acc))+'</b></div>'+
+      (also?'<div class="cbalso">'+(tie?'or ':'then ')+also+'</div>':'')+'</div>'+
+    '<div class="cbbig" style="color:'+GREEN+'">'+esc(numStr(best.rate))+'%</div></div>';
+}
+
+/* ══════ this month's cashback, card by card ══════════════════════════════
+   It opens with what the cards had last month, so a month that changes a
+   little is a few taps - and one that does not change is "Still the same".
+   Categories are picked from your own, several at a time (or typed the way
+   the bank calls them); a rate is one tap from a row of the usual ones.
+   Saved to the Cashback column of the Dashboard sheet, a category a line. */
+var CB_RATES=[1,2,3,5,7,10,15,20];
+function cbCards(){ return (D.accounts||[]).filter(function(a){ return /card|credit|debit/i.test(a.type||''); }); }
+function cbLinesOf(a){ return cashbackList(a).map(function(c){ return {label:c.label,rate:String(c.rate||'').replace(/[%\s]/g,'')}; }); }
+function openCbEdit(focus){
+  var accs=cbAccounts().map(function(a){ return {row:a.row||0,name:a.name,orig:String(a.cashback||''),lines:cbLinesOf(a)}; });
+  var f=focus&&D.accMap[focus];
+  if(f&&!accs.some(function(x){ return x.name===focus; })) accs.push({row:f.row||0,name:f.name,orig:String(f.cashback||''),lines:[]});
+  if(!accs.length){ var c0=cbCards()[0]; if(c0) accs.push({row:c0.row||0,name:c0.name,orig:'',lines:[]}); }
+  S.cbEd={accs:accs,rate:null};
   drawCbEdit();
+  /* a card with nothing on it yet: straight to its categories */
+  for(var i=0;i<accs.length;i++) if(!accs[i].lines.length&&(accs[i].name===focus||accs.length===1)){ cbPickCats(i); break; }
 }
 function drawCbEdit(){
   var E=S.cbEd; if(!E) return;
-  var h=sheetTop('Cashback','saveCbEdit()');
+  var h=sheetTop('Cashback · '+cbMonthWord(),'saveCbEdit()');
+  if(cbMonthDue()&&cbAccounts().length) h+='<button class="ghostbtn" onclick="cbKeep()">Still the same as last month</button>';
   E.accs.forEach(function(x,ai){
     var a=D.accMap[x.name]||{name:x.name,type:''};
-    h+='<div class="glass cbed" style="margin-top:12px"><div class="cbacc">'+accLogo(a,'badge')+esc(strip(x.name))+'</div>';
+    h+='<div class="glass cbed"><div class="cbacc">'+accLogo(a,'badge')+'<span class="cban">'+esc(strip(x.name))+'</span>'+
+      (x.lines.length?'<button class="cbclr" onclick="cbClearAcc('+ai+')">Clear</button>':'')+'</div>';
     x.lines.forEach(function(l,li){
-      h+='<div class="cbline"><input class="tinput cbl" placeholder="Category" value="'+esc(l.label)+'"'+
-          ' oninput="S.cbEd.accs['+ai+'].lines['+li+'].label=this.value">'+
-        '<input class="tinput cbr" inputmode="decimal" placeholder="%" value="'+esc(l.rate)+'"'+
-          ' oninput="S.cbEd.accs['+ai+'].lines['+li+'].rate=this.value">'+
+      var lab=strip(l.label)||l.label, any=CB_ANY.test(lab), r=String(l.rate||'').trim();
+      var on=!!(E.rate&&E.rate[0]===ai&&E.rate[1]===li);
+      h+='<div class="cbline"><span class="cbcat">'+(any?icBadge('percent',155):catBadge(l.label))+
+          '<span>'+esc(any?'Everything':lab)+'</span></span>'+
+        '<button class="cbpct'+(r?'':' unset')+(on?' on':'')+'" onclick="cbRateOpen('+ai+','+li+')">'+(r?esc(r)+'%':'Set %')+'</button>'+
         '<button class="rlx" onclick="cbDropLine('+ai+','+li+')" aria-label="Remove">✕</button></div>';
+      if(on){
+        var other=(r&&CB_RATES.indexOf(Number(r))<0)?r:'';
+        h+='<div class="cbpresets">'+CB_RATES.map(function(v){
+            return '<button class="'+(String(v)===r?'on':'')+'" onclick="cbRateSet('+ai+','+li+','+v+')">'+v+'%</button>';
+          }).join('')+
+          '<span class="cbo"><input class="tinput cbother" id="cbother" inputmode="decimal" placeholder="Other %" value="'+esc(other)+'"'+
+            ' onkeydown="if(event.key===\'Enter\'){event.preventDefault();cbRateSet('+ai+','+li+',this.value);}">'+
+          '<button class="cbok" onclick="cbRateSet('+ai+','+li+',document.getElementById(\'cbother\').value)">OK</button></span></div>';
+      }
     });
-    h+='<button class="expadd" style="color:'+ACCENT+'" onclick="cbAddLine('+ai+')">+ Add category</button></div>';
+    h+='<button class="expadd cbadd" onclick="cbPickCats('+ai+')">'+svgIc('plus',15,2.6)+(x.lines.length?'Categories':'Pick categories')+'</button></div>';
   });
-  var others=(D.accounts||[]).filter(function(a){
-    return /card|credit|debit/i.test(a.type||'')&&!E.accs.some(function(x){ return x.name===a.name; }); });
-  if(others.length) h+='<div class="glass" style="margin-top:12px;padding:2px 0">'+
-    fRow('Another card','<select class="tinput fin" onchange="cbAddAcc(this.value)">'+opt('','Choose…',true)+
-      others.map(function(a){ return opt(a.name,strip(a.name),false); }).join('')+'</select>')+'</div>';
-  h+='<p class="tiny" style="margin:12px 4px 0;line-height:1.45">Saved to the Cashback column of the Dashboard sheet. A category is matched by what it means: “Supermarkets” covers Groceries, “Restaurants” a café, “Everything” every purchase.</p>';
+  var others=cbCards().filter(function(a){ return !E.accs.some(function(x){ return x.name===a.name; }); });
+  if(others.length) h+='<div class="fieldlabel">Another card</div><div class="cbmore">'+others.map(function(a){
+      return '<button class="cbmorec" onclick="cbAddAcc('+q(a.name)+')">'+accLogo(a,'cblogo')+esc(strip(a.name))+'</button>';
+    }).join('')+'</div>';
+  h+='<p class="tiny" style="margin:14px 4px 0;line-height:1.45">A category counts by what it means: “Supermarkets” covers Groceries, “Restaurants” a café, Everything every purchase. Saved to the Cashback column of the Dashboard sheet.</p>';
   h+=sheetEnd();
   document.getElementById('modal').innerHTML=h;
 }
-function cbAddLine(ai){ S.cbEd.accs[ai].lines.push({label:'',rate:''}); drawCbEdit(); }
-function cbDropLine(ai,li){ S.cbEd.accs[ai].lines.splice(li,1); drawCbEdit(); }
-function cbAddAcc(name){
-  if(!name) return;
-  var a=D.accMap[name];
-  S.cbEd.accs.push({row:a?a.row:0,name:name,orig:String((a&&a.cashback)||''),lines:[{label:'',rate:''}]});
+/* the same category, however it is written */
+function cbSame2(x,y){ return String(strip(x)||x||'').toLowerCase().replace(/\s+/g,' ').trim()===String(strip(y)||y||'').toLowerCase().replace(/\s+/g,' ').trim(); }
+function cbIdx(x,label){
+  var any=CB_ANY.test(strip(label)||label);
+  for(var i=0;i<x.lines.length;i++){
+    var lab=strip(x.lines[i].label)||x.lines[i].label;
+    if(any?CB_ANY.test(lab):cbSame2(x.lines[i].label,label)) return i;
+  }
+  return -1;
+}
+/* several at once: tap them on and off, then close */
+function cbPickCats(ai){
+  var E=S.cbEd, x=E&&E.accs[ai]; if(!x) return;
+  openCats({title:'Cashback on', mode:'sub', mainOk:true, multi:true, custom:true,
+    none:{label:'Everything',icon:'percent'},
+    only:function(n,k){ return k!=='s'||(!isXferSub(n)&&!isCorrName(n)); },
+    isOn:function(k,v){ return cbIdx(x,k===''?'Everything':v)>-1; },
+    pick:function(k,v){
+      var label=k===''?'Everything':v, i=cbIdx(x,label);
+      if(i>-1) x.lines.splice(i,1); else if(String(label).trim()) x.lines.push({label:String(label).trim(),rate:''});
+    },
+    after:function(){ cbRateNext(); drawCbEdit(); }});
+}
+function cbRateNext(){
+  var E=S.cbEd; if(!E) return;
+  E.rate=null;
+  for(var a=0;a<E.accs.length&&!E.rate;a++){
+    for(var i=0;i<E.accs[a].lines.length;i++) if(!String(E.accs[a].lines[i].rate||'').trim()){ E.rate=[a,i]; break; }
+  }
+}
+function cbRateOpen(ai,li){
+  var E=S.cbEd; if(!E) return;
+  E.rate=(E.rate&&E.rate[0]===ai&&E.rate[1]===li)?null:[ai,li];
   drawCbEdit();
 }
+function cbRateSet(ai,li,v){
+  var E=S.cbEd; if(!E) return;
+  var l=E.accs[ai]&&E.accs[ai].lines[li]; if(!l) return;
+  var r=String(v==null?'':v).replace(/[%\s]/g,'').replace(',','.'), n=parseFloat(r);
+  if(!r) return;
+  if(!(n>0&&n<=100)){ toast('That is not a percent'); return; }
+  l.rate=numStr(n);
+  /* on to the next one still without a rate */
+  cbRateNext();
+  drawCbEdit();
+}
+function cbDropLine(ai,li){ var E=S.cbEd; if(!E) return; E.accs[ai].lines.splice(li,1); E.rate=null; drawCbEdit(); }
+function cbClearAcc(ai){ var E=S.cbEd; if(!E) return; E.accs[ai].lines=[]; E.rate=null; drawCbEdit(); }
+function cbAddAcc(name){
+  var E=S.cbEd, a=D.accMap[name]; if(!E||!a) return;
+  E.accs.push({row:a.row||0,name:name,orig:String(a.cashback||''),lines:[]});
+  drawCbEdit();
+  cbPickCats(E.accs.length-1);
+}
+/* nothing changed this month: said once, and done until the next */
+function cbKeep(){ S.cbEd=null; closeModal(); cbSame(); toast('Kept for '+cbMonthWord()); }
 function saveCbEdit(){
   var E=S.cbEd; if(!E) return;
+  /* a category without its percent is not cashback yet */
+  for(var ai=0;ai<E.accs.length;ai++){
+    for(var li=0;li<E.accs[ai].lines.length;li++){
+      var l=E.accs[ai].lines[li];
+      if(String(l.label).trim()&&!String(l.rate||'').trim()){
+        E.rate=[ai,li]; drawCbEdit();
+        toast('How much back on '+(strip(l.label)||l.label)+'?'); return;
+      }
+    }
+  }
   var edits=[];
   E.accs.forEach(function(x){
     var txt=x.lines.filter(function(l){ return String(l.label).trim(); }).map(function(l){
@@ -11875,6 +12062,7 @@ function drawUnform(){
   }
   h+='<button class="paybtn mrggo" style="background:linear-gradient(160deg,'+ok(.66,.13,255)+','+ok(.55,.15,255)+')" onclick="doUnform()">'+
     (n===1?'Make it one expense':'Split into '+n+' expenses')+'</button>';
+  if(lines.length&&!collapseWhy(t)) h+='<button class="ghostbtn" onclick="unfToOne()">Make it one expense instead</button>';
   h+=sheetEnd();
   document.getElementById('modal').innerHTML=h;
 }
@@ -11890,6 +12078,124 @@ function unfCatPick(){
     only:function(n){ return !isXferSub(n)&&!isCorrName(n); },
     pick:function(k,v){ if(!S.unf) return; S.unf.sub=v; catBtnSet('unf_cat','s',v,'Choose category\u2026'); }});
 }
+/* ══════ an expense and a receipt, one into the other ═══════════════════════
+   One tap either way, from the record's own sheet or with it picked in the
+   list. An expense becomes a receipt of its whole amount with nothing split
+   yet: its category goes, as the lines will say what was bought. A receipt
+   with nothing split becomes an expense under the category you pick; one
+   with lines is split into expenses of their own - or, on a screen that says
+   what goes, made one expense, its lines gone. */
+function toReceiptWhy(t){
+  if(!t||t.k!=='e') return 'Only an expense can become a receipt';
+  if(isReceipt(t)) return 'It is a receipt already';
+  if(isLine(t)) return 'That is one line of a receipt';
+  if(isXfer(t)||isXferSub(t.sub)) return 'A transfer cannot become a receipt';
+  if(isCorr(t)) return 'A balance correction cannot become a receipt';
+  if(/-f$/.test(String(t.id||''))) return 'A fee stays with its payment';
+  if(t.pending||!(t.row>0||t.srow>0)) return 'Wait a moment, it is still saving';
+  return '';
+}
+function convertBtns(s){
+  if(s.kind!=='e') return '';
+  var t=findTx('e',s.row); if(!t||!(t.row>0||t.srow>0)) return '';
+  var at=q(String(t.row));
+  if(isReceipt(t)){
+    var n=linesOf(t.receipt).length;
+    if(!n) return '<button class="refbtn" onclick="closeSheet();cvToExpense(findTx(\'e\',Number('+at+')))">'+svgIc('tag',17,2)+'Turn into an expense</button>';
+    var m=n+(receiptLeft(t)>0?1:0);
+    return '<button class="refbtn" onclick="closeSheet();openUnform(Number('+at+'))">'+svgIc('list',17,2)+'Split into '+m+' separate expense'+(m===1?'':'s')+'</button>'+
+      '<button class="refbtn" onclick="closeSheet();openCollapse(Number('+at+'))">'+svgIc('tag',17,2)+'Make it one expense</button>';
+  }
+  if(toReceiptWhy(t)) return '';
+  return '<button class="refbtn" onclick="closeSheet();cvToReceipt(findTx(\'e\',Number('+at+')))">'+svgIc('receipt',17,2)+'Turn into a receipt</button>';
+}
+function cvToReceipt(t){
+  var why=toReceiptWhy(t); if(why){ toast(why); return; }
+  var back={receipt:t.receipt,rtotal:t.rtotal,main:t.main,sub:t.sub,pending:t.pending};
+  var rid=newReceiptId(), ref=txRef(t);
+  t.receipt=rid; t.rtotal=Math.abs(Number(t.amount)||0); t.main=''; t.sub=''; t.pending=true;
+  S.sel=null; S.selDel=0; prep(); render(true);
+  toastAction('It is a receipt now','Add what was bought','cvAddLine('+q(rid)+')',8000);
+  bg('convertTx',{id:ref.id,row:ref.row,was:ref.was,to:'receipt',receipt:rid},null,function(){
+    for(var k in back) if(back.hasOwnProperty(k)) t[k]=back[k];
+  });
+}
+function cvAddLine(rid){ hideAction(); openLine(rid); }
+function cvToExpense(t){
+  if(!t||!isReceipt(t)) return;
+  if(t.pending||!(t.row>0||t.srow>0)){ toast('Wait a moment, it is still saving'); return; }
+  if(linesOf(t.receipt).length){ openUnform(t.row); return; }
+  openCats({title:'What was it for?', mode:'sub', recent:true, cur:'', curKind:'s',
+    only:function(n){ return !isXferSub(n)&&!isCorrName(n); },
+    pick:function(k,v){ if(v) cvExpenseGo(t,v,false); }});
+}
+/* the receipt is an expense now, on screen at once; with collapse its lines
+   are out of sight until the sheet has taken them away */
+function cvExpenseGo(t,sub,collapse){
+  var sm=D.subMap[sub]||{}, ref=txRef(t), keys=(collapse?linesOf(t.receipt):[]).map(delKey);
+  var back={receipt:t.receipt,rtotal:t.rtotal,main:t.main,sub:t.sub,amount:t.amount,uah:t.uah,pending:t.pending};
+  keys.forEach(function(k){ S.pendingDel[k]=1; });
+  t.amount=Math.abs(Number(t.rtotal)||0); t.uah=t.amount*rateOf(t.currency||'UAH');
+  t.receipt=''; t.rtotal=null; t.main=sm.main||''; t.sub=sub; t.pending=true;
+  S.sel=null; S.selDel=0; rebuildTx(); prep(); render(true);
+  toast(collapse?'It is one expense now':'It is an expense now');
+  var p={id:ref.id,row:ref.row,was:ref.was,to:'expense',sub:sub};
+  if(collapse) p.collapse=true;
+  bg('convertTx',p,function(){ keys.forEach(function(k){ delete S.pendingDel[k]; }); },function(){
+    for(var k in back) if(back.hasOwnProperty(k)) t[k]=back[k];
+    rebuildTx();
+  });
+}
+/* the lines that cannot simply go: money that has to stay where it is */
+function collapseWhy(t){
+  var L=linesOf(t.receipt);
+  for(var i=0;i<L.length;i++){
+    var x=L[i];
+    if(isXferSub(x.sub)) return 'A transfer is part of it — split it into expenses instead';
+    if(/-f$/.test(String(x.id||''))) return 'A fee is part of it — split it into expenses instead';
+    if(stateOf(x)) return 'Part of it is refunded or owed — split it into expenses instead';
+    if(linkedInc(x,'r')||linkedInc(x,'b')) return 'Money came back for part of it — split it into expenses instead';
+    if(x.pending) return 'Wait a moment, it is still saving';
+  }
+  return '';
+}
+function openCollapse(row){
+  var t=findTx('e',row); if(!t||!isReceipt(t)) return;
+  if(t.pending||!(t.row>0||t.srow>0)){ toast('Wait a moment, it is still saving'); return; }
+  var why=collapseWhy(t); if(why){ toast(why,5000); return; }
+  S.clp={row:row,sub:''};
+  drawCollapse();
+}
+function drawCollapse(){
+  var C=S.clp; if(!C) return;
+  var t=findTx('e',C.row);
+  if(!t||!isReceipt(t)){ S.clp=null; closeModal(); return; }
+  var n=linesOf(t.receipt).length, tot=Math.abs(Number(t.rtotal)||0);
+  var h=sheetTop('Make it one expense','','collapseBack()');
+  h+='<p class="tiny" style="margin:0 4px 10px;line-height:1.45">'+esc(strip(t.shop)||'Receipt')+' · '+esc(fmtShort(t.date))+' · '+
+    esc(strip(t.account))+' · '+money(tot,tot<1?decOf(t.currency):0)+'</p>';
+  h+='<div class="fieldlabel">What was it for?</div>'+catBtn('clp_cat','s',C.sub,'Choose category…','clpCatPick()');
+  h+='<p class="tiny" style="margin:8px 4px 0;line-height:1.45">All '+money(tot,tot<1?decOf(t.currency):0)+' becomes one expense under it. '+
+    (n===1?'Its line goes':'Its '+n+' lines go')+' — what '+(n===1?'it says':'they say')+' was bought is not kept.</p>';
+  h+='<button class="paybtn mrggo" style="background:linear-gradient(160deg,'+ok(.66,.13,255)+','+ok(.55,.15,255)+')" onclick="doCollapse()">Make it one expense</button>';
+  h+=sheetEnd();
+  document.getElementById('modal').innerHTML=h;
+}
+function clpCatPick(){
+  var C=S.clp; if(!C) return;
+  openCats({title:'What was it for?', mode:'sub', recent:true, cur:C.sub, curKind:'s',
+    only:function(n){ return !isXferSub(n)&&!isCorrName(n); },
+    pick:function(k,v){ if(!S.clp) return; S.clp.sub=v; catBtnSet('clp_cat','s',v,'Choose category…'); }});
+}
+function collapseBack(){ var C=S.clp; S.clp=null; if(C) editTx('e',C.row); else closeModal(); }
+function doCollapse(){
+  var C=S.clp; if(!C) return;
+  var t=findTx('e',C.row); if(!t) return;
+  if(!C.sub){ toast('Pick what it was for'); return; }
+  S.clp=null; closeModal();
+  cvExpenseGo(t,C.sub,true);
+}
+function unfToOne(){ var U=S.unf; S.unf=null; if(U) openCollapse(U.row); }
 function unformBack(){
   var U=S.unf; S.unf=null;
   if(U) editTx('e',U.row); else closeModal();
@@ -12374,7 +12680,8 @@ function selMergeWhy(){
   /* a receipt among them: the others go into it */
   if(heads.length>1) return 'Pick one receipt and the expenses to put in it';
   if(heads.length===1) return intoRcpWhy(heads[0],it);
-  if(it.length<2) return 'Pick at least two expenses';
+  /* one on its own becomes a receipt itself */
+  if(it.length===1) return toReceiptWhy(it[0]);
   for(var i=0;i<it.length;i++){
     if(!selPlainExp(it[i])) return 'Only plain expenses can go into a receipt';
     if(it[i].receipt) return 'Some of these are already in a receipt';
@@ -12478,6 +12785,7 @@ function selDelete(){
 function selMerge(){
   var it=selItems(), heads=it.filter(isReceipt);
   if(heads.length===1){ openIntoReceipt(heads[0],it); return; }
+  if(it.length===1){ S.sel=null; S.selDel=0; render(true); cvToReceipt(it[0]); return; }
   var items=selPayload();
   S.sel=null; S.selDel=0;
   render(true); toast('Making a receipt…');
@@ -13147,7 +13455,7 @@ window.__S=S;
    As a website, a small service worker keeps these files on the phone, so
    the app opens instantly and with no signal. A new version is fetched in
    the background; when it arrives, a note offers to switch to it. */
-var APP_VERSION='2026.10.02.7';
+var APP_VERSION='2026.10.02.8';
 (function(){
   try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persist(); }catch(e){}
   if(inGas()||!('serviceWorker' in navigator)) return;
