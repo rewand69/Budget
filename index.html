@@ -1587,9 +1587,10 @@ button.cathd.pick:active{transform:scale(.985)}
    header first, it is the map.
 
    DATA
-   D  everything the server sent, replaced wholesale on every reply
-      (today, setup, accounts, overview, calendar, expectations,
-      tx, quick, prefs). Never mutate D expecting it to persist.
+   D  everything the server sent (today, setup, accounts, overview,
+      calendar, expectations, tx, quick, prefs, sync), replaced wholesale
+      by a full reply - or, by a save's reply that carries only what it
+      changed (res.changes), patched in place: see applyChanges.
    S  everything the server does not know: which tab, which filters
       are armed, what the open sheet is holding, selection, the
       in-flight queue. Lives only in this page.
@@ -1601,10 +1602,14 @@ button.cathd.pick:active{transform:scale(.985)}
      · a 60s guard fires if the callbacks never come back, so a row
        can never sit stuck forever
      · on success applyData(res, seq) swaps D and repaints
-   Replies can land out of order, so applyData drops anything older
-   than S.applied. Row numbers change on every reply, which is why
-   it also clears the selection — a stale selection would aim the
-   next action at the wrong records.
+   Every save carries D.sync (syncFor), the state of the sheet this
+   phone has; when the sheet is still in it, the reply is only what
+   the save changed and applyChanges lays it over D. Replies can land
+   out of order: the sheet's revision (sync.rev) says which is newer,
+   and without one (an older script) the order they were asked in
+   (S.applied). Row numbers change on every reply, which is why it
+   also clears the selection — a stale selection would aim the next
+   action at the wrong records.
 
    RENDERING
    render(true) repaints from D. Handlers that must NOT lose the
@@ -2082,6 +2087,9 @@ var API={
   call:function(fn,arg,cb){
     /* which phone it came from - the sheet writes it on every record it adds */
     if(arg&&typeof arg==='object'&&!(arg instanceof Array)&&arg.by===undefined){ try{ arg.by=meId(); }catch(e){} }
+    /* and which state of the sheet it has: a save that finds the sheet still
+       in it answers with only what it changed */
+    if(arg&&typeof arg==='object'&&!(arg instanceof Array)&&!NO_SYNC[fn]){ var sy=syncFor(); if(sy) arg.sync=sy; else delete arg.sync; }
     if(inGas()){
       google.script.run.withSuccessHandler(function(r){cb(null,r);})
                        .withFailureHandler(function(e){cb(e&&e.message?e.message:String(e));})
@@ -2105,6 +2113,23 @@ function toast(msg,ms){
    from config.js, and the key this phone was given when it was connected.
    Both stay on this phone and nowhere else. */
 var CONN_KEY='budget.key', CONN_URL='budget.api';
+/* ---- what this phone has of the sheet ------------------------------------
+   D.sync is the sheet's revision and the row counts of Expenses and Income
+   that the data on this phone stands for. It goes with every save; while
+   the sheet is still in that state, the save's answer is only what it
+   changed (applyChanges). Every twenty minutes a save asks for the whole
+   world anyway: changes made in the sheet by hand only ever arrive with it. */
+var NO_SYNC={bootstrap:1,olderTx:1,cardDetails:1,savePrefs:1,saveQuick:1,savePushSub:1,savePushJwts:1,deletePushSub:1,pushTest:1,pushInbox:1};
+var SYNC_FULL_MS=20*60000;
+function syncFor(){
+  var s=D&&D.sync;
+  if(!s||typeof s!=='object'||!s.ep) return null;
+  if(!S.fullAt||Date.now()-S.fullAt>SYNC_FULL_MS) return null;
+  /* a phone that cannot keep its own id must not pass for another one */
+  var dv=''; try{ dv=devId(); }catch(e){}
+  if(dv==='dnostorage') dv='';
+  return {ep:s.ep,rev:s.rev,e:s.e,i:s.i,dev:dv};
+}
 function inGas(){ return !!(window.google&&google.script&&google.script.run); }
 function okUrl(u){ return /^https?:\/\/[^\s]+\/exec$/.test(String(u||'').trim()); }
 function apiUrl(){
@@ -2220,6 +2245,8 @@ function load(){
   if(snap){
     D=snap.d;
     S.syncedAt=Number(snap.at)||0;
+    /* last time's copy: the first save asks for the whole world */
+    S.fullAt=0;
     /* the copy may be from yesterday; today is today */
     var now=iso(new Date());
     if(String(D.today||'')<now) D.today=now;
@@ -2250,6 +2277,7 @@ function load(){
     }else{
       D=res;
       S.syncedAt=Date.now();
+      S.fullAt=Date.now();
       rebuildTx();
       /* the first load lands on whichever tab is first in the bar */
       if(!S.landed){ S.landed=true; S.tab=landTab(); renderTabs(); }
@@ -2390,11 +2418,17 @@ try{ window.addEventListener('resize',function(){ clearTimeout(fitNums._t); fitN
    background. When the real data comes back it replaces the local copy;
    if the call fails the local change is rolled back.                    */
 function applyData(res,seq){
-  if(seq!==undefined){ if(seq<S.applied) return; S.applied=seq; }
+  if(res&&res.changes){ applyChanges(res,seq); return; }
+  /* the newer of two answers: the sheet's revision says, when both have one */
+  var cur=D&&D.sync, nw=res&&res.sync;
+  if(cur&&nw&&cur.ep===nw.ep){ if(nw.rev<cur.rev){ relist(); return; } }
+  else if(seq!==undefined&&seq<S.applied){ relist(); return; }
+  if(seq!==undefined&&seq>S.applied) S.applied=seq;
   D=res;
   prefOverlay();
   S.fromSnap=false;
   S.syncedAt=Date.now();
+  S.fullAt=Date.now();
   /* the first load lands on whichever tab is first in the bar; after that it
      is wherever you were */
   if(!S.landed){ S.landed=true; S.tab=landTab(); renderTabs(); }
@@ -2414,6 +2448,101 @@ function applyData(res,seq){
   if(S.tab==='Activity'&&ae&&ae.id==='actsearch') drawActList(); else render(true);
   saveSnap();
   spellAuto();
+}
+/* ---- a save's answer that is only what it changed ------------------------
+   It was made against the state this phone said it has (D.sync, or one a
+   few saves of its own behind, whose answers came first). Rows the save
+   added and deleted renumber the records here exactly as they did in the
+   sheet; the rows it touched come back as the sheet now has them; the
+   balances are new. An answer that does not fit what is here - another
+   one before it went missing, a different sheet - and the whole world is
+   asked for instead. */
+var CH_SKIP={changes:1,base:1,ops:1,up:1,sync:1,tx:1,rawTx:1,subMap:1,accMap:1};
+function applyChanges(res,seq){
+  var cur=D&&D.sync, nw=res.sync||{};
+  if(!D||!cur||cur.ep!==nw.ep){ fullAgain(); return; }
+  /* an answer that came first - a whole world - has it already */
+  if(!(nw.rev>cur.rev)){ relist(); return; }
+  if(res.base!==cur.rev){ fullAgain(); return; }
+  if(seq!==undefined&&seq>S.applied) S.applied=seq;
+  var dayWas=D.today;
+  if(!D.rawTx) D.rawTx=D.tx||[];
+  var m=mergeChanges(D.rawTx,S.older,res);
+  D.rawTx=m.raw;
+  /* older history: renumbered too - unless a record moved into or within it,
+     then it is fetched again when it is needed */
+  if(S.older){ if(m.oldHit){ S.older=null; S.olderAsked=false; } else S.older=m.older; }
+  for(var k in res) if(res.hasOwnProperty(k)&&!CH_SKIP[k]) D[k]=res[k];
+  D.sync=nw;
+  prefOverlay();
+  S.fromSnap=false;
+  S.syncedAt=Date.now();
+  if(tabHidden(S.tab)){ S.tab=tabOrder()[0]||S.tab; renderTabs(); }
+  rebuildTx();
+  if(!S.older&&needOlder()) ensureOlder();
+  S.sel=null; S.selDel=0;
+  prep();
+  var ae=document.activeElement;
+  if(S.tab==='Activity'&&ae&&ae.id==='actsearch') drawActList(); else render(true);
+  saveSnap();
+  spellAuto();
+  /* a new day: the calendar and the rest move on with it */
+  if(dayWas&&res.today&&res.today!==dayWas) fullAgain();
+}
+/* The lists in, the lists out: rows inserted and deleted, in the order the
+   sheet did it, move every record of that sheet the way they moved there
+   (ops: [kind, at, n] - n rows inserted before row at, or, with at < 0,
+   deleted from row -at); then each row touched (up) takes the place of
+   what stood there - gone: no longer a record, old: from before the two
+   years. The older history keeps its sheet row in srow. */
+function mergeChanges(raw,older,res){
+  var ops=res.ops||[], up=res.up||[], oldHit=false;
+  function shift(list,f){
+    ops.forEach(function(op){
+      var k=op[0], at=Number(op[1]), n=Number(op[2]), out=[];
+      for(var i=0;i<list.length;i++){
+        var t=list[i], r=t[f];
+        if(t.k!==k||!(r>0)){ out.push(t); continue; }
+        if(at>0){ if(r>=at) t[f]=r+n; out.push(t); continue; }
+        if(r>=-at&&r<-at+n) continue;
+        if(r>=-at+n) t[f]=r-n;
+        out.push(t);
+      }
+      list=out;
+    });
+    return list;
+  }
+  raw=shift(raw.slice(),'row');
+  if(older) older=shift(older.slice(),'srow');
+  var rows={e:{},i:{}}, ids={e:{},i:{}};
+  up.forEach(function(u){ if(!rows[u.k]) return; rows[u.k][u.row]=1; if(u.id) ids[u.k][u.id]=1; });
+  function keep(f){ return function(t){ var k=t.k; return !(rows[k]&&(rows[k][t[f]]||(t.id&&ids[k][t.id]))); }; }
+  raw=raw.filter(keep('row'));
+  if(older){ var n0=older.length; older=older.filter(keep('srow')); if(older.length!==n0) oldHit=true; }
+  up.forEach(function(u){
+    if(u.gone||!rows[u.k]) return;
+    if(u.old){ oldHit=true; return; }
+    raw.push(u);
+  });
+  return {raw:raw,older:older,oldHit:oldHit};
+}
+/* An answer not used, as a newer one is here already: what landed with it -
+   a record that was on its way up - shows as the sheet has it */
+function relist(){
+  if(!D) return;
+  rebuildTx(); prep();
+  var ae=document.activeElement;
+  if(S.tab==='Activity'&&ae&&ae.id==='actsearch') drawActList(); else render(true);
+}
+/* the whole world, asked for in the background */
+function fullAgain(){
+  if(S.fullBusy) return;
+  S.fullBusy=true;
+  var seq=++S.seq;
+  API.call('bootstrap',null,function(err,res){
+    S.fullBusy=false;
+    if(!err&&res) applyData(res,seq);
+  });
 }
 /* What the list shows = what the sheet sent, minus deletions still inside
    their undo window, plus rows still on their way up. */
@@ -13018,7 +13147,7 @@ window.__S=S;
    As a website, a small service worker keeps these files on the phone, so
    the app opens instantly and with no signal. A new version is fetched in
    the background; when it arrives, a note offers to switch to it. */
-var APP_VERSION='2026.10.02.6';
+var APP_VERSION='2026.10.02.7';
 (function(){
   try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persist(); }catch(e){}
   if(inGas()||!('serviceWorker' in navigator)) return;
