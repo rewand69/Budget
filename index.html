@@ -1410,11 +1410,27 @@ button.actcard .chevr{flex:none;color:rgba(25,23,19,.28);font-size:19px}
 .goalnone{padding:4px 4px 2px;font:400 12.5px/1.4 -apple-system,sans-serif;color:rgba(25,23,19,.5)}
 .newproj button+button{margin-left:0}
 /* ══════ people: whose record it is ══════
-   A record wears the colour of whoever added it, as its background. The
-   switch under each page's title shows one person's activity or all of it. */
-.row.pby:not(.selon):not(:active){background:var(--pb)}
-.rcp.pby,.owedrow.pby{background:var(--pb)}
-.rcp.pby .row.pby:not(.selon):not(:active){background:transparent}
+   A record wears the colour of whoever added it down its left edge: behind
+   the six-dot handle where it has one, a thin edge where it does not. The
+   switch under each page's title (in Activity, a filter) shows one person's
+   activity or all of it. */
+.row.pby,.rcp.pby,.owedrow.pby{box-shadow:inset 5px 0 0 var(--pb)}
+.row.txdrag.pby,.rcp.txdrag.pby{box-shadow:inset 23px 0 0 var(--pb)}
+.rcp.pby .row.pby,.owedrow.pby>.row.pby{box-shadow:none}
+.pby .grip,.pby .grip:active,.dragrow.pby .grip{color:var(--pd)}
+.txdrag.pby.dragrow{box-shadow:inset 23px 0 0 var(--pb),inset 0 1px 0 rgba(255,255,255,1),0 14px 30px -12px rgba(30,26,22,.45)}
+.rcp.txdrag.pby.rcpdrop{box-shadow:inset 23px 0 0 var(--pb),0 0 0 2px #2F6BFF,0 8px 22px -10px rgba(47,107,255,.55)}
+.fpill .fpi .pdot{width:10px;height:10px;margin:0}
+/* Settings → People, on the phone named Admin */
+.pplrow{display:flex;align-items:center;gap:12px;padding:12px 12px 12px 16px;border-bottom:.5px solid rgba(25,23,19,.07)}
+.pplrow:last-child{border-bottom:0}
+.pplmain{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.pplmain b{font:600 15px/1.2 -apple-system,sans-serif;letter-spacing:-.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pplmain i{font:400 12.5px/1.25 -apple-system,sans-serif;font-style:normal;color:rgba(25,23,19,.5)}
+.ppldel{flex:none;padding:8px 13px;border:0;border-radius:13px;background:rgba(214,58,47,.09);color:#c23a2b;font:600 13px/1 -apple-system,sans-serif}
+.ppldel.armed{background:#d63a2f;color:#fff}
+.ppldel:disabled{opacity:.45}
+.pplwarn{margin:-4px 16px 12px 58px;font:500 12.5px/1.4 -apple-system,sans-serif;color:#b23526}
 .page-head{flex-wrap:wrap}
 .whobar{order:9;flex-basis:100%;display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;margin:0 -2px;padding:2px}
 .whobar::-webkit-scrollbar{display:none}
@@ -2213,6 +2229,7 @@ function orderKey(t){
 }
 function prep(){
   CATSETS=null; PREG=null; PACT=null; PIX=null;
+  meGone();
   /* Newest day first. Inside one day, the most recently ADDED entry sits on
      top: addTx always inserts at sheet row 2, so a newer record carries a
      SMALLER row number than an older one, and ascending row === newest first.
@@ -2493,8 +2510,17 @@ function isXferFee(t){
 /* the transfer or withdrawal it was paid with, on the same day and card -
    moved apart, it is its own row again, so the difference shows */
 function feeRides(f,par){
-  return !!(f&&par&&f!==par&&par.k==='e'&&par.date===f.date&&par.account===f.account&&
-            isXferSub(par.sub)&&!isReceipt(par)&&!isLine(par));
+  if(!(f&&par&&f!==par&&par.k==='e'&&par.date===f.date&&par.account===f.account&&
+       isXferSub(par.sub)&&!isReceipt(par))) return false;
+  /* inside a receipt it rides on its transfer's line, both lines of it */
+  if(isLine(par)||isLine(f)) return isLine(par)&&isLine(f)&&par.receipt===f.receipt;
+  return true;
+}
+/* a receipt's lines as they are drawn: a fee rides on its transfer's line */
+function rcpLines(rid){
+  var all=linesOf(rid), fold=feeFold(all);
+  return {all:all, on:fold.on,
+          shown:fold.hidden.length?all.filter(function(x){ return fold.hidden.indexOf(x)<0; }):all};
 }
 function feeFold(list){
   var ids={}, out={hidden:[],on:{}};
@@ -3525,7 +3551,7 @@ function txRow(t,onclick,drag,sel,fee){
     (sw?' data-sk="'+esc(t.k)+'" data-sr="'+(t.row||0)+'"'+(canRepeat(t)?' data-rep="1"':''):'')+
     ((drag||sw)?pid:'')+
     (!t.pending&&t.row?' data-pk="'+esc(t.k)+'" data-pr="'+t.row+'"':'')+
-    (pb?' style="--pb:'+pb+'"':'')+' onclick="'+onclick+'">'+
+    (pb?' style="'+pb+'"':'')+' onclick="'+onclick+'">'+
     (picking?'<span class="selck">'+CHECK_ICON+'</span>':'')+
     (drag?'<span class="grip" onpointerdown="gripDown(event)" onclick="event.stopPropagation();event.preventDefault()">'+GRIP_ICON+'</span>':'')+
     (xf?icBadge('transfer',hueOf(t.main||'Transfer')):cr?icBadge('sliders',hueOf('Balance correction')):
@@ -3594,7 +3620,7 @@ function findBtn(){
     ' aria-label="Search and filter">'+svgIc('search',19,2)+'</button>';
 }
 /* a category, source or account is narrowing the list */
-function narrowed(){ return !!(S.fCat.length||S.fSub.length||S.fSrc.length||S.fAcc.length); }
+function narrowed(){ return !!(S.fCat.length||S.fSub.length||S.fSrc.length||S.fAcc.length||whoView()); }
 /* everything under the header */
 function actBody(){
   var nBad=viewTx(D.tx).filter(unbalanced).length;
@@ -3620,14 +3646,17 @@ function findPanel(){
       ' placeholder="Shop, note, category, amount…" value="'+esc(S.q)+'" oninput="onSearch(this.value)">'+
       (S.q?'<button class="sx" onclick="clearSearch()" aria-label="Clear">'+svgIc('x',12,3)+'</button>':'')+
       '</label><button class="fcancel" onclick="toggleFind()">Cancel</button></div>'+
-      (S.fBad?'':'<div class="fbar">'+filterPills(false)+'</div>');
+      (S.fBad?(whoPill(false)?'<div class="fbar">'+whoPill(false)+'</div>':''):'<div class="fbar">'+filterPills(false)+'</div>');
   }
-  return (narrowed()&&!S.fBad)?'<div class="fbar">'+filterPills(true)+'</div>':'';
+  /* Needs attention keeps to one person too, so it says whose */
+  if(S.fBad) return whoView()?'<div class="fbar">'+whoPill(true)+'</div>':'';
+  return narrowed()?'<div class="fbar">'+filterPills(true)+'</div>':'';
 }
 /* each list only offers what it can be narrowed by; onlySet leaves out the
    pills that are not doing anything */
 function filterPills(onlySet){
-  var h='';
+  /* whose records first - once there is more than one person */
+  var h=whoPill(onlySet);
   function add(label,arr,fn){ if(!onlySet||(arr&&arr.length)) h+=fpill(label,arr,fn); }
   /* one pill for what it was for: a whole category, some of its
      subcategories, or both from different categories - and on All the
@@ -5588,7 +5617,7 @@ function drawPicker(){
   function rowHtml(it){
     var on=it.any?pickerAnyOn(cfg):pickerOn(cfg,it.value);
     var hue=(it.hue!==undefined)?it.hue:hueOf(it.tintKey||it.value||it.label);
-    var badge=it.logo
+    var badge=it.badge?it.badge:it.logo
       ? '<span class="badge" style="background:#fff"><img src="'+esc(it.logo)+'" alt="" onerror="logoFail(this,'+q(it.icon||'tag')+','+hue+')"></span>'
       : icBadge(it.icon||'tag',hue);
     return '<button class="row" onclick="pickerPick('+q(it.value)+')">'+badge+
@@ -5598,7 +5627,7 @@ function drawPicker(){
       '<span class="tick" style="color:'+(on?ACCENT:'transparent')+'">\u2713</span></button>';
   }
   if(cfg.anyLabel){
-    h+='<div class="glass list" style="margin-bottom:4px">'+rowHtml({value:'',label:cfg.anyLabel,icon:'grid',hue:255,any:true})+'</div>';
+    h+='<div class="glass list" style="margin-bottom:4px">'+rowHtml({value:'',label:cfg.anyLabel,icon:cfg.anyIcon||'grid',hue:255,any:true})+'</div>';
   }
   cfg.groups.forEach(function(g){
     if(!g.items.length) return;
@@ -5696,8 +5725,32 @@ function openAccFilter(){
     groups:accountGroupsForPicker(),
     apply:function(v){ fPut('fAcc',v); render(); }});
 }
-function anyFilter(){ return !!(S.fCat.length||S.fSub.length||S.fSrc.length||S.fAcc.length||S.fBad); }
-function clearFilters(){ S.fCat=[]; S.fSub=[]; S.fSrc=[]; S.fAcc=[]; S.fBad=false; render(); }
+function anyFilter(){ return !!(S.fCat.length||S.fSub.length||S.fSrc.length||S.fAcc.length||S.fBad||whoView()); }
+function clearFilters(){
+  S.fCat=[]; S.fSub=[]; S.fSrc=[]; S.fAcc=[]; S.fBad=false;
+  if(whoView()){ S.who='all'; try{ localStorage.setItem(WHO_KEY,'all'); }catch(e){} }
+  render();
+}
+/* Activity's Person pill: everyone, or one person's records - the same
+   choice the switch makes on the other pages */
+function whoPill(onlySet){
+  if(!multiPeople()) return '';
+  var w=whoView();
+  if(!w) return onlySet?'':'<button class="fpill" onclick="openWhoFilter()"><span class="v">Person</span><span class="x">\u25BC</span></button>';
+  var c=personColor(w), bg=pcolBand(c);
+  return '<button class="fpill set" style="'+(bg?'background:'+bg+';':'')+'color:#191713" onclick="openWhoFilter()">'+
+    '<span class="fpi"><i class="pdot" style="background:'+pcolDot(c)+'"></i></span><span class="v">'+esc(personName(w))+'</span>'+
+    '<span class="x">\u25BC</span></button>';
+}
+function openWhoFilter(){
+  var mk=meKey();
+  openPicker({title:'Whose records', anyLabel:'Everyone', anyIcon:'users', current:whoView(),
+    groups:[{items:activePeople().map(function(k){
+      var n=personName(k);
+      return {value:k,label:n,badge:meAvatar(n,personColor(k)),meta:k===mk?'This phone':''};
+    })}],
+    apply:function(v){ setWho(v||'all'); }});
+}
 function toggleBad(){ S.fBad=!S.fBad; if(S.fBad){ S.fCat=[]; S.fSub=[]; S.fSrc=[]; } render(); }
 function fHas(a,x){ return (a||[]).indexOf(x)>-1; }
 /* one tap adds, the next takes away; the empty list means everything */
@@ -5758,9 +5811,12 @@ var PCOL=[['none','None',null],['blue','Blue',255],['teal','Teal',200],['green',
   ['yellow','Yellow',95],['orange','Orange',60],['red','Red',25],['pink','Pink',350],['purple','Purple',310],
   ['violet','Violet',282],['gray','Grey',-1]];
 function pcol(k){ for(var i=0;i<PCOL.length;i++) if(PCOL[i][0]===k) return PCOL[i]; return null; }
-/* the background a person's records wear, and the dot that stands for them */
-function pcolBg(k){ var c=pcol(k); if(!c||c[2]===null) return ''; return c[2]<0?ok(.93,0,0):ok(.935,.05,c[2]); }
+/* the dot that stands for a person */
 function pcolDot(k){ var c=pcol(k); if(!c||c[2]===null) return 'rgba(25,23,19,.25)'; return c[2]<0?ok(.6,0,0):ok(.64,.15,c[2]); }
+/* on a record: the band down its left edge, and the handle's dots on it */
+function pcolBand(k){ var c=pcol(k); if(!c||c[2]===null) return ''; return c[2]<0?ok(.87,0,0):ok(.87,.075,c[2]); }
+function pcolGrip(k){ var c=pcol(k); if(!c||c[2]===null) return ''; return c[2]<0?ok(.48,0,0):ok(.48,.1,c[2]); }
+function pbCss(k){ var b=pcolBand(k); return b?('--pb:'+b+';--pd:'+pcolGrip(k)):''; }
 function pcolName(k){ var c=pcol(k); return c?c[1]:'None'; }
 function peopleOn(){ return !!(D&&D.people); }
 function meLocal(){ try{ var o=JSON.parse(localStorage.getItem(ME_KEY)||'null'); return (o&&typeof o==='object')?o:{}; }catch(e){ return {}; } }
@@ -5781,7 +5837,8 @@ function peopleReg(){
   var p=(D&&D.prefs)||{}, me=meLocal(), sig=(me.n||'')+'|'+(me.c||'')+'|'+(me.t||0);
   if(PREG&&PREG.p===p&&PREG.sig===sig) return PREG;
   var ids={}, k;
-  for(k in p) if(p.hasOwnProperty(k)&&k.indexOf('who.')===0&&p[k]&&typeof p[k]==='object') ids[k.slice(4)]=p[k];
+  /* a phone whose person Admin deleted is nobody's ({x:1}) */
+  for(k in p) if(p.hasOwnProperty(k)&&k.indexOf('who.')===0&&p[k]&&typeof p[k]==='object'&&!p[k].x) ids[k.slice(4)]=p[k];
   var mi=meId();
   if(me.n||me.c) ids[mi]={n:me.n||'',c:me.c||'',t:me.t||0};
   var people={}, keyOf={};
@@ -5852,6 +5909,8 @@ function setWho(k){
 }
 /* the switch under every page's title */
 function whoBar(){
+  /* Activity has it among its filters */
+  if(S.tab==='Activity') return '';
   var L=activePeople(); if(L.length<2) return '';
   var cur=whoView()||'all';
   var h=L.map(function(k){
@@ -5862,8 +5921,8 @@ function whoBar(){
   if(cur!=='all'&&S.tab==='Calendar') note='Payments here are shared: a tick from anyone counts.';
   return '<div class="whobar" role="group" aria-label="Whose activity">'+h+'</div>'+(note?'<p class="whonote">'+esc(note)+'</p>':'');
 }
-/* a record's background, in its person's colour */
-function pbOf(t){ return pcolBg(personColor(personOf(t))); }
+/* a record's left edge, in its person's colour: the style that paints it */
+function pbOf(t){ return pbCss(personColor(personOf(t))); }
 /* the Calendar's Paid, with a dot for who paid - when there is more than one */
 function paidPill(rec){
   var d=(rec&&multiPeople())?'<i class="pdot" style="background:'+pcolDot(personColor(personOf(rec)))+'"></i>':'';
@@ -5921,8 +5980,8 @@ function meSwatches(cur){
   }).join('');
 }
 function mePreview(c){
-  var bg=pcolBg(c);
-  return '<div class="row'+(bg?' pby':'')+'"'+(bg?' style="--pb:'+bg+'"':'')+'>'+icBadge('coffee',hueOf('Coffee'))+
+  var st=pbCss(c);
+  return '<div class="row txdrag'+(st?' pby':'')+'"'+(st?' style="'+st+'"':'')+'><span class="grip">'+GRIP_ICON+'</span>'+icBadge('coffee',hueOf('Coffee'))+
     '<div class="rmain"><div class="rtitle">Coffee</div><div class="rmeta">Blue Cup</div></div>'+
     '<div class="ramt">−65</div></div>';
 }
@@ -5976,6 +6035,120 @@ function claimMine(){
   PACT=null; drawSettings(); render(true);
   toast(list.length+' record'+(list.length===1?' is':'s are')+' yours now');
   bg('claimRecords',{by:id},null,function(){ all.forEach(function(t){ delete t.by; }); PACT=null; render(true); });
+}
+/* Admin deleted this phone's person on another phone: the name and colour
+   go here too, so its next records are nobody's until a name is set again */
+function meGone(){
+  if(!D||!D.prefs) return;
+  var me=meLocal(); if(!me.n&&!me.c) return;
+  var e=D.prefs['who.'+meId()];
+  if(!e||!e.x||(Number(e.t)||0)<=(Number(me.t)||0)) return;
+  me.n=''; me.c=''; me.t=Number(e.t)||Date.now();
+  try{ localStorage.setItem(ME_KEY,JSON.stringify(me)); }catch(x){}
+  PREG=null; PACT=null;
+  setTimeout(function(){ toast('Admin deleted this phone\u2019s name. Set one again in Settings.',7000); },400);
+}
+/* ---- Settings → People: the phone named Admin can delete anyone else ----
+   A person goes with every record they added: the name and colour from
+   every phone, and the records from the sheet. Their phone forgets the name. */
+function isAdmin(){ return String(meLocal().n||'').trim().toLowerCase()==='admin'; }
+function adminRow(){
+  if(!isAdmin()) return '';
+  var n=adminPeople().length;
+  return '<button class="srow" onclick="openPeople()">'+sIcon('users',255)+'<span class="stl">People</span>'+
+    '<span class="sval">'+(n?n+' other'+(n===1?'':'s'):'Only you')+'</span><span class="chevr">\u203a</span></button>';
+}
+/* everyone but this phone's own person: from the names saved and from the records */
+function adminPeople(){
+  var reg=peopleReg(), mk=meKey(), seen={}, l=[], all=txAll();
+  Object.keys(reg.people).forEach(function(k){ if(k!==mk&&!seen[k]){ seen[k]=1; l.push(k); } });
+  for(var i=0;i<all.length;i++){ var k=personOf(all[i]); if(k&&k!==mk&&!seen[k]){ seen[k]=1; l.push(k); } }
+  l.sort(function(a,b){ return personName(a).localeCompare(personName(b)); });
+  return l;
+}
+function personRecs(key){ return txAll().filter(function(t){ return !t.pending&&personOf(t)===key; }); }
+/* the phones that are this person */
+function personPhones(key){
+  var reg=peopleReg(), ids=Object.keys(reg.keyOf).filter(function(id){ return reg.keyOf[id]===key; });
+  if(key.indexOf('d:')===0&&ids.indexOf(key.slice(2))<0) ids.push(key.slice(2));
+  return ids;
+}
+function openPeople(){
+  if(!isAdmin()) return;
+  S.ppl={arm:'',busy:''};
+  drawPeople();
+  /* the counts include the oldest records once they are here */
+  if(!S.older) loadOlderThen(pplRedraw,function(){});
+}
+function drawPeople(){
+  var P=S.ppl; if(!P) return;
+  var L=adminPeople();
+  var h=sheetTop('People','','pplBack()')+'<i id="pplscr" hidden></i>';
+  h+='<p class="tiny" style="margin:0 4px 12px;line-height:1.45">This phone is Admin, so it can delete another person: their name and colour, and every record they added, on every phone.</p>';
+  if(!L.length) h+='<div class="glass"><div class="empty">Nobody else has a name or records yet.</div></div>';
+  else h+='<div class="glass list">'+L.map(pplRow).join('')+'</div>';
+  h+='<p class="tiny" style="margin:10px 4px 0;line-height:1.45">Deleted records can only be brought back from the spreadsheet\u2019s version history (File \u2192 Version history).</p>';
+  h+=sheetEnd();
+  document.getElementById('modal').innerHTML=h;
+}
+function pplRow(k){
+  var P=S.ppl, n=personName(k), c=personColor(k), cnt=personRecs(k).length, arm=P.arm===k, busy=P.busy===k;
+  var meta=busy?'Deleting\u2026':(cnt+' record'+(cnt===1?'':'s')+(S.older?'':' \u00b7 counting older\u2026'));
+  return '<div class="pplrow">'+meAvatar(n,c)+'<span class="pplmain"><b>'+esc(n)+'</b><i>'+esc(meta)+'</i></span>'+
+    '<button class="ppldel'+(arm?' armed':'')+'"'+(P.busy?' disabled':'')+' onclick="pplDel('+q(k)+')">'+(arm?'Tap again':'Delete')+'</button></div>'+
+    (arm?'<p class="pplwarn">Deletes '+esc(n)+(cnt?' and '+cnt+' record'+(cnt===1?'':'s'):'')+', on every phone.</p>':'');
+}
+function pplBack(){ var P=S.ppl; if(P) clearTimeout(P.t); S.ppl=null; drawSettings(); }
+/* drawn again only while it is what the window shows */
+function pplRedraw(){ if(S.ppl&&document.getElementById('pplscr')) drawPeople(); }
+function pplDel(k){
+  var P=S.ppl; if(!P||P.busy) return;
+  if(k===meKey()) return;
+  if(offline()){ toast('This needs a connection.'); return; }
+  if(P.arm!==k){
+    P.arm=k; clearTimeout(P.t);
+    P.t=setTimeout(function(){ if(S.ppl&&S.ppl.arm===k){ S.ppl.arm=''; pplRedraw(); } },4000);
+    drawPeople(); return;
+  }
+  P.arm=''; clearTimeout(P.t); P.busy=k; drawPeople();
+  /* every record of theirs has to be here first, the oldest too */
+  loadOlderThen(function(){ pplGo(k); },function(){
+    if(S.ppl) S.ppl.busy='';
+    pplRedraw(); toast('Could not load the older records. Try again.');
+  });
+}
+function pplGo(k){
+  commitUndo();
+  var name=personName(k), recs=personRecs(k), set={};
+  recs.forEach(function(t){ set[delKey(t)]=1; });
+  /* what goes along by itself is not asked for twice: a receipt's lines,
+     the other half of a transfer, money that came back, a fee */
+  var prim=recs.filter(function(t){
+    if(isLine(t)){ var h=rcpHeadOf(t.receipt); if(h&&set[delKey(h)]) return false; }
+    if(t.k==='i'&&isLinkedInc(t)){ var lp=txById('e',String(t.id).slice(0,-2)); if(lp&&set[delKey(lp)]) return false; }
+    if(t.k==='i'&&isXferSrc(t.source)){ var xe=xferExpenseOf(t); if(xe&&set[delKey(xe)]) return false; }
+    var pid=feeParentId(t); if(pid){ var par=txById('e',pid); if(par&&set[delKey(par)]) return false; }
+    return true;
+  });
+  var keys=expandDeletion(prim).map(delKey);
+  keys.forEach(function(x){ S.pendingDel[x]=1; });
+  /* their phones are nobody now */
+  var now=Date.now();
+  personPhones(k).forEach(function(id){ setPref('who.'+id,{x:1,t:now}); });
+  if(whoView()===k) setWho('all');
+  PREG=null; PACT=null;
+  rebuildTx(); prep(); render(true);
+  var n=recs.length, steps=[], CH=100;
+  for(var i=0;i<prim.length;i+=CH) steps.push({fn:'deleteMany',payload:{items:prim.slice(i,i+CH).map(txRef)}});
+  function finish(ok){
+    keys.forEach(function(x){ delete S.pendingDel[x]; });
+    if(S.ppl) S.ppl.busy='';
+    rebuildTx(); prep(); render(true); pplRedraw();
+    toast(ok?(name+(n?' and '+n+' record'+(n===1?'':'s'):'')+' deleted'):'Not everything was deleted. Try again.',ok?3500:6000);
+  }
+  if(!steps.length){ finish(true); return; }
+  toast('Deleting '+name+'\u2019s records\u2026',20000);
+  bgChain(steps,finish);
 }
 /* The names Setup has now, as sets - made again whenever the data is
    (prep), or when the lists themselves were swapped for new ones. */
@@ -7358,16 +7531,42 @@ function saveSheet(){
     var feeRow=(t&&s.kind==='e')?feeOf(t):null, feeBackup=feeRow?JSON.parse(JSON.stringify(feeRow)):null;
     var fcid2='', feeHid='';
     if(feeRow&&payload.feeNote&&/^(ATM|Transfer) fee$/.test(feeRow.note||'')) feeRow.note=payload.feeNote;
+    /* a transfer inside a receipt: its fee is a line of the same receipt, and
+       the receipt's total moves with the fee - as the sheet does it
+       (ReceiptFees.gs) */
+    var rIn=!!(D.rfees&&t&&isLine(t)), rHead=rIn?rcpHeadOf(t.receipt):null, rHeadTot=rHead?rHead.rtotal:null;
+    function rGrow(d){
+      if(!rHead||!d) return;
+      var p10=Math.pow(10,decOf(rHead.currency||'UAH'));
+      rHead.rtotal=Math.round(((Number(rHead.rtotal)||0)+d)*p10)/p10;
+    }
     if(feeSend){
-      if(fee>0&&feeRow){ feeRow.amount=fee; feeRow.uah=fee*rateOf(feeRow.currency||cur); feeRow.pending=true; }
+      if(fee>0&&feeRow){
+        if(rIn){
+          if(feeRow.receipt===t.receipt) rGrow(fee-Math.abs(Number(feeRow.amount)||0));
+          else if(!feeRow.receipt){ feeRow.receipt=t.receipt; feeRow.rtotal=null; rGrow(fee); }
+        }
+        feeRow.amount=fee; feeRow.uah=fee*rateOf(feeRow.currency||cur); feeRow.pending=true;
+      }
       else if(fee>0){
         fcid2='p'+(++S.cid);
         var nf=feeLocal(s,fee,cur,payload.id,fcid2,feeNote);
+        if(rIn){ nf.receipt=t.receipt; nf.rtotal=null; rGrow(fee); }
         S.pending[fcid2]=nf; D.tx.push(nf);
       }
-      else if(feeRow){ feeHid=delKey(feeRow); S.pendingDel[feeHid]=1; rebuildTx(); }
+      else if(feeRow){
+        if(rIn&&feeRow.receipt===t.receipt) rGrow(-Math.abs(Number(feeRow.amount)||0));
+        feeHid=delKey(feeRow); S.pendingDel[feeHid]=1; rebuildTx();
+      }
     }
-    closeSheet(); prep(); render(true); toast('Saved');
+    /* the fee's own row given a new amount, beside its transfer in a receipt */
+    if(rIn&&backup&&feeParentId(t)){
+      var fpar=txById('e',feeParentId(t));
+      if(fpar&&isLine(fpar)&&fpar.receipt===t.receipt) rGrow(amt-Math.abs(Number(backup.amount)||0));
+    }
+    closeSheet(); prep(); render(true);
+    /* without ReceiptFees.gs the sheet still writes the fee outside */
+    toast((!D.rfees&&t&&isLine(t)&&feeSend&&fee>0)?RF_MSG:'Saved',(!D.rfees&&t&&isLine(t)&&feeSend&&fee>0)?9000:undefined);
     bg('updateTx',payload,function(){
       if(fcid2) delete S.pending[fcid2];
       if(feeHid) delete S.pendingDel[feeHid];
@@ -7375,6 +7574,7 @@ function saveSheet(){
       if(t&&backup) for(var k2 in backup) if(backup.hasOwnProperty(k2)) t[k2]=backup[k2];
       if(mate&&mateBackup) for(var k3 in mateBackup) if(mateBackup.hasOwnProperty(k3)) mate[k3]=mateBackup[k3];
       if(feeRow&&feeBackup) for(var k4 in feeBackup) if(feeBackup.hasOwnProperty(k4)) feeRow[k4]=feeBackup[k4];
+      if(rHead) rHead.rtotal=rHeadTot;
       if(fcid2) D.tx=D.tx.filter(function(x){ return x.cid!==fcid2; });
       if(feeHid) rebuildTx();
     });
@@ -8309,7 +8509,7 @@ function drawSettings(){
   var h=sheetTop('Settings','')+'<i id="setscr" hidden></i>';
   var ord=tabOrder(), off=tabsOff().length, orph=orphanCount(), tr=tripNow();
   /* you, on this phone: a name and a colour every record from here wears */
-  h+=sGroup('You',meRow()+claimRow(),
+  h+=sGroup('You',meRow()+claimRow()+adminRow(),
     '<p class="setfoot">'+(peopleOn()?'Kept on this phone. Another phone can have a name and colour of its own.':esc(PEOPLE_MSG))+'</p>');
   var tidy=shopGroups().length, rules=Object.keys(shopRules()).length;
   h+=sGroup('Categories',
@@ -9732,7 +9932,7 @@ function owedRow(t){
   if(t.note) bits.push(t.note);
   if(t.account) bits.push(strip(t.account));
   var pb=pbOf(t);
-  return '<div class="owedrow'+(pb?' pby':'')+'"'+(pb?' style="--pb:'+pb+'"':'')+'><button class="row" onclick="closeModal();editTx(\'e\','+t.row+')">'+catBadge(t.sub||t.main,t.main)+
+  return '<div class="owedrow'+(pb?' pby':'')+'"'+(pb?' style="'+pb+'"':'')+'><button class="row" onclick="closeModal();editTx(\'e\','+t.row+')">'+catBadge(t.sub||t.main,t.main)+
     '<span class="rmain"><span class="rtitle" style="display:block">'+esc(strip(t.shop||t.sub||'Expense'))+'</span>'+
     '<span class="rmeta" style="display:block">'+esc(bits.join(' \u00b7 '))+'</span></span>'+
     '<span class="ramt">'+money(Math.abs(txAmount(t)),0)+'</span></button>'+
@@ -10934,7 +11134,7 @@ function rcpOpen(id){
 }
 
 function receiptBlock(t,drag,sel){
-  var left=receiptLeft(t), open=rcpOpen(t.receipt), lines=linesOf(t.receipt);
+  var left=receiptLeft(t), open=rcpOpen(t.receipt), RL=rcpLines(t.receipt), lines=RL.all;
   var picking=sel!==undefined;
   var pend=!!t.pending&&!!t.id;
   var sw=!picking&&(t.pending?pend:!!t.row);
@@ -10951,7 +11151,7 @@ function receiptBlock(t,drag,sel){
      so reordering a day never leaves a receipt's parts in different places */
   var st=stateOf(t), grey=st==='refund'||st==='owedback';
   var rpb=pbOf(t);
-  var h='<div class="rcp'+(open?' open':'')+(drag?' txdrag':'')+(rpb?' pby':'')+'"'+(rpb?' style="--pb:'+rpb+'"':'')+
+  var h='<div class="rcp'+(open?' open':'')+(drag?' txdrag':'')+(rpb?' pby':'')+'"'+(rpb?' style="'+rpb+'"':'')+
     (drag?' data-k="e" data-row="'+(t.row||0)+'"'+pid:'')+'>';
   h+='<div class="row rcphead'+(sw?' swipeable':'')+(t.pending?' pendrow':'')+(rpb?' pby':'')+(picking?' selrow':'')+(sel?' selon':'')+
     (grey?' txout':'')+(st==='refund'?' txref':'')+'"'+
@@ -10975,10 +11175,11 @@ function receiptBlock(t,drag,sel){
     '</div>';
   if(open){
     h+='<div class="rcpbody">';
-    h+=lines.map(function(x){
+    h+=RL.shown.map(function(x){
+        var fe=(x.id&&RL.on[x.id])||null;
         return picking
-          ? txRow(x,"selTap('e',"+x.row+")",false,selHas(x)?1:0)
-          : txRow(x,"editTx('e',"+x.row+")",false);
+          ? txRow(x,"selTap('e',"+x.row+")",false,selHas(x)?1:0,fe)
+          : txRow(x,"editTx('e',"+x.row+")",false,undefined,fe);
       }).join('');
     /* something still not split: the way to add it is right under the lines */
     if(left>0&&!picking&&t.row>0&&!t.pending)
@@ -11018,6 +11219,7 @@ function fixReceipt(row){
 /* ══════ taking a receipt apart, putting expenses into one ═══════════════════
    Both change what the rows are rather than what they say, so the page waits
    for the sheet (Receipts.gs does the work) and shows what comes back. */
+var RF_MSG='For the fee to go into its receipt, add ReceiptFees.gs in Apps Script next to Код.gs, then Deploy → Manage deployments → Edit → Version: New version → Deploy.';
 var NEED_RCP='This needs Receipts.gs in Apps Script: add it next to Код.gs, then Deploy → Manage deployments → Edit → Version: New version → Deploy.';
 function callSheet(fn,payload,msg,done){
   if(offline()){ toast('This needs a connection.'); if(done) done(false); return; }
@@ -11057,13 +11259,13 @@ function drawUnform(){
   var t=findTx('e',U.row);
   if(!t||!isReceipt(t)){ S.unf=null; closeModal(); return; }
   /* receiptLeft is rounded to the currency's own places: anything but 0 is money */
-  var lines=linesOf(t.receipt), left=receiptLeft(t), n=lines.length+(left>0?1:0);
+  var RL=rcpLines(t.receipt), lines=RL.shown, left=receiptLeft(t), n=lines.length+(left>0?1:0);
   var h=sheetTop('Split into expenses','','unformBack()');
   h+='<p class="tiny" style="margin:0 4px 10px;line-height:1.45">'+esc(strip(t.shop)||'Receipt')+' · '+esc(fmtShort(t.date))+' · '+
     esc(strip(t.account))+' · '+money(Math.abs(Number(t.rtotal)||0),0)+'</p>';
   if(lines.length){
     h+='<div class="fieldlabel">'+(lines.length===1?'This line becomes an expense of its own':'These '+lines.length+' lines become expenses of their own')+'</div>'+
-      '<div class="glass list">'+lines.map(function(x){ return txRow(x,'',false); }).join('')+'</div>';
+      '<div class="glass list">'+lines.map(function(x){ return txRow(x,'',false,undefined,(x.id&&RL.on[x.id])||null); }).join('')+'</div>';
   }
   if(left>0){
     h+='<div class="fieldlabel">The rest, '+money(left,left<1?decOf(t.currency):0)+', was not split yet</div>'+
@@ -11099,7 +11301,7 @@ function doUnform(){
   var left=receiptLeft(t);
   if(left>0&&!U.sub){ toast('Pick a category for the rest'); return; }
   if(left>0&&(isXferSub(U.sub)||isCorrName(U.sub))){ toast('Pick a spending category for the rest'); return; }
-  var n=linesOf(t.receipt).length+(left>0?1:0);
+  var n=rcpLines(t.receipt).shown.length+(left>0?1:0);
   var p=txRef(t); p.sub=left>0?U.sub:'';
   S.unf=null; S.sel=null; S.selDel=0;
   closeModal();
@@ -12345,7 +12547,7 @@ window.__S=S;
    As a website, a small service worker keeps these files on the phone, so
    the app opens instantly and with no signal. A new version is fetched in
    the background; when it arrives, a note offers to switch to it. */
-var APP_VERSION='2026.10.02.1';
+var APP_VERSION='2026.10.02.2';
 (function(){
   try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persist(); }catch(e){}
   if(inGas()||!('serviceWorker' in navigator)) return;
