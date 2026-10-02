@@ -188,6 +188,10 @@ h1.page{margin:6px 4px 14px;font:700 34px/1.05 -apple-system,sans-serif;letter-s
 .xbtn{background:rgba(25,23,19,.06);width:32px;height:32px;border-radius:50%;font:400 15px/1 -apple-system,sans-serif;color:rgba(25,23,19,.5);flex:none}
 .savebtn{padding:9px 18px;border-radius:22px;font:600 14px/1 -apple-system,sans-serif;color:#fff;flex:none;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 4px 12px -5px rgba(30,26,22,.5);transition:opacity .2s}
+/* the keyboard is up: sheets stand on it, not behind it (kbSync) */
+body.kbopen .sheet{bottom:calc(var(--kb,0px) + 6px);max-height:calc(var(--vvh,100%) - 12px);
+  padding-bottom:12px;transition:bottom .2s ease,max-height .2s ease}
+body.kbopen .sheet.subsheet{max-height:calc(var(--vvh,100%) - 40px)}
 .sheet-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;margin:0 -4px;padding:0 4px;overscroll-behavior:contain}
 /* With a sheet open the page behind it is pinned where it was (syncPageLock):
    a scroll that runs off the end of the sheet, or starts on the dimmed part,
@@ -9515,6 +9519,34 @@ function clpUp(e){
   document.removeEventListener('pointercancel',clpUp);
 }
 document.addEventListener('pointerdown',clpDown,true);
+
+/* ---- the keyboard ---------------------------------------------------------
+   iOS leaves a fixed sheet where it was when the keyboard comes up, so what
+   a search finds - the lower part of the sheet - ends up behind the keys.
+   While the keyboard is up the sheets stand on top of it instead: --kb is
+   how much of the screen it covers, --vvh what is left above it. */
+function kbSync(){
+  var vv=window.visualViewport; if(!vv) return;
+  var kb=0;
+  if(Math.abs((vv.scale||1)-1)<0.01){
+    kb=Math.round(window.innerHeight-vv.height-vv.offsetTop);
+    /* less than this is the browser's own bars coming and going */
+    if(kb<100) kb=0;
+  }
+  var de=document.documentElement.style;
+  de.setProperty('--kb',kb+'px');
+  de.setProperty('--vvh',Math.round(vv.height)+'px');
+  document.body.classList.toggle('kbopen',kb>0);
+  /* the field being typed in stays in sight in its now shorter sheet */
+  var a=kb&&document.activeElement;
+  if(a&&a.closest&&a.closest('.sheet-body')) setTimeout(function(){ try{ a.scrollIntoView({block:'nearest'}); }catch(e){} },0);
+}
+try{
+  if(window.visualViewport){
+    window.visualViewport.addEventListener('resize',kbSync);
+    window.visualViewport.addEventListener('scroll',kbSync);
+  }
+}catch(e){}
 
 /* ---- dragging a row by its grip ------------------------------------------
    The row follows the finger and a line shows where it will land: between
