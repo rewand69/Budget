@@ -1433,18 +1433,24 @@ button.actcard .chevr{flex:none;color:rgba(25,23,19,.28);font-size:19px}
 .cblogo .ic{width:12px;height:12px}
 .cbmorec .cblogo{width:24px;height:24px;border-radius:8px}
 .cbmorec .cblogo .ic{width:15px;height:15px}
-/* Accounts: which card to pay with - a category, a line for each card */
-.cbtab .row{padding:14px 16px 14px 14px;gap:13px}
-.cbtab .badge{width:38px;height:38px;border-radius:12px}
-.cbblk{align-items:flex-start}
-.cbblk .rtitle{font:650 16px/1.25 -apple-system,sans-serif;letter-spacing:-.25px;color:#191713}
-.cbcard{display:flex;align-items:center;gap:8px;margin-top:9px;min-width:0;font:500 15px/1.2 -apple-system,sans-serif;letter-spacing:-.2px;color:rgba(25,23,19,.8)}
-.cbcard .cblogo{width:20px;height:20px}
-.cbcard .cbn{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.cbcard .cbr{flex:none;margin-left:auto;padding-left:10px;font:700 16px/1 -apple-system,sans-serif;letter-spacing:-.3px;
-  font-variant-numeric:tabular-nums;color:rgba(25,23,19,.58)}
-.cbcard.top{color:#191713}
-.cbcard.top .cbn{font-weight:620}
+/* Accounts: which card to pay with - two columns of small tiles */
+.cbgrid{display:flex;align-items:flex-start;gap:8px}
+.cbcol{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:8px}
+.cbtile{padding:9px 10px 9px;border-radius:16px}
+.cbth{display:flex;align-items:flex-start;gap:5px;margin-bottom:2px;font:650 13.5px/1.25 -apple-system,sans-serif;letter-spacing:-.2px;color:#191713}
+.cbth .inic{flex:none;margin-top:1px}
+.cbth .inic .ic{width:14px;height:14px}
+.cbth>span:last-child{min-width:0;overflow-wrap:anywhere}
+.cbtl{display:flex;align-items:flex-start;gap:5px;margin-top:5px;font:500 12.5px/1.25 -apple-system,sans-serif;letter-spacing:-.1px;color:rgba(25,23,19,.72)}
+.cbtl .cblogo{width:15px;height:15px;border-radius:5px}
+.cbtl .cblogo .ic{width:10px;height:10px}
+.cbtl .cbn{flex:1;min-width:0;overflow-wrap:anywhere}
+.cbtl .cbr{flex:none;font:700 13px/1.25 -apple-system,sans-serif;font-variant-numeric:tabular-nums;color:rgba(25,23,19,.5)}
+.cbtl.top{color:#191713}
+.cbtl.top .cbn{font-weight:600}
+.cbts{display:flex;align-items:flex-start;gap:3px;margin:1px 0 0 20px;font:500 11.5px/1.25 -apple-system,sans-serif;color:rgba(25,23,19,.55)}
+.cbts .ic{flex:none;width:10px;height:10px;margin-top:2px}
+.cbts span{min-width:0;overflow-wrap:anywhere}
 /* only at that shop */
 .cbat{flex:0 1 auto;display:inline-flex;align-items:center;gap:4px;min-width:0;max-width:48%;padding:3px 8px 3px 6px;border-radius:8px;
   background:rgba(25,23,19,.06);font:600 12.5px/1.2 -apple-system,sans-serif;letter-spacing:-.1px;color:rgba(25,23,19,.66)}
@@ -11251,25 +11257,33 @@ function drawCbSheet(){
   }else{
     if(cbMonthDue()) h+='<div class="glass cbdue"><span><b>New month</b><i>Have the categories changed?</i></span>'+
       '<button class="cbsame" onclick="cbSheetSame()">Still the same</button><button class="cbupd" onclick="cbSheetEdit()">Update</button></div>';
-    h+='<div class="glass list cbtab">'+rows.map(cbRowHtml).join('')+'</div>'+
-      '<p class="tiny cbnote">In the order of your Categories list. Green is the most back - anywhere, or at the shop named on the line.</p>';
+    /* two columns: each tile goes where the column is shorter, so the
+       order of the list reads across and nothing is left as a gap */
+    var cols=[[],[]], hi=[0,0];
+    rows.forEach(function(r,i){
+      r.i=i;
+      var c=hi[0]<=hi[1]?0:1;
+      cols[c].push(r); hi[c]+=1.4+r.cards.length+0.8*r.cards.filter(function(x){ return x.shop; }).length;
+    });
+    h+='<div class="cbgrid">'+cols.map(function(c){ return '<div class="cbcol">'+c.map(cbRowHtml).join('')+'</div>'; }).join('')+'</div>'+
+      '<p class="tiny cbnote">Green: the most back - anywhere, or at the shop under it.</p>';
   }
   h+=sheetEnd();
   sheetPaint(h,'cbsheet');
 }
 function cbSheetEdit(){ openCbEdit(null,true); }
 function cbSheetSame(){ cbSame(); toast('Kept for '+cbMonthWord()); if(document.getElementById('cbsheet')) drawCbSheet(); }
-/* one category: its name, then a line for each card - with the shop when
-   it is only there - the most in green */
+/* one category, small: its name, then each card and how much - and the
+   shop, in full, under a line that only counts there; the most in green */
 function cbRowHtml(r){
-  return '<div class="row cbblk">'+(r.any?icBadge('percent',155):catBadge(r.label))+
-    '<div class="rmain"><div class="rtitle">'+esc(cbTitle(r))+'</div>'+
+  var ic=r.any?'<span class="inic" style="color:'+ok(.52,.12,155)+'">'+svgIc('percent',16,2)+'</span>':inIc(r.label);
+  return '<div class="glass cbtile" data-i="'+(r.i||0)+'"><div class="cbth">'+ic+'<span>'+esc(cbTitle(r))+'</span></div>'+
     r.cards.map(function(c){
       var a=D.accMap[c.acc]||{name:c.acc,type:''};
-      return '<div class="cbcard'+(c.top?' top':'')+'">'+accLogo(a,'cblogo')+
-        '<span class="cbn">'+esc(strip(c.acc))+'</span>'+(c.shop?cbAtHtml(c.shop):'')+
-        '<b class="cbr"'+(c.top?' style="color:'+GREEN+'"':'')+'>'+esc(numStr(c.rate))+'%</b></div>';
-    }).join('')+'</div></div>';
+      return '<div class="cbtl'+(c.top?' top':'')+'">'+accLogo(a,'cblogo')+'<span class="cbn">'+esc(strip(c.acc))+'</span>'+
+        '<b class="cbr"'+(c.top?' style="color:'+GREEN+'"':'')+'>'+esc(numStr(c.rate))+'%</b></div>'+
+        (c.shop?'<div class="cbts">'+svgIc('bag',10,2.2)+'<span>'+esc(shopCanon(c.shop)||c.shop)+'</span></div>':'');
+    }).join('')+'</div>';
 }
 
 /* ══════ this month's cashback, card by card ══════════════════════════════
