@@ -836,6 +836,16 @@ select.expname{padding:9px 10px;font-size:14px;border-radius:13px}
 .spck.on{background:#2F6BFF;color:#fff}
 .spin.on .tinput{box-shadow:inset 0 0 0 1.5px rgba(47,107,255,.6)}
 .spdel{flex:none;width:30px;height:42px;border:0;background:none;color:rgba(25,23,19,.4);font-size:14px}
+.shopshead{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
+.shopadd{display:inline-flex;align-items:center;gap:5px;flex:none;padding:6px 2px 4px;border:0;background:none;
+  font:600 13.5px/1 -apple-system,sans-serif;color:#2F5BD8}
+.shopadd .ic{width:14px;height:14px}
+.shopaddq .shopplus{flex:none;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  margin-right:2px;background:rgba(47,91,216,.1);color:#2F5BD8}
+.shopaddq .sn{color:#2F5BD8}
+.shopchip.shopnew{display:inline-flex;align-items:center;gap:4px;max-width:100%;color:#2F5BD8;background:rgba(47,91,216,.09);border-color:transparent}
+.shopchip.shopnew .ic{flex:none;width:12px;height:12px}
+.shopchip.shopnew span{overflow:hidden;text-overflow:ellipsis}
 .spaddrow{display:inline-flex;align-items:center;gap:7px;margin:10px 2px 0;padding:8px 2px;border:0;background:none;font:600 14px/1 -apple-system,sans-serif;color:#2F5BD8}
 .shopsaveas{align-self:center;font:500 12px/1 -apple-system,sans-serif;color:rgba(25,23,19,.45);margin:0 2px 0 4px}
 .splang{padding:0 14px 14px}
@@ -11428,10 +11438,23 @@ function cbShopIn(ai,li,v){
   var box=document.getElementById('cbsc_'+ai+'_'+li); if(!box) return;
   var t=String(v||'').trim(), c=shopStrict(t);
   var list=t?shopMatches(t,4).filter(function(n){ return shopStrict(n)!==c; }):[];
+  /* not in the shop list yet: added from here, with its spellings */
+  var plus=t&&shopsOn()&&!shopKnown(t);
   box.innerHTML=list.map(function(n){
     return '<button class="shopchip" onmousedown="event.preventDefault()" onclick="cbShopSet('+ai+','+li+','+q(n)+')">'+esc(n)+'</button>';
-  }).join('');
-  box.style.display=list.length?'':'none';
+  }).join('')+(plus?'<button class="shopchip shopnew" onmousedown="event.preventDefault()" onclick="cbShopNew('+ai+','+li+')">'+
+    svgIc('plus',12,2.8)+'<span>'+esc(t)+'</span></button>':'');
+  box.style.display=(list.length||plus)?'':'none';
+}
+/* the new shop's sheet over the editor; saved, the line gets its name */
+function cbShopNew(ai,li){
+  var l=cbLineAt(ai,li); if(!l) return;
+  var t=shopTrim(l.shop); if(!t) return;
+  try{ if(document.activeElement&&document.activeElement.blur) document.activeElement.blur(); }catch(e){}
+  openShopNew(t,{box:'modal3',after:function(name){
+    var x=cbLineAt(ai,li); if(x) x.shop=name;
+    if(S.cbEd) drawCbEdit();
+  }});
 }
 function cbShopSet(ai,li,n){
   var l=cbLineAt(ai,li); if(!l) return;
@@ -14678,9 +14701,10 @@ function drawShops(){
   h+='<div class="glass" style="padding:4px 0">'+
     navRow('Tidy up spellings',g.length?(g.length+' shop'+(g.length===1?' is':'s are')+' written more than one way'):'Every shop has one spelling','drawTidy()')+'</div>';
   h+='<div id="spcard">'+spellCard(rows)+'</div><div id="splang">'+langCard(rows)+'</div>';
-  h+='<div class="fieldlabel">Shops <span class="opt">'+rows.length+'</span></div>'+
+  h+='<div class="shopshead"><div class="fieldlabel">Shops <span class="opt">'+rows.length+'</span></div>'+
+    '<button class="shopadd" onclick="openShopNew(S.shopQ||\'\')">'+svgIc('plus',14,2.6)+'Add a shop</button></div>'+
     '<input class="tinput" id="shopq" type="search" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Find a shop, any spelling" value="'+esc(qv)+'" oninput="S.shopQ=this.value;drawShopList()">';
-  h+='<div class="glass" id="shoplist" style="margin-top:10px;padding:0">'+shopListHtml(shopFind(rows,qv))+'</div>';
+  h+='<div class="glass" id="shoplist" style="margin-top:10px;padding:0">'+shopListHtml(shopFind(rows,qv),qv)+'</div>';
   h+='<p class="tiny" style="margin:12px 4px 0;line-height:1.45">Tap a shop to rename it or to say how else it is written. Renaming rewrites the shop in every record, older ones included, and in your quick actions and shop rules. Hold a shop to pick several and merge them into one.</p>';
   h+=sheetEnd();
   document.getElementById('modal').innerHTML=h+shopFab();
@@ -14773,10 +14797,14 @@ function shopLangGo(){
     if(document.getElementById('splang')) drawShops();
   },function(){ S.spLangPick=null; drawShops(); toast('Could not load the older records. Try again.'); });
 }
-function shopListHtml(list){
-  if(!list.length) return '<div class="empty" style="padding:16px">No shop like that.</div>';
+function shopListHtml(list,qv){
+  /* searched for one that is not there: it can be added as it is typed */
+  var t=shopTrim(qv), add=(t&&!S.ssel&&!shopKnown(t))?'<button class="shoprow shopaddq" onclick="openShopNew('+q(t)+')">'+
+    '<span class="shopplus">'+svgIc('plus',15,2.6)+'</span><span class="sm"><span class="sn">Add “'+esc(t)+'”</span>'+
+    '<span class="sv">A new shop, with its spellings filled in</span></span></button>':'';
+  if(!list.length) return add||'<div class="empty" style="padding:16px">No shop like that.</div>';
   var sel=!!S.ssel;
-  return list.slice(0,300).map(function(x){
+  return add+list.slice(0,300).map(function(x){
     var on=sel&&S.ssel.indexOf(x.name)>-1, sp=[];
     if(x.e) bookSpellings(x.e).forEach(function(v){ if(v.toLowerCase()!==x.name.toLowerCase()&&sp.indexOf(v)<0) sp.push(v); });
     return '<button class="shoprow'+(on?' on':'')+(sel?' picking':'')+'" data-hold="shop" data-sn="'+esc(x.name)+'" onclick="shopRowTap('+q(x.name)+')">'+
@@ -14980,7 +15008,7 @@ function shopMergeDo(){
 }
 function drawShopList(){
   var el=document.getElementById('shoplist'); if(!el){ drawShops(); return; }
-  el.innerHTML=shopListHtml(shopFind(shopRowsAll(),S.shopQ));
+  el.innerHTML=shopListHtml(shopFind(shopRowsAll(),S.shopQ),S.shopQ);
 }
 function shopCount(name){ var r=shopRowOf(name); return r?r.n:0; }
 /* A shop on its own: how it is written in English, Russian and Ukrainian,
@@ -15031,22 +15059,77 @@ function shopEdRow(k,val,ph,del){
 }
 function drawShopEdit(){
   var d=S.shopEd; if(!d) return;
-  if(!shopsOn()){ drawShopRename(); return; }
-  var n=shopCount(d.orig), name=shopEdName(d);
-  var h=sheetTop('Shop','','shopEdBack()');
+  if(!shopsOn()){ if(d.isNew){ toast(SHOPS_MSG,8000); return; } drawShopRename(); return; }
+  var n=d.isNew?0:shopCount(d.orig), name=shopEdName(d);
+  var h=sheetTop(d.isNew?'New shop':'Shop','',d.isNew?'shopNewBack()':'shopEdBack()')+'<i id="shopedscr" hidden></i>';
   h+='<div class="fieldlabel">Default shop name</div><div class="spdef" id="se_def">'+(name?esc(name):'<span class="spnone">Tick a spelling below</span>')+'</div>';
-  h+='<p class="tiny" id="shopednote" style="margin:8px 4px 0;line-height:1.45">'+shopEdNoteText(d,n,name,shopEdOther(d,name))+'</p>';
+  h+='<p class="tiny" id="shopednote" style="margin:8px 4px 0;line-height:1.45">'+(d.isNew?shopNewNote(d,name):shopEdNoteText(d,n,name,shopEdOther(d,name)))+'</p>';
   SP_FIELDS.forEach(function(f){ h+='<div class="fieldlabel">'+f[1]+'</div>'+shopEdRow(f[0],d[f[0]],f[2]); });
   h+='<div class="fieldlabel">Other spellings</div><div id="se_alt">'+
     d.alt.map(function(a,i){ return shopEdRow('a'+i,a,'Another spelling',true); }).join('')+'</div>'+
     '<button class="spaddrow" onclick="shopEdAddRow()">'+svgIc('plus',15,2.6)+'Add a spelling</button>';
   h+='<p class="tiny" style="margin:6px 4px 0;line-height:1.45">Tick the spelling to show everywhere. Typed any of these ways, the shop is found and saved under the ticked one.</p>';
   h+='<button class="splink" onclick="shopEdSuggest()">'+svgIc('sparkles',14,2.2)+'Fill in the empty ones</button>';
-  h+='<button class="paybtn" id="shopedsave" onclick="saveShopEdit()">'+esc(shopEdSaveLabel(d,n))+'</button>';
+  h+='<button class="paybtn" id="shopedsave" onclick="saveShopEdit()">'+esc(d.isNew?'Add shop':shopEdSaveLabel(d,n))+'</button>';
   h+=sheetEnd();
-  document.getElementById('modal').innerHTML=h;
+  /* a spelling added or ticked: the sheet stays where it is */
+  sheetPaint(h,'shopedscr',d.box||'modal');
 }
 function shopEdBack(){ S.shopEd=null; drawShops(); }
+/* ── a new shop: from Settings → Shops, or from a cashback line's shop ──
+   It starts with its spellings filled in - in English, Ukrainian and
+   Russian, from the name as typed - to check, change or add to. */
+function shopKnown(v){
+  var c=shopStrict(v); if(!c) return false;
+  return shopIndex().some(function(x){ return x.sp.some(function(w){ return shopStrict(w)===c; }); });
+}
+function openShopNew(name,opts){
+  if(!shopsOn()){ toast(SHOPS_MSG,8000); return; }
+  name=shopTrim(name).replace(/;/g,' ').slice(0,120);
+  var d={orig:'',name:name,had:false,isNew:true,en:'',uk:'',ru:'',alt:[],def:'en',box:(opts&&opts.box)||'modal',after:(opts&&opts.after)||null};
+  if(name){
+    var sp=spellGroup([name]);
+    if(sp){ d.en=sp.name||''; d.uk=sp.uk||''; d.ru=sp.ru||''; }
+    d.def=shopEdFind(d,name);
+  }
+  S.shopEd=d;
+  drawShopEdit();
+  if(!name){ var el=document.getElementById('se_en'); if(el) try{ el.focus(); }catch(e){} }
+}
+function shopNewNote(d,name){
+  if(!name) return 'Type its name in one of the languages below and tick it.';
+  var have=bookShop(name);
+  if(have) return '“'+esc(name)+'” is a spelling of '+esc(have)+', which is in the list already.';
+  return 'A new shop: in the list from now on, to pick and to find in any of these spellings - before anything is bought there.';
+}
+function shopNewBack(){
+  var d=S.shopEd; S.shopEd=null;
+  if(d&&d.box==='modal3'){ var m=document.getElementById('modal3'); if(m) m.innerHTML=''; return; }
+  drawShops();
+}
+function shopNewDone(name){
+  var d=S.shopEd; S.shopEd=null;
+  if(d&&d.box==='modal3'){ var m=document.getElementById('modal3'); if(m) m.innerHTML=''; }
+  else drawShops();
+  if(d&&d.after) d.after(name);
+}
+function saveShopNew(d){
+  var to=shopEdName(d);
+  if(!to){ toast('The ticked spelling is empty'); return; }
+  var alt=d.alt.map(shopTrim).filter(Boolean), en=shopTrim(d.en), uk=shopTrim(d.uk), ru=shopTrim(d.ru);
+  if([to,en,uk,ru].concat(alt).some(function(v){ return v.indexOf(';')>-1; })){ toast('One spelling per field — without “;”'); return; }
+  /* there already, under that name or as a spelling of one: that one */
+  var have=bookShop(to);
+  if(have){ toast('“'+have+'” is in the list already'); shopNewDone(have); return; }
+  var clash='';
+  [en,uk,ru].concat(alt).some(function(v){
+    var o=bookShop(v);
+    if(o&&o.toLowerCase()!==to.toLowerCase()){ clash='“'+v+'” is a spelling of '+o+' too — typed, it is saved as '+o; return true; }
+  });
+  bookPut([{name:to,en:en,uk:uk,ru:ru,alt:alt}],[]);
+  toast(clash||('“'+to+'” added'),clash?6000:2500);
+  shopNewDone(to);
+}
 /* typing into the ticked spelling: the name above follows */
 function shopEdSet(k,v){
   var d=S.shopEd; if(!d) return;
@@ -15087,13 +15170,14 @@ function shopEdNoteText(d,n,to,other){
 }
 function shopEdNote(){
   var d=S.shopEd; if(!d) return;
-  var to=shopEdName(d), n=shopCount(d.orig);
-  var el=document.getElementById('shopednote'); if(el) el.innerHTML=shopEdNoteText(d,n,to,shopEdOther(d,to));
+  var to=shopEdName(d), n=d.isNew?0:shopCount(d.orig);
+  var el=document.getElementById('shopednote'); if(el) el.innerHTML=d.isNew?shopNewNote(d,to):shopEdNoteText(d,n,to,shopEdOther(d,to));
   var df=document.getElementById('se_def'); if(df) df.innerHTML=to?esc(to):'<span class="spnone">Tick a spelling below</span>';
-  var b=document.getElementById('shopedsave'); if(b) b.textContent=shopEdSaveLabel(d,n);
+  var b=document.getElementById('shopedsave'); if(b) b.textContent=d.isNew?'Add shop':shopEdSaveLabel(d,n);
 }
 function saveShopEdit(){
   var d=S.shopEd; if(!d) return;
+  if(d.isNew){ saveShopNew(d); return; }
   if(!shopsOn()){ saveShopRename(); return; }
   var to=shopEdName(d);
   if(!to){ toast('The ticked spelling is empty'); return; }
