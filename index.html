@@ -1434,12 +1434,19 @@ button.actcard .chevr{flex:none;color:rgba(25,23,19,.28);font-size:19px}
 .cbmorec .cblogo{width:24px;height:24px;border-radius:8px}
 .cbmorec .cblogo .ic{width:15px;height:15px}
 /* Accounts: which card to pay with */
-.cbtab .row{padding:11px 14px 11px 12px;gap:12px}
+.cbtab .row{padding:12px 16px 12px 12px;gap:12px}
 .cbtab .badge{width:36px;height:36px;border-radius:12px}
-.cbwho{display:flex;align-items:center;gap:6px;margin-top:4px;min-width:0;font:500 13px/1.2 -apple-system,sans-serif;color:#191713}
-.cbwho b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.cbalso{margin-top:3px;font:400 12px/1.25 -apple-system,sans-serif;color:rgba(25,23,19,.45);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.cbbig{flex:none;font:700 19px/1 -apple-system,sans-serif;letter-spacing:-.5px}
+/* a category, and under it a line for each card */
+.cbblk{align-items:flex-start}
+.cbblk .rtitle{line-height:1.25}
+.cbcard{display:flex;align-items:center;gap:7px;margin-top:7px;min-width:0;font:500 13.5px/1.2 -apple-system,sans-serif;color:rgba(25,23,19,.6)}
+.cbcard .cbn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cbcard .cbr{flex:none;font:600 15px/1 -apple-system,sans-serif;letter-spacing:-.2px;color:rgba(25,23,19,.5)}
+.cbcard.top{color:#191713}
+.cbcard.top .cbn{font-weight:600}
+.cbcard.top .cbr{font-weight:700}
+/* the shops, apart */
+.cbdiv{height:1px;margin:20px 8px 2px;background:rgba(25,23,19,.13)}
 .cbdue{display:flex;align-items:center;gap:8px;padding:11px 12px 11px 14px;margin-bottom:10px}
 .cbdue>span{flex:1;min-width:0}
 .cbdue b{display:block;font:600 14px/1.2 -apple-system,sans-serif}
@@ -11126,36 +11133,69 @@ function upcPay(row,occ){
 }
 /* ══════ cashback: which card to pay with ═════════════════════════════════
    One button on Accounts, under Free to spend a day, with the best few at a
-   glance. It opens the whole table: every category (or shop) a card gives
-   money back on this month, the best card for it and how much, and the
-   others after it - what is wanted at the till. The same category on two
-   cards shares a row - the names are compared, not guessed at, so two of a
-   bank's own categories never fold into one; Everything comes last, as it
-   only counts where nothing better does. Cards that give the same are in
-   the order Accounts lists them. */
+   glance. It opens the whole picture: every category a card gives money
+   back on this month, in the order of your Categories list, and under each
+   one every card that gives something on it and how much - the most in
+   green. The same category on two cards is one entry - the names are
+   compared, not guessed at, so two of a bank's own categories never fold
+   into one. A bank's own names come after your categories, Everything after
+   them, and the shops at the bottom, under a line of their own. */
 function cbKey(lab){
   if(CB_ANY.test(lab)) return 'any';
   return 'w:'+String(strip(lab)||lab).toLowerCase().replace(/\s+/g,' ').trim();
 }
-function cbTable(){
-  var by={}, rows=[], rank=accRank();
-  (D.accounts||[]).forEach(function(a){
+/* every category and shop with cashback, as first met going down Accounts;
+   the cards on each in the order Accounts lists them */
+function cbRows(){
+  var by={}, rows=[], rank=accRank(), pos=null;
+  accsInOrder(D.accounts||[]).forEach(function(a){
     cashbackList(a).forEach(function(c){
       var r=cbRate(c.rate); if(!(r>0)) return;
-      var lab=strip(c.label)||c.label, key=c.shop?'s:'+(cbShopKey(c.label)||cbKey(lab)):cbKey(lab), row=by[key];
-      if(!row){ row=by[key]={key:key,any:key==='any',shop:!!c.shop,cards:[]}; rows.push(row); }
+      var lab=strip(c.label)||c.label, shop=!!c.shop;
+      /* a shop you buy at, written without "Shop:", is a shop here too -
+         unless it is also one of your categories */
+      if(!shop&&!CB_ANY.test(lab)&&cbIsShop(c.label)){ pos=pos||cbCatPos(); if(pos[cbKey(lab)]===undefined) shop=true; }
+      var key=shop?'s:'+(cbShopKey(c.label)||cbKey(lab)):cbKey(lab), row=by[key];
+      if(!row){ row=by[key]={key:key,any:key==='any',shop:shop,cards:[]}; rows.push(row); }
       var have=row.cards.filter(function(x){ return x.acc===a.name; })[0];
       if(have){ if(r>have.rate){ have.rate=r; have.label=c.label; } return; }
       row.cards.push({acc:a.name,rate:r,label:c.label});
     });
   });
   rows.forEach(function(row){
-    row.cards.sort(function(x,y){ return (y.rate-x.rate)||(rank(x.acc)-rank(y.acc)); });
-    row.best=row.cards[0].rate; row.label=row.cards[0].label;
+    var top=row.cards.slice().sort(function(x,y){ return (y.rate-x.rate)||(rank(x.acc)-rank(y.acc)); })[0];
+    row.best=top.rate; row.label=top.label;
   });
-  return rows.sort(function(x,y){
+  return rows;
+}
+/* the best first, and the best card first - for the button on Accounts */
+function cbTable(){
+  var rank=accRank();
+  return cbRows().map(function(row){
+    row.cards.sort(function(x,y){ return (y.rate-x.rate)||(rank(x.acc)-rank(y.acc)); });
+    return row;
+  }).sort(function(x,y){
     return (x.any-y.any)||(y.best-x.best)||strip(x.label).localeCompare(strip(y.label));
   });
+}
+/* where a name stands in your Categories list: each category, then its
+   subcategories, the way the lists have them */
+function cbCatPos(){
+  var pos={}, n=0, mains=(D.setup&&D.setup.mainCategories)||[], subs=(D.setup&&D.setup.subcategories)||[], mset={};
+  function put(name){ var k=cbKey(name); if(k!=='any'&&pos[k]===undefined) pos[k]=n++; }
+  mains.forEach(function(m){ mset[m]=1; put(m); subs.forEach(function(x){ if(x.main===m) put(x.name); }); });
+  subs.forEach(function(x){ if(!mset[x.main]) put(x.name); });
+  return pos;
+}
+/* for the sheet: categories in the list's order, then the bank's own names,
+   then Everything; the shops apart, A to Z */
+function cbSheetRows(){
+  var rows=cbRows(), pos=cbCatPos(), far=1e6;
+  var cats=rows.filter(function(r){ return !r.shop; }), shops=rows.filter(function(r){ return r.shop; });
+  cats.forEach(function(r,i){ r.ord=r.any?3*far:(pos[r.key]!==undefined?pos[r.key]:far+i); });
+  cats.sort(function(x,y){ return x.ord-y.ord; });
+  shops.sort(function(x,y){ return cbTitle(x).localeCompare(cbTitle(y)); });
+  return {cats:cats,shops:shops};
 }
 function cbMonthWord(){ return MON[Number(String(D.today).slice(5,7))-1]||''; }
 function cbTitle(r){ return r.any?'Everything else':(r.shop?(shopCanon(r.label)||r.label):(strip(r.label)||r.label)); }
@@ -11177,35 +11217,41 @@ function cbButton(){
     '<span class="at"><b>Cashback'+(rows.length?' · '+esc(cbMonthWord()):'')+(due?'<em class="cbnew">New month</em>':'')+'</b>'+
     '<span>'+(rows.length?sub:esc(sub))+'</span></span><span class="chevr">›</span></button>';
 }
-/* behind it: the whole table, with Edit at the top */
+/* behind it: category by category, the shops under a line, Edit at the top */
 function openCbSheet(){ drawCbSheet(); }
 function drawCbSheet(){
-  var rows=cbTable();
-  var h=sheetTop('Cashback · '+cbMonthWord(),'cbSheetEdit()','',rows.length?'Edit':'Add')+'<i id="cbsheet" hidden></i>';
-  if(!rows.length){
+  var R=cbSheetRows(), any=R.cats.length||R.shops.length;
+  var h=sheetTop('Cashback · '+cbMonthWord(),'cbSheetEdit()','',any?'Edit':'Add')+'<i id="cbsheet" hidden></i>';
+  if(!any){
     h+='<button class="glass cbempty" onclick="cbSheetEdit()">'+icBadge('percent',155)+
       '<span><b>Which card to pay with</b><i>Put in this month’s cashback categories of your cards: they show here, and the app says which card gives the most back as you add an expense.</i></span></button>';
   }else{
     if(cbMonthDue()) h+='<div class="glass cbdue"><span><b>New month</b><i>Have the categories changed?</i></span>'+
       '<button class="cbsame" onclick="cbSheetSame()">Still the same</button><button class="cbupd" onclick="cbSheetEdit()">Update</button></div>';
-    h+='<div class="glass list cbtab">'+rows.map(cbRowHtml).join('')+'</div>'+
-      '<p class="tiny" style="margin:12px 4px 0;line-height:1.45">The best card for each comes first. As you add an expense, the app says when another card gives more back - at a shop too.</p>';
+    if(R.cats.length) h+='<div class="glass list cbtab">'+R.cats.map(cbRowHtml).join('')+'</div>';
+    if(R.shops.length){
+      if(R.cats.length) h+='<div class="cbdiv"></div>';
+      h+='<div class="sect cbsect"><span><span class="inic">'+svgIc('bag',16,2)+'</span>Shops</span></div>'+
+        '<div class="glass list cbtab cbshops">'+R.shops.map(cbRowHtml).join('')+'</div>';
+    }
+    h+='<p class="tiny" style="margin:12px 4px 0;line-height:1.45">In the order of your Categories list; the most back is in green. As you add an expense, the app says when another card gives more back.</p>';
   }
   h+=sheetEnd();
   sheetPaint(h,'cbsheet');
 }
 function cbSheetEdit(){ openCbEdit(null,true); }
 function cbSheetSame(){ cbSame(); toast('Kept for '+cbMonthWord()); if(document.getElementById('cbsheet')) drawCbSheet(); }
+/* one category or shop: its name, then a line for each card that gives
+   something there, the one that gives the most in green */
 function cbRowHtml(r){
-  var best=r.cards[0], a=D.accMap[best.acc]||{name:best.acc,type:''};
-  var tie=r.cards.length>1&&r.cards[1].rate===best.rate;
-  var also=r.cards.slice(1).map(function(c){ return esc(strip(c.acc))+' '+esc(numStr(c.rate))+'%'; }).join(' · ');
   var title=cbTitle(r);
-  return '<div class="row">'+(r.any?icBadge('percent',155):(r.shop?icBadge('bag',hueOf(title)):catBadge(r.label)))+
-    '<div class="rmain"><div class="rtitle">'+esc(title)+(r.shop?'<span class="cbtag">shop</span>':'')+'</div>'+
-      '<div class="cbwho">'+accLogo(a,'cblogo')+'<b>'+esc(strip(best.acc))+'</b></div>'+
-      (also?'<div class="cbalso">'+(tie?'or ':'then ')+also+'</div>':'')+'</div>'+
-    '<div class="cbbig" style="color:'+GREEN+'">'+esc(numStr(best.rate))+'%</div></div>';
+  return '<div class="row cbblk">'+(r.any?icBadge('percent',155):(r.shop?icBadge('bag',hueOf(title)):catBadge(r.label)))+
+    '<div class="rmain"><div class="rtitle">'+esc(title)+'</div>'+
+    r.cards.map(function(c){
+      var a=D.accMap[c.acc]||{name:c.acc,type:''}, top=c.rate===r.best;
+      return '<div class="cbcard'+(top?' top':'')+'">'+accLogo(a,'cblogo')+'<span class="cbn">'+esc(strip(c.acc))+'</span>'+
+        '<b class="cbr"'+(top?' style="color:'+GREEN+'"':'')+'>'+esc(numStr(c.rate))+'%</b></div>';
+    }).join('')+'</div></div>';
 }
 
 /* ══════ this month's cashback, card by card ══════════════════════════════
