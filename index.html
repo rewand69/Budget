@@ -1465,6 +1465,9 @@ button.actcard .chevr{flex:none;color:rgba(25,23,19,.28);font-size:19px}
 .cbed .cbline+.cbline{border-top:.5px solid rgba(25,23,19,.08)}
 .cbl1{display:flex;align-items:center;gap:8px}
 .cbline .cbcat{font:600 15.5px/1.2 -apple-system,sans-serif}
+button.cbcat{padding:0;border:0;background:none;text-align:left;color:inherit;-webkit-tap-highlight-color:transparent}
+button.cbcat:active{opacity:.6}
+.cbcat .cbchg{flex:none;font:400 17px/1 -apple-system,sans-serif;font-style:normal;color:rgba(25,23,19,.28);margin-left:-4px}
 .cbline .cbcat .badge{width:32px;height:32px}
 .cbshopf{display:flex;align-items:center;gap:7px;height:36px;margin:8px 0 0 42px;padding:0 11px;border-radius:11px;
   background:rgba(25,23,19,.045);color:rgba(25,23,19,.35);cursor:text}
@@ -11319,8 +11322,9 @@ function drawCbEdit(){
       var lab=strip(l.label)||l.label, any=CB_ANY.test(lab), r=String(l.rate||'').trim();
       var on=!!(E.rate&&E.rate[0]===ai&&E.rate[1]===li), id=ai+'_'+li;
       /* the category, its rate - and under it the shop it may be kept to */
-      h+='<div class="cbline"><div class="cbl1"><span class="cbcat">'+(any?icBadge('percent',155):catBadge(l.label))+
-          '<span>'+esc(any?'Everything':lab)+'</span></span>'+
+      /* tap the category to change it: the shop and the rate stay */
+      h+='<div class="cbline"><div class="cbl1"><button class="cbcat" onclick="cbCatChange('+ai+','+li+')">'+(any?icBadge('percent',155):catBadge(l.label))+
+          '<span>'+esc(any?'Everything':lab)+'</span><i class="cbchg">›</i></button>'+
         '<button class="cbpct'+(r?'':' unset')+(on?' on':'')+'" onclick="cbRateOpen('+ai+','+li+')">'+(r?esc(r)+'%':'Set %')+'</button>'+
         '<button class="rlx" onclick="cbDropLine('+ai+','+li+')" aria-label="Remove">✕</button></div>'+
         '<label class="cbshopf'+(String(l.shop||'').trim()?' has':'')+'">'+svgIc('bag',14,2)+
@@ -11354,6 +11358,22 @@ function drawCbEdit(){
   if(pr&&pr.scrollIntoView){ try{ pr.scrollIntoView({block:'nearest'}); }catch(e){} }
 }
 function cbEditBack(){ S.cbEd=null; drawCbSheet(); }
+/* another category for a line - its shop and its rate stay as they are */
+function cbCatChange(ai,li){
+  var l=cbLineAt(ai,li); if(!l) return;
+  var cur=l.label, any=CB_ANY.test(strip(cur)||cur);
+  openCats({title:'Change category', mode:'sub', mainOk:true, custom:true,
+    cur:any?'':cur, curKind:any?'':(D.subMap[cur]?'s':'m'),
+    ph:'Search a category, or type your bank’s name for it',
+    none:{label:'Everything',icon:'percent'},
+    only:function(n,k){ return k!=='s'||(!isXferSub(n)&&!isCorrName(n)); },
+    pick:function(k,v){
+      var x=cbLineAt(ai,li); if(!x) return;
+      var label=k===''?'Everything':String(v||'').trim(); if(!label) return;
+      x.label=label;
+      drawCbEdit();
+    }});
+}
 /* the same category, however it is written */
 function cbSame2(x,y){ return String(strip(x)||x||'').toLowerCase().replace(/\s+/g,' ').trim()===String(strip(y)||y||'').toLowerCase().replace(/\s+/g,' ').trim(); }
 /* a category's line for anywhere - the ones kept to a shop are lines of
