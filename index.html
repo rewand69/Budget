@@ -687,6 +687,8 @@ select.expname{padding:9px 10px;font-size:14px;border-radius:13px}
   transition:background .18s,color .18s,transform .16s}
 .shopchip:active{transform:scale(.95)}
 .shopchip.on{color:#fff;background:rgba(25,23,19,.72);border-color:transparent;box-shadow:none}
+/* found by another of its spellings: which one, after the name */
+.shopvia{font-style:normal;margin-left:5px;opacity:.55}
 
 /* the action bar: what acts on the picked records sits at the thumbs, what
    makes a new thing out of them sits in the middle and says its name */
@@ -794,6 +796,28 @@ select.expname{padding:9px 10px;font-size:14px;border-radius:13px}
 .shoprow:last-child{border-bottom:0}
 .shoprow .sn{flex:1;min-width:0;font:500 15px/1.25 -apple-system,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .shoprow .sc{flex:none;font:500 13px/1 -apple-system,sans-serif;color:rgba(25,23,19,.45)}
+.shoprow .sm{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.shoprow .sv{font:400 12.5px/1.25 -apple-system,sans-serif;color:rgba(25,23,19,.45);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* a shop's spellings */
+.spcard{margin-top:12px;padding:2px 0}
+.sprow{display:flex;align-items:center;gap:12px;padding:12px 12px 12px 16px;border-bottom:.5px solid rgba(25,23,19,.07)}
+.sprow:last-child{border-bottom:0}
+.sprow .spt{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.sprow .spt b{font:600 14.5px/1.25 -apple-system,sans-serif;letter-spacing:-.2px}
+.sprow .spt i{font:400 12.5px/1.3 -apple-system,sans-serif;font-style:normal;color:rgba(25,23,19,.5)}
+.sprow.done .spt b{font-weight:500;color:rgba(25,23,19,.62)}
+.spgo{flex:none;padding:8px 13px;border:0;border-radius:13px;background:rgba(47,107,255,.10);color:#2F5BD8;font:600 13px/1 -apple-system,sans-serif}
+.spgo.armed{background:#2F6BFF;color:#fff}
+.spgo:disabled{opacity:.5}
+.spnote{margin:12px 4px 0;line-height:1.45;color:#a8461f}
+.spchips{display:flex;flex-wrap:wrap;gap:6px;margin:2px 2px 0}
+.spchip{display:inline-flex;align-items:center;gap:2px;max-width:100%;padding:6px 4px 6px 11px;border-radius:12px;background:rgba(255,255,255,.72);
+  box-shadow:inset 0 0 0 .5px rgba(25,23,19,.14);font:500 13.5px/1.2 -apple-system,sans-serif}
+.spchip button{border:0;background:none;padding:3px 6px;color:rgba(25,23,19,.45);font-size:12px}
+.spadd{display:flex;gap:8px;margin-top:8px}
+.spadd .tinput{flex:1;min-width:0}
+.spaddb{flex:none;padding:0 16px;border:0;border-radius:14px;background:rgba(25,23,19,.07);font:600 14px/1 -apple-system,sans-serif;color:#191713}
+.splink{display:inline-flex;align-items:center;gap:6px;margin:12px 2px 0;padding:6px 2px;border:0;background:none;font:600 13.5px/1 -apple-system,sans-serif;color:#2F5BD8}
 .tidygrp{padding:6px 0 12px;margin-top:12px}
 .tidyopt{display:flex;align-items:center;gap:12px;width:100%;padding:12px 16px;text-align:left;background:none}
 .tidyopt .rad{flex:none;width:22px;height:22px;border-radius:50%;box-shadow:inset 0 0 0 2px rgba(25,23,19,.2)}
@@ -2214,6 +2238,7 @@ function load(){
       saveSnap();
     }
     setTimeout(pushCheck,2000);
+    spellAuto();
     qFlush();
   });
 }
@@ -2369,6 +2394,7 @@ function applyData(res,seq){
   var ae=document.activeElement;
   if(S.tab==='Activity'&&ae&&ae.id==='actsearch') drawActList(); else render(true);
   saveSnap();
+  spellAuto();
 }
 /* What the list shows = what the sheet sent, minus deletions still inside
    their undo window, plus rows still on their way up. */
@@ -4015,6 +4041,9 @@ function streakCheck(){
 function searchTokens(q){ return String(q||'').trim().split(/\s+/).filter(Boolean); }
 function txText(t){
   var bits=[t.shop,t.note,t.sub,t.main,t.source,t.account,t.trip];
+  if(t.k==='e'&&t.shop&&shopBook().length) shopParts(t.shop).forEach(function(p){
+    var e=bookEntry(bookShop(p)||p); if(e) bits=bits.concat([e.name],bookSpellings(e));
+  });
   flagList(t).forEach(function(f){ bits.push(f.name); });
   projectsOf(t).forEach(function(n){ bits.push(n); });
   if(t.k==='e') goalsOf(t).forEach(function(n){ bits.push(n); });
@@ -7102,6 +7131,7 @@ function recentShops(n){
   var seen={}, out=[];
   for(var i=0;i<list.length&&out.length<(n||5);i++){
     shopParts(list[i].shop).forEach(function(v){
+      v=bookShop(v)||v;
       var key=v.toLowerCase();
       if(seen[key]||out.length>=(n||5)) return;
       seen[key]=1; out.push(v);
@@ -7157,54 +7187,455 @@ function shopLev(a, b){
   }
   return prev[n];
 }
-/* every shop ever typed, most used first, rebuilt only when the ledger
-   itself changed - this runs on every keystroke */
-var SHOP_IX_ = null, SHOP_IX_N_ = -1;
+/* ══════ a shop in English, Ukrainian and Russian ═════════════════════════
+   For filling in a shop's spellings. First a list of the brands, places and
+   everyday words shop names are most often made of, written all three ways
+   (a '*' marks a word like "Pharmacy", which English puts after the name:
+   Аптека 911 is 911 Pharmacy). Everything else is transliterated: from
+   Ukrainian by the national standard, from Russian the usual way, and from
+   English into Cyrillic by sound - roughly, so worth a look. The name in the
+   language it was typed in is never changed. */
+var SP_LIST=[
+'ATB|АТБ|АТБ|АТБ-Маркет|ATB Market','Silpo|Сільпо|Сильпо','Novus|Новус|Новус','Fora|Фора|Фора','Varus|Варус|Варус',
+'Auchan|Ашан|Ашан','Metro|Метро|Метро|Metro Cash & Carry','Tavria V|Таврія В|Таврия В','Velyka Kyshenia|Велика Кишеня|Великая Кишеня|Velyka Kyshenya',
+'Eko Market|Еко Маркет|Эко Маркет|Eco Market','Furshet|Фуршет|Фуршет','Megamarket|Мегамаркет|Мегамаркет','Le Silpo|Ле Сільпо|Ле Сильпо',
+'Thrash|Траш|Траш|Thrash!','Kopiyka|Копійка|Копейка|Kopeyka','Nash Krai|Наш Край|Наш Край|Nash Kray','Rukavychka|Рукавичка|Рукавичка',
+'Spar|Спар|Спар','Blyzenko|Близенько|Близенько','Fozzy|Фоззі|Фоззи','Billa|Білла|Билла','Karavan|Караван|Караван','Velmart|Вельмарт|Вельмарт',
+'Lotok|Лоток|Лоток','Avrora|Аврора|Аврора','Obzhora|Обжора|Обжора','Sim23|Сім23|Сим23','TsUM|ЦУМ|ЦУМ','Arsen|Арсен|Арсен',
+'ANC Pharmacy|Аптека АНЦ|Аптека АНЦ|АНЦ|ANC|Apteka ANC','Podorozhnyk|Подорожник|Подорожник','Bila Romashka|Біла Ромашка|Белая Ромашка',
+'911 Pharmacy|Аптека 911|Аптека 911|Apteka 911|Pharmacy 911','Liki24|Лікі24|Лики24',
+'EVA|Єва|Ева|ЄВА|ЕВА','Prostor|Простор|Простор','Watsons|Ватсонс|Ватсонс','Brocard|Брокард|Брокард','Makeup|Мейкап|Мейкап|Make Up',
+'Kosmo|Космо|Космо','Notino|Нотіно|Нотино','Rozetka|Розетка|Розетка','Yves Rocher|Ів Роше|Ив Роше',
+'Comfy|Комфі|Комфи','Foxtrot|Фокстрот|Фокстрот','Eldorado|Ельдорадо|Эльдорадо','Allo|Алло|Алло','Moyo|Мойо|Мойо','Citrus|Цитрус|Цитрус',
+'Apple|Епл|Эппл|Еппл|Эпл','Samsung|Самсунг|Самсунг','Xiaomi|Сяомі|Сяоми|Ксіомі|Ксиоми',
+'Epicentr|Епіцентр|Эпицентр|Epicenter|Епіцентр К|Эпицентр К','Nova Linia|Нова Лінія|Новая Линия|Nova Liniya','Leroy Merlin|Леруа Мерлен|Леруа Мерлен',
+'IKEA|ІКЕА|ИКЕА','JYSK|Юск|Юск|Юськ','Pepco|Пепко|Пепко','Domotekhnika|Домотехніка|Домотехника','Antoshka|Антошка|Антошка',
+'Yakaboo|Якабу|Якабу','Knyharnia Ye|Книгарня Є|Книгарня Е','Vivat|Віват|Виват','Bukva|Буква|Буква','MasterZoo|МастерЗоо|МастерЗоо|Master Zoo',
+'Sinsay|Сінсей|Синсей|Сінсай|Синсай','Zara|Зара|Зара','H&M|Ейч енд Ем|Эйч энд Эм|HM','Reserved|Резервд|Резервд',
+'LC Waikiki|ЛС Вайкікі|ЛС Вайкики|Waikiki','Colin\'s|Колінз|Колинз|Colins|Колінс|Колинс','Intertop|Інтертоп|Интертоп',
+'Adidas|Адідас|Адидас','Nike|Найк|Найк','Puma|Пума|Пума','New Balance|Нью Беленс|Нью Бэланс','Decathlon|Декатлон|Декатлон',
+'Bershka|Бершка|Бершка','Pull&Bear|Пул енд Бер|Пул энд Бир|Pull and Bear','Mango|Манго|Манго','Mohito|Мохіто|Мохито','Cropp|Кропп|Кропп',
+'Kari|Карі|Кари','Ecco|Екко|Экко','Lamoda|Ламода|Ламода','Kasta|Каста|Каста','Prom|Пром|Пром|Prom.ua','OLX|ОЛХ|ОЛХ|ОЛІКС|ОЛИКС',
+'AliExpress|Аліекспрес|Алиэкспресс','Temu|Тему|Тему','Amazon|Амазон|Амазон','eBay|Ібей|Ибэй|Ебей|Эбей','Shein|Шеїн|Шеин|Шейн',
+'McDonald\'s|Макдональдз|Макдональдс|McDonalds|Макдоналдс|Макдак|Мак','KFC|КФС|КФС','Burger King|Бургер Кінг|Бургер Кинг',
+'Domino\'s|Доміно\'с|Домино\'с|Dominos|Domino\'s Pizza','Pizza Celentano|Піца Челентано|Пицца Челентано|Celentano|Челентано',
+'Puzata Hata|Пузата Хата|Пузатая Хата','Lviv Croissants|Львівські круасани|Львовские круассаны','Aroma Kava|Арома Кава|Арома Кава',
+'One Price Coffee|Ван Прайс Кофі|Ван Прайс Кофе','Starbucks|Старбакс|Старбакс','Sushi Master|Суші Мастер|Суши Мастер','Mafia|Мафія|Мафия',
+'Kartopliana Hata|Картопляна Хата|Картофельная Хата','Salateira|Салатейра|Салатейра',
+'Lviv Handmade Chocolate|Львівська майстерня шоколаду|Львовская мастерская шоколада',
+'Glovo|Глово|Глово','Bolt Food|Болт Фуд|Болт Фуд','Raketa|Ракета|Ракета','Uber Eats|Убер Ітс|Убер Итс','Wolt|Волт|Волт',
+'Uklon|Уклон|Уклон','Bolt|Болт|Болт','Uber|Убер|Убер','OnTaxi|ОнТаксі|ОнТакси',
+'OKKO|ОККО|ОККО','WOG|ВОГ|ВОГ','Socar|Сокар|Сокар','UPG|ЮПіДжі|ЮПиДжи|УПГ','Shell|Шелл|Шелл','BRSM-Nafta|БРСМ-Нафта|БРСМ-Нафта|БРСМ|BRSM',
+'Ukrnafta|Укрнафта|Укрнафта','Amic|Амік|Амик|Amic Energy','KLO|КЛО|КЛО','Avias|Авіас|Авиас',
+'Ukrzaliznytsia|Укрзалізниця|Укрзализныця|Укрзализница|UZ','Intercity|Інтерсіті|Интерсити','FlixBus|ФліксБас|ФликсБас',
+'Wizz Air|Віззейр|Визз Эйр','Ryanair|Райанейр|Райанэйр',
+'Kyivstar|Київстар|Киевстар','Vodafone|Водафон|Водафон','lifecell|Лайфселл|Лайфселл|Лайфсел','Ukrtelecom|Укртелеком|Укртелеком',
+'Volia|Воля|Воля|Volya','Lanet|Ланет|Ланет','Triolan|Тріолан|Триолан','Yasno|Ясно|Ясно','Naftogaz|Нафтогаз|Нафтогаз','DTEK|ДТЕК|ДТЭК',
+'Kyivvodokanal|Київводоканал|Киевводоканал',
+'Nova Poshta|Нова пошта|Новая почта|Nova Post|Новапошта','Ukrposhta|Укрпошта|Укрпочта','Meest|Міст|Мист|Meest Express','Justin|Джастін|Джастин',
+'Monobank|Монобанк|Монобанк|Mono|Моно','PrivatBank|ПриватБанк|ПриватБанк|Privat24|Приват24|Приват','Oschadbank|Ощадбанк|Ощадбанк',
+'PUMB|ПУМБ|ПУМБ','Raiffeisen|Райффайзен|Райффайзен|Райф','A-Bank|А-Банк|А-Банк|Абанк',
+'Netflix|Нетфлікс|Нетфликс','Spotify|Спотіфай|Спотифай','YouTube|Ютуб|Ютуб','YouTube Premium|Ютуб Преміум|Ютуб Премиум',
+'Apple Music|Епл Мьюзік|Эппл Мьюзик','iCloud|Айклауд|Айклауд','Google|Гугл|Гугл','Google One|Гугл Ван|Гугл Ван','Google Play|Гугл Плей|Гугл Плей',
+'App Store|Ап Стор|Ап Стор|AppStore','Steam|Стім|Стим','PlayStation|Плейстейшн|Плейстейшн|PS Store|PSN','Xbox|Іксбокс|Иксбокс',
+'Megogo|Мегого|Мегого','Sweet TV|Світ ТВ|Свит ТВ|Sweet.tv','Planeta Kino|Планета Кіно|Планета Кино','Multiplex|Мультиплекс|Мультиплекс',
+'Oskar|Оскар|Оскар','Karabas|Карабас|Карабас','Telegram|Телеграм|Телеграм','ChatGPT|ЧатДжіПіТі|ЧатДжиПиТи|OpenAI','Claude|Клод|Клод',
+'Patreon|Патреон|Патреон','Duolingo|Дуолінго|Дуолинго','Twitch|Твіч|Твич','Discord|Діскорд|Дискорд','Microsoft|Майкрософт|Майкрософт',
+'Adobe|Адобі|Адоби','Canva|Канва|Канва','Notion|Ноушн|Ноушн','Sport Life|Спорт Лайф|Спорт Лайф|Sportlife',
+'Ukraine|Україна|Украина|Ukraina','ZSU|ЗСУ|ВСУ|AFU','Come Back Alive|Повернись живим|Вернись живым',
+'Prytula Foundation|Фонд Притули|Фонд Притулы','United24|Юнайтед24|Юнайтед24','Kyiv|Київ|Киев|Kiev','Kharkiv|Харків|Харьков','Lviv|Львів|Львов','Dnipro|Дніпро|Днепр','Odesa|Одеса|Одесса|Odessa',
+'Zaporizhzhia|Запоріжжя|Запорожье','Vinnytsia|Вінниця|Винница','Poltava|Полтава|Полтава','Chernihiv|Чернігів|Чернигов',
+'Ivano-Frankivsk|Івано-Франківськ|Ивано-Франковск','Ternopil|Тернопіль|Тернополь','Uzhhorod|Ужгород|Ужгород','Bukovel|Буковель|Буковель',
+'*Pharmacy|Аптека|Аптека','*Market|Ринок|Рынок|Маркет','*Bazaar|Базар|Базар','*Cafe|Кафе|Кафе|Café','*Coffee Shop|Кав\'ярня|Кофейня|Кавярня','*Coffee to Go|Кава з собою|Кофе с собой',
+'*Restaurant|Ресторан|Ресторан','*Pizzeria|Піцерія|Пиццерия','*Bakery|Пекарня|Пекарня','*Supermarket|Супермаркет|Супермаркет',
+'*Shop|Магазин|Магазин|Магаз','*Groceries|Продукти|Продукты','*Hair Salon|Перукарня|Парикмахерская','*Barbershop|Барбершоп|Барбершоп',
+'*Beauty Salon|Салон краси|Салон красоты','*Taxi|Таксі|Такси','*Gas Station|Заправка|Заправка|АЗС','*Post Office|Пошта|Почта',
+'*Flowers|Квіти|Цветы','*Pet Shop|Зоомагазин|Зоомагазин','*Gym|Спортзал|Спортзал|Тренажерний зал|Тренажерный зал',
+'*Cinema|Кінотеатр|Кинотеатр|Кіно|Кино','*Bus|Автобус|Автобус','*Minibus|Маршрутка|Маршрутка','*Tram|Трамвай|Трамвай',
+'*Trolleybus|Тролейбус|Троллейбус','*Train|Поїзд|Поезд|Електричка|Электричка','*Hospital|Лікарня|Больница',
+'*Dentist|Стоматологія|Стоматология|Стоматолог','*Clinic|Клініка|Клиника','*Laboratory|Лабораторія|Лаборатория','*Optics|Оптика|Оптика',
+'*Dry Cleaning|Хімчистка|Химчистка','*Laundry|Пральня|Прачечная','*Car Wash|Автомийка|Автомойка|Мийка|Мойка',
+'*Tire Service|Шиномонтаж|Шиномонтаж','*Car Service|СТО|СТО|Автосервіс|Автосервис','*Parking|Паркінг|Парковка',
+'*Hotel|Готель|Гостиница|Отель','*Hostel|Хостел|Хостел','*Confectionery|Кондитерська|Кондитерская','*Meat|М\'ясо|Мясо',
+'*Vegetables|Овочі|Овощи','*Fruit|Фрукти|Фрукты','*Fish|Риба|Рыба','*Bread|Хліб|Хлеб','*Milk|Молоко|Молоко','*Kiosk|Кіоск|Киоск|Ларьок|Ларек',
+'*Shawarma|Шаурма|Шаурма|Шаверма','*Sushi|Суші|Суши','*Pizza|Піца|Пицца','*Burger|Бургер|Бургер','*Coffee|Кава|Кофе','*Tea|Чай|Чай',
+'*Bar|Бар|Бар','*Pub|Паб|Паб','*Canteen|Їдальня|Столовая','*Pawnshop|Ломбард|Ломбард','*Bank|Банк|Банк','*ATM|Банкомат|Банкомат',
+'*Rent|Оренда|Аренда','*Utilities|Комуналка|Коммуналка|Комунальні|Коммунальные|Квартплата','*Internet|Інтернет|Интернет',
+'*Mobile|Мобільний|Мобильный','*Fitness|Фітнес|Фитнес','*Pool|Басейн|Бассейн','*Yoga|Йога|Йога','*Massage|Масаж|Массаж',
+'*Manicure|Манікюр|Маникюр','*Salon|Салон|Салон','*Toys|Іграшки|Игрушки','*Books|Книги|Книги',
+'*Stationery|Канцтовари|Канцтовары|Канцелярія|Канцелярия','*Clothes|Одяг|Одежда','*Shoes|Взуття|Обувь','*Furniture|Меблі|Мебель',
+'*Electronics|Техніка|Техника|Електроніка|Электроника','*Hardware Store|Будматеріали|Стройматериалы',
+'*Household Goods|Господарчий|Хозтовары','*Gifts|Подарунки|Подарки','*Souvenirs|Сувеніри|Сувениры','*Church|Церква|Церковь',
+'*School|Школа|Школа','*Kindergarten|Садочок|Садик|Дитсадок|Детсад','*University|Університет|Университет','*Courses|Курси|Курсы',
+'*Tutor|Репетитор|Репетитор','*Vet Clinic|Ветклініка|Ветклиника|Ветеринар','*Notary|Нотаріус|Нотариус','*Cosmetics|Косметика|Косметика',
+'*Perfume|Парфуми|Парфюмерия|Парфумерія','*Jewelry|Ювелірний|Ювелирный|Ювелірка|Ювелирка','*Repair|Ремонт|Ремонт','*Keys|Ключі|Ключи',
+'*Printing|Друк|Печать|Копіцентр|Копицентр','*Photo|Фото|Фото','*Mall|ТЦ|ТЦ|ТРЦ|Торговий центр|Торговый центр','*Delivery|Доставка|Доставка',
+'*Lottery|Лотерея|Лотерея','*Charity|Благодійність|Благотворительность','*Donation|Донат|Донат','*Tips|Чайові|Чаевые','*Fine|Штраф|Штраф',
+'*Taxes|Податки|Налоги|Податок|Налог','*Insurance|Страховка|Страховка|Страхування|Страхование','*Doctor|Лікар|Врач|Доктор'
+];
+/* English words often met in shop names, as they are written in Cyrillic */
+var SP_EN={a:'а|а',and:'енд|энд',auto:'авто|авто',baby:'бебі|бэби',bakery:'бейкері|бейкери',bar:'бар|бар',beauty:'б\'юті|бьюти',beer:'бір|бир',
+best:'бест|бест',big:'біг|биг',bistro:'бістро|бистро',black:'блек|блэк',blue:'блю|блю',book:'бук|бук',books:'букс|букс',box:'бокс|бокс',
+burger:'бургер|бургер',cafe:'кафе|кафе',caffe:'каффе|каффе',casa:'каса|каса',cucina:'кучіна|кучина',dolce:'дольче|дольче',bella:'белла|белла',cake:'кейк|кейк',car:'кар|кар',center:'центр|центр',centre:'центр|центр',city:'сіті|сити',
+clinic:'клінік|клиник',club:'клаб|клаб',coffee:'кофі|кофе',craft:'крафт|крафт',cup:'кап|кап',day:'дей|дэй',delivery:'делівері|деливери',
+dental:'дентал|дентал',euro:'євро|евро',express:'експрес|экспресс',family:'фемілі|фэмили',fashion:'фешн|фэшн',first:'ферст|ферст',fit:'фіт|фит',
+fitness:'фітнес|фитнес',food:'фуд|фуд',fresh:'фреш|фреш',fruit:'фрут|фрут',fun:'фан|фан',garden:'гарден|гарден',gold:'голд|голд',
+good:'гуд|гуд',green:'грін|грин',grill:'гриль|гриль',gym:'джим|джим',hair:'хеір|хэир',happy:'хепі|хэппи',home:'хоум|хоум',iphone:'айфон|айфон',ipad:'айпад|айпад',macbook:'макбук|макбук',hotel:'готель|отель',
+house:'хаус|хаус',kids:'кідс|кидс',king:'кінг|кинг',lab:'лаб|лаб',land:'ленд|лэнд',life:'лайф|лайф',lounge:'лаунж|лаунж',love:'лав|лав',
+mall:'мол|молл',market:'маркет|маркет',mart:'март|март',max:'макс|макс',mega:'мега|мега',mini:'міні|мини',moon:'мун|мун',nail:'нейл|нейл',
+new:'нью|нью',night:'найт|найт',ocean:'оушен|оушен',of:'оф|оф',one:'ван|ван',park:'парк|парк',pet:'пет|пет',pharmacy:'аптека|аптека',piccolo:'пікколо|пикколо',pizza:'піца|пицца',place:'плейс|плейс',
+plaza:'плаза|плаза',plus:'плюс|плюс',point:'поінт|поинт',pro:'про|про',pub:'паб|паб',queen:'квін|квин',restaurant:'ресторан|ресторан',red:'ред|ред',service:'сервіс|сервис',
+shop:'шоп|шоп',silver:'сільвер|сильвер',smart:'смарт|смарт',smile:'смайл|смайл',sport:'спорт|спорт',star:'стар|стар',store:'стор|стор',street:'стріт|стрит',
+studio:'студіо|студио',style:'стайл|стайл',sun:'сан|сан',super:'супер|супер',sushi:'суші|суши',sweet:'світ|свит',taxi:'таксі|такси',
+tea:'ті|ти',trattoria:'тратторія|траттория',the:'зе|зэ',time:'тайм|тайм',top:'топ|топ',toys:'тойс|тойс',two:'ту|ту',vita:'віта|вита',wash:'вош|вош',white:'вайт|вайт',wine:'вайн|вайн',
+world:'ворлд|ворлд',zoo:'зоо|зоо'};
+
+var SPX_=null;
+/* every form of every entry, by its loose key - and the longest phrase, so
+   a name is read from the left taking the longest piece that is known */
+/* letters only, in their own script: for telling Маркет from Market */
+function spPlain(s){ return String(s||'').toLowerCase().replace(SP_NOTLET,''); }
+function spDict(){
+  if(SPX_) return SPX_;
+  var by={}, longest=1;
+  SP_LIST.forEach(function(line){
+    var gen=line.charAt(0)==='*', f=(gen?line.slice(1):line).split('|');
+    var e={en:f[0],uk:f[1],ru:f[2],gen:gen,keys:{}};
+    f.forEach(function(form,i){
+      var k=shopLoose(form); if(!k) return;
+      var as=i===0?'en':i===1?'uk':i===2?'ru':'var';
+      if(!e.keys[k]) e.keys[k]=as;
+      if(!by[k]) by[k]=e;
+      longest=Math.max(longest,form.split(/\s+/).length);
+    });
+  });
+  return (SPX_={by:by,longest:longest});
+}
+
+var SP_UK_LAT={'а':'a','б':'b','в':'v','г':'h','ґ':'g','д':'d','е':'e','є':'ie','ж':'zh','з':'z','и':'y','і':'i','ї':'i','й':'i','к':'k',
+  'л':'l','м':'m','н':'n','о':'o','п':'p','р':'r','с':'s','т':'t','у':'u','ф':'f','х':'kh','ц':'ts','ч':'ch','ш':'sh','щ':'shch','ь':'',
+  'ю':'iu','я':'ia','ъ':'','ы':'y','э':'e','ё':'io'};
+var SP_UK_LAT0={'є':'ye','ї':'yi','й':'y','ю':'yu','я':'ya'};
+var SP_RU_LAT={'а':'a','б':'b','в':'v','г':'g','д':'d','е':'e','ё':'yo','ж':'zh','з':'z','и':'i','й':'y','к':'k','л':'l','м':'m','н':'n',
+  'о':'o','п':'p','р':'r','с':'s','т':'t','у':'u','ф':'f','х':'kh','ц':'ts','ч':'ch','ш':'sh','щ':'shch','ъ':'','ы':'y','ь':'','э':'e',
+  'ю':'yu','я':'ya','і':'i','ї':'yi','є':'ye','ґ':'g'};
+var SP_CYR=/[\u0400-\u04ff]/, SP_LAT=/[a-z]/i, SP_APOS=/[\u2019\u2018\u02bc'`]/;
+/* "a letter in any script", built so an engine too old for \p{L} gets a
+   plainer test instead of a broken page */
+var SP_LETTER=(function(){ try{ return new RegExp('\\p{L}','u'); }catch(e){ return /[a-z\u00c0-\u024f\u0400-\u04ff]/i; } })();
+var SP_NOTLET=(function(){ try{ return new RegExp('[^\\p{L}]','gu'); }catch(e){ return /[^a-z\u00c0-\u024f\u0400-\u04ff]/gi; } })();
+/* which Cyrillic it is: letters only Ukrainian has, or only Russian */
+function spLang(s){
+  s=String(s||'').toLowerCase();
+  if(/[ієїґ]/.test(s)||/[\u0400-\u04ff][\u2019\u02bc'][\u0400-\u04ff]/.test(s)||/ц[яю](\s|$)|[сц]ьк/.test(s)) return 'uk';
+  if(/[ыэёъ]/.test(s)) return 'ru';
+  return 'both';
+}
+/* the capitals of `src` laid onto `out`: a word in capitals stays one, a
+   word with a capital first letter gets one */
+function spCase(src,out){
+  if(!out) return out;
+  var letters=src.replace(SP_NOTLET,'');
+  if(letters.length>1&&letters===letters.toUpperCase()&&letters!==letters.toLowerCase()) return out.toUpperCase();
+  var f=src.charAt(0);
+  if(f&&f!==f.toLowerCase()) return out.charAt(0).toUpperCase()+out.slice(1);
+  return out;
+}
+function spCyrLat(w,lang){
+  var s=w.toLowerCase(), out='', map=lang==='ru'?SP_RU_LAT:SP_UK_LAT;
+  for(var i=0;i<s.length;i++){
+    var c=s.charAt(i), first=i===0||!SP_CYR.test(s.charAt(i-1));
+    if(SP_APOS.test(c)&&i>0&&SP_CYR.test(s.charAt(i-1))) continue;
+    if(lang!=='ru'&&c==='г'&&i>0&&s.charAt(i-1)==='з'){ out+='gh'; continue; }
+    if(lang!=='ru'&&first&&SP_UK_LAT0[c]){ out+=SP_UK_LAT0[c]; continue; }
+    out+=map.hasOwnProperty(c)?map[c]:c;
+  }
+  return spCase(w,out);
+}
+/* Ukrainian into Russian and back, letter by letter */
+function spUkRu(w){
+  var s=w.replace(/ц([яЯ])$/,function(m,a){ return 'ц'+(a==='я'?'а':'А'); }).replace(/([сцСЦ])[ьЬ]([кК])/g,'$1$2'), out='';
+  for(var i=0;i<s.length;i++){
+    var c=s.charAt(i), lc=c.toLowerCase(), up=c!==lc, r;
+    if(SP_APOS.test(c)&&i>0&&SP_CYR.test(s.charAt(i-1))) continue;
+    r={'і':'и','ї':'и','є':'е','ґ':'г'}[lc];
+    out+=r?(up?r.toUpperCase():r):c;
+  }
+  return out;
+}
+function spRuUk(w){
+  var s=w, out='';
+  for(var i=0;i<s.length;i++){
+    var c=s.charAt(i), lc=c.toLowerCase(), up=c!==lc, prev=i>0?s.charAt(i-1).toLowerCase():'', r=null;
+    var afterV=!prev||/[аеёиоуыэюяіїє\s-]/.test(prev);
+    if(lc==='ы') r='и';
+    else if(lc==='э') r='е';
+    else if(lc==='ъ') r='\'';
+    else if(lc==='ё') r=afterV?'йо':'ьо';
+    else if(lc==='е'&&!prev) r='є';
+    out+=r?(up?r.charAt(0).toUpperCase()+r.slice(1):r):c;
+  }
+  return out;
+}
+/* English letters into Cyrillic by sound - the patterns are tried longest
+   first at each point */
+var SP_LATP=[['shch','щ','щ'],['sch','ш','ш'],['tch','ч','ч'],['zgh','зг','зг'],['kh','х','х'],['zh','ж','ж'],['ts','ц','ц'],['tz','ц','ц'],
+  ['ch','ч','ч'],['sh','ш','ш'],['ph','ф','ф'],['th','т','т'],['gh','г','г'],['ck','к','к'],['qu','кв','кв'],['ya','я','я'],['yu','ю','ю'],
+  ['yo','йо','йо'],['ye','є','е'],['yi','ї','йи'],['ium','іум','иум'],['iu','ю','ю'],['ia','ія','ия'],['ee','і','и'],['oo','у','у'],
+  ['ea','і','и'],['ou','ау','ау'],['ow','оу','оу'],['ay','ей','эй'],['ey','ей','эй'],['ai','ей','эй'],['oy','ой','ой'],['au','ау','ау'],
+  ['oa','оу','оу'],['x','кс','кс'],['j','дж','дж'],['w','в','в'],['q','к','к']];
+var SP_LAT1={a:'а',b:'б',d:'д',f:'ф',g:'г',h:'х',k:'к',l:'л',m:'м',n:'н',o:'о',p:'п',r:'р',s:'с',t:'т',u:'у',v:'в',z:'з'};
+var SP_ABC={a:'А',b:'Б',c:'С',d:'Д',e:'Е',f:'Ф',g:'Г',h:'Х',i:'І',j:'ДЖ',k:'К',l:'Л',m:'М',n:'Н',o:'О',p:'П',q:'К',r:'Р',s:'С',t:'Т',
+  u:'У',v:'В',w:'В',x:'КС',y:'И',z:'З'};
+function spLatCyr(w,to){
+  var ru=to==='ru', s=w.toLowerCase();
+  var letters=w.replace(/[^a-z]/gi,'');
+  /* a short word in capitals is letters: KFC, ATB */
+  if(letters.length>1&&letters.length<=5&&letters===letters.toUpperCase()&&!/[aeiouy]{2}/i.test(letters)){
+    var acr='';
+    for(var a=0;a<w.length;a++){ var ch=w.charAt(a).toLowerCase(); acr+=SP_ABC[ch]?(ru&&ch==='i'?'И':SP_ABC[ch]):w.charAt(a); }
+    return acr;
+  }
+  if(SP_EN.hasOwnProperty(s)) return spCase(w,SP_EN[s].split('|')[ru?1:0]);
+  var out='', i=0, n=s.length;
+  /* a silent e after one consonant makes the vowel before it long: life, home */
+  var magic=-1;
+  if(n>=4&&/[aeiouy][b-df-hj-np-tv-z]e$/.test(s)&&!/[aeiouy]/.test(s.charAt(n-4))) magic=n-3;
+  while(i<n){
+    if(magic>-1&&i===n-1&&s.charAt(i)==='e'){ i++; continue; }
+    if(i===magic){
+      var v=s.charAt(i), nx=s.charAt(i+1);
+      out+=v==='a'?(ru?'эй':'ей'):v==='i'||v==='y'?'ай':v==='o'?(nx==='r'?'о':'оу'):v==='u'?'ю':(ru?'и':'і');
+      i++; continue;
+    }
+    if(s.substr(i,2)==='ue'&&i+2===n){ out+='ю'; i+=2; continue; }
+    var hit=null;
+    for(var p=0;p<SP_LATP.length;p++){ if(s.substr(i,SP_LATP[p][0].length)===SP_LATP[p][0]){ hit=SP_LATP[p]; break; } }
+    if(hit){ out+=ru?hit[2]:hit[1]; i+=hit[0].length; continue; }
+    var c=s.charAt(i), nxt=s.charAt(i+1), r;
+    if(c==='c') r=/[eiy]/.test(nxt)?'с':'к';
+    else if(c==='e') r=(ru&&(i===0||/[aeiou]/.test(s.charAt(i-1))))?'э':'е';
+    else if(c==='i') r=ru?'и':'і';
+    else if(c==='y') r=(i===0)?'й':(i===n-1)?(ru?'и':'і'):'и';
+    else r=SP_LAT1.hasOwnProperty(c)?SP_LAT1[c]:c;
+    out+=r; i++;
+  }
+  return spCase(w,out);
+}
+/* one word into the language asked for. `lang` is which Cyrillic the name
+   is in (uk, ru or both) */
+var SP_EN_BACK=null;
+function spEnBack(){
+  if(SP_EN_BACK) return SP_EN_BACK;
+  /* not the ones that are words of their own: світ is the world, біг a run */
+  var m={}, skip={'ван':1,'ту':1,'зе':1,'зэ':1,'оф':1,'енд':1,'энд':1,'сан':1,'мун':1,'а':1,'світ':1,'свит':1,'біг':1,'стар':1,
+    'про':1,'бук':1,'март':1,'мол':1,'кап':1,'дей':1,'ред':1};
+  Object.keys(SP_EN).forEach(function(en){
+    SP_EN[en].split('|').forEach(function(c){ if(c.length>=3&&!skip[c]&&!m[c]) m[c]=en; });
+  });
+  return (SP_EN_BACK=m);
+}
+function spWord(w,lang,to){
+  if(!SP_LETTER.test(w)) return w;
+  /* a word in two scripts (Сільпо24 is fine; iPhone-сервіс is two) */
+  var runs=w.match(/[\u0400-\u04ff\u2019\u02bc']+|[a-z]+|[^a-z\u0400-\u04ff\u2019\u02bc']+/gi)||[w];
+  if(runs.length>1) return runs.map(function(r){ return spWord(r,lang,to); }).join('');
+  var cyr=SP_CYR.test(w);
+  /* a known name inside a longer word: OLX.ua */
+  var de=spDict().by[shopLoose(w)];
+  if(de&&!de.gen&&shopLoose(w).length>1&&!(cyr&&to!=='en')&&!(!cyr&&to==='en')) return de[to];
+  if(cyr){
+    if(to==='en'){
+      var back=spEnBack()[w.toLowerCase()];
+      return back?spCase(w,back):spCyrLat(w,lang==='ru'?'ru':'uk');
+    }
+    if(to==='uk') return lang==='ru'?spRuUk(w):w;
+    return lang==='uk'?spUkRu(w):w;
+  }
+  if(to==='en') return w;
+  return spLatCyr(w,to);
+}
+/* The three spellings of one name. A known name is taken whole; otherwise
+   it is read from the left, the longest known piece first, and anything
+   unknown is transliterated. The language it was typed in keeps it as it
+   is. */
+function spellOf(name){
+  var src=String(name||'').replace(/[«»“”"]/g,'').replace(/\s+/g,' ').trim();
+  if(!src) return {en:'',uk:'',ru:''};
+  var d=spDict(), whole=d.by[shopLoose(src)];
+  if(whole) return {en:whole.en,uk:whole.uk,ru:whole.ru,known:true};
+  var lang=spLang(src), toks=src.split(' '), units=[], i=0;
+  while(i<toks.length){
+    var hit=null, len=Math.min(d.longest,toks.length-i);
+    for(;len>=1;len--){
+      var piece=toks.slice(i,i+len).join(' '), e=d.by[shopLoose(piece)];
+      if(e&&shopLoose(piece).length>1){
+        var pp=spPlain(piece);
+        hit={e:e,src:piece,as:pp===spPlain(e.uk)?'uk':pp===spPlain(e.ru)?'ru':pp===spPlain(e.en)?'en':'var'};
+        break;
+      }
+    }
+    if(hit){ units.push(hit); i+=len; } else { units.push({src:toks[i]}); i++; }
+  }
+  function one(u,to){
+    if(!u.e) return spWord(u.src,lang,to);
+    var cyr=SP_CYR.test(u.src);
+    /* the language it was typed in keeps the word typed - found as the
+       other language's word, it is that language's */
+    if((to==='en'&&!cyr)||(to==='uk'&&cyr&&lang!=='ru'&&u.as!=='ru')||(to==='ru'&&cyr&&lang!=='uk'&&u.as!=='uk')) return u.src;
+    /* found only as another way of writing it: written over, not translated */
+    if(u.as==='var'&&to!=='en'&&cyr) return spWord(u.src,lang,to);
+    /* an everyday word in an English name with more to it is part of the
+       name: Coffee Life is Кофі Лайф, not Кава */
+    if(to!=='en'&&!cyr&&u.e.gen) return spWord(u.src,lang,to);
+    return u.e[to];
+  }
+  var out={};
+  ['en','uk','ru'].forEach(function(to){ out[to]=units.map(function(u){ return one(u,to); }); });
+  /* Аптека 911 → 911 Pharmacy */
+  if(units.length>1&&units[0].e&&units[0].e.gen&&SP_CYR.test(units[0].src)&&/^[A-ZА-ЯІЇЄҐЁ0-9«"]/.test(units[1].src)&&
+     !spEnBack()[units[1].src.toLowerCase()]&&
+     !units.slice(1).every(function(u){ return u.e&&u.e.gen; }))
+    out.en=out.en.slice(1).concat([out.en[0]]);
+  var en=out.en.join(' ').split(' ').map(function(x,i){
+    if(i&&/^(of|and|the|a|an|at|in|on|for|to|by|de|la|da|di|z|i|v|u|na)$/.test(x)) return x;
+    return x===x.toLowerCase()?x.charAt(0).toUpperCase()+x.slice(1):x;
+  }).join(' ');
+  return {en:en,uk:out.uk.join(' '),ru:out.ru.join(' ')};
+}
+/* Several spellings that are one shop: the English name, the Ukrainian and
+   the Russian ones - each taken from a spelling already written that way if
+   there is one, the most used first - and any other spelling as is. */
+function spellGroup(names){
+  var L=names.filter(Boolean);
+  if(!L.length) return null;
+  var known=null;
+  L.forEach(function(n){ var s=spellOf(n); if(!known&&s.known) known=s; });
+  var base=known||spellOf(L[0]), out={name:base.en,uk:base.uk,ru:base.ru};
+  if(!known){
+    var lat=L.filter(function(n){ return SP_LAT.test(n)&&!SP_CYR.test(n); })[0];
+    /* written plainly enough to be either, it is taken as Ukrainian; the
+       Russian is then made from it (Кава Хаус: Кофе Хаус) */
+    var uk=L.filter(function(n){ return SP_CYR.test(n)&&spLang(n)==='uk'; })[0]||L.filter(function(n){ return SP_CYR.test(n)&&spLang(n)==='both'; })[0];
+    var ru=L.filter(function(n){ return SP_CYR.test(n)&&spLang(n)==='ru'; })[0];
+    if(lat) out.name=lat;
+    else if(uk||ru) out.name=spellOf(uk||ru).en;
+    if(uk) out.uk=uk; else if(ru) out.uk=spellOf(ru).uk;
+    if(ru) out.ru=ru; else if(uk) out.ru=spellOf(uk).ru;
+    /* typed all in small letters: the names made from it get capitals */
+    var cap=function(x){ return x.replace(/(^|\s)(\S)/g,function(m,a,b){ return a+b.toUpperCase(); }); };
+    if(out.name&&out.name===out.name.toLowerCase()) out.name=cap(out.name);
+    if(!uk&&out.uk===out.uk.toLowerCase()) out.uk=cap(out.uk);
+    if(!ru&&out.ru===out.ru.toLowerCase()) out.ru=cap(out.ru);
+  }
+  var have=[out.name,out.uk,out.ru].map(shopLoose);
+  out.alt=L.filter(function(n){ var k=shopLoose(n); if(have.indexOf(k)>-1) return false; have.push(k); return true; });
+  return out;
+}
+
+/* ══════ a shop's spellings: the Shops sheet (Shops.gs) ═══════════════════
+   Every shop can have a name - the one its records are saved under - and
+   other ways of writing it: Ukrainian, Russian and any more. Typed any of
+   those ways, the shop is found, and saved under its name. */
+var SHOPS_MSG='For shops to keep their spellings, add Shops.gs in Apps Script next to Код.gs, then Deploy → Manage deployments → Edit → Version: New version → Deploy.';
+function shopsOn(){ return !!(D&&D.shopsOn); }
+function shopBook(){ return (D&&D.shopBook instanceof Array)?D.shopBook:[]; }
+function bookSpellings(e){ return [e.uk,e.ru].concat(e.alt||[]).filter(Boolean); }
+function shopTrim(v){ return String(v==null?'':v).replace(/\s+/g,' ').trim(); }
+var SPI_=null;
+function spIndex(){
+  var b=shopBook();
+  if(SPI_&&SPI_.b===b) return SPI_;
+  var strict={}, loose={}, byName={};
+  b.forEach(function(e){
+    if(!e||!e.name) return;
+    byName[e.name.toLowerCase()]=e;
+    [e.name].concat(bookSpellings(e)).forEach(function(x){
+      var k=shopStrict(x), L=shopLoose(x);
+      if(k&&!strict.hasOwnProperty(k)) strict[k]=e.name;
+      /* a loose key two shops share finds neither */
+      if(L) loose[L]=(loose.hasOwnProperty(L)&&loose[L]!==e.name)?'':e.name;
+    });
+  });
+  return (SPI_={b:b,strict:strict,loose:loose,byName:byName});
+}
+function bookEntry(name){ return spIndex().byName[String(name||'').toLowerCase()]||null; }
+/* the shop a typed name is a spelling of, or '' */
+function bookShop(v){
+  var ix=spIndex(), k=shopStrict(v);
+  if(!k) return '';
+  if(ix.strict.hasOwnProperty(k)) return ix.strict[k];
+  var L=shopLoose(v);
+  return (L&&ix.loose[L])||'';
+}
+/* every shop ever typed, most used first - a spelling counted with its
+   shop, and a shop from the Shops sheet even before it has a record.
+   Rebuilt only when the ledger or the sheet changed: this runs on every
+   keystroke */
+var SHOP_IX_ = null, SHOP_IX_N_ = -1, SHOP_IX_B_ = null;
 function shopIndex(){
-  var tx = D.tx || [];
-  if (SHOP_IX_ && SHOP_IX_N_ === tx.length) return SHOP_IX_;
+  var tx = D.tx || [], book = shopBook();
+  if (SHOP_IX_ && SHOP_IX_N_ === tx.length && SHOP_IX_B_ === book) return SHOP_IX_;
   var c = {};
   tx.forEach(function(t){
     if (t.k !== 'e' || !t.shop || isXferSub(t.sub) || isCorrName(t.sub)) return;
-    shopParts(t.shop).forEach(function(v){ c[v] = (c[v] || 0) + 1; });
+    shopParts(t.shop).forEach(function(v){ var n = bookShop(v) || v; c[n] = (c[n] || 0) + 1; });
   });
+  book.forEach(function(e){ if (e && e.name && !c.hasOwnProperty(e.name)) c[e.name] = 0; });
   SHOP_IX_ = Object.keys(c).map(function(n){
-    return { n: n, c: c[n], L: shopLoose(n), K: shopSkel(n) };
+    var e = bookEntry(n), sp = [n].concat(e ? bookSpellings(e) : []);
+    return { n: n, c: c[n], sp: sp, L: sp.map(shopLoose), K: sp.map(shopSkel) };
   }).sort(function(a, b){ return b.c - a.c; });
-  SHOP_IX_N_ = tx.length;
+  SHOP_IX_N_ = tx.length; SHOP_IX_B_ = book;
   return SHOP_IX_;
 }
+/* the shops a typed name could be, by any of their spellings. SHOP_VIA_
+   keeps which spelling found one, when it was not the name itself */
+var SHOP_VIA_ = {};
 function shopMatches(qs, n){
   var L = shopLoose(qs), K = shopSkel(qs);
+  SHOP_VIA_ = {};
   if (!L) return [];
-  var t0 = [], t1 = [], t2 = [], t3 = [];
+  var tiers = [[], [], [], []];
   shopIndex().forEach(function(x){
-    if (x.L.indexOf(L) === 0) t0.push(x.n);
-    else if (x.L.indexOf(L) > 0) t1.push(x.n);
-    else if (K && x.K.indexOf(K) === 0) t2.push(x.n);
-    else if (K.length >= 3 && shopLev(K, x.K.slice(0, K.length)) <= 1) t3.push(x.n);
+    var best = 9, via = '';
+    for (var i = 0; i < x.L.length; i++) {
+      var l = x.L[i], k = x.K[i], t = 9;
+      if (l.indexOf(L) === 0) t = 0;
+      else if (l.indexOf(L) > 0) t = 1;
+      else if (K && k.indexOf(K) === 0) t = 2;
+      else if (K.length >= 3 && shopLev(K, k.slice(0, K.length)) <= 1) t = 3;
+      if (t < best) { best = t; via = i ? x.sp[i] : ''; }
+    }
+    if (best > 3) return;
+    if (via) SHOP_VIA_[x.n] = via;
+    tiers[best].push(x.n);
   });
   /* the loose tiers are noisy - 'аптек' reaches as far as Patreon - so they
      only get to speak when the tight ones found nothing at all */
-  var out = t0.concat(t1);
-  if (!out.length) out = t2.concat(t3);
+  var out = tiers[0].concat(tiers[1]);
+  if (!out.length) out = tiers[2].concat(tiers[3]);
   return out.slice(0, n || 6);
 }
 function shopChipsInner(cur){
   /* with several shops, the one being typed is the part after the last
      semicolon, and the ones before it are not offered again */
   var parts = String(cur || '').split(';'), typed = parts.pop().trim();
-  var before = parts.map(function(x){ return shopStrict(x); });
+  var before = parts.map(function(x){ return shopStrict(shopCanon(x)); });
   /* nothing typed yet: the five you used last. Typing turns the same row
      into search results over every shop in the ledger. */
   var list = (typed ? shopMatches(typed, 10) : recentShops(10)).filter(function(x){
     return before.indexOf(shopStrict(x)) < 0;
   }).slice(0, typed ? 6 : 5);
   if (!list.length) return '';
-  var c = shopStrict(typed);
+  /* the shop it will be saved as is the one that is on - typed as one of
+     its spellings, too */
+  var c = typed ? shopStrict(shopCanon(typed)) : '';
   return list.map(function(x){
+    var via = typed && SHOP_VIA_[x] && shopStrict(SHOP_VIA_[x]) !== shopStrict(x) ? SHOP_VIA_[x] : '';
     return '<button class="shopchip' + (c && shopStrict(x) === c ? ' on' : '') +
-      '" data-shop="' + esc(x) + '" onclick="pickShop(' + q(x) + ')">' + esc(x) + '</button>';
+      '" data-shop="' + esc(x) + '" onclick="pickShop(' + q(x) + ')">' + esc(x) +
+      (via ? '<i class="shopvia">' + esc(via) + '</i>' : '') + '</button>';
   }).join('');
 }
 function shopChips(cur){
@@ -10709,8 +11140,8 @@ function ruleParts(v){
 function ruleFor(shop){
   var m=shopRules(), parts=shopParts(shop);
   for(var i=0;i<parts.length;i++){
-    var k=shopStrict(parts[i]); if(!k) continue;
-    for(var n in m) if(m.hasOwnProperty(n)&&shopStrict(n)===k) return ruleParts(m[n]);
+    var k=shopStrict(bookShop(parts[i])||parts[i]); if(!k) continue;
+    for(var n in m) if(m.hasOwnProperty(n)&&shopStrict(bookShop(n)||n)===k) return ruleParts(m[n]);
   }
   return null;
 }
@@ -10821,7 +11252,7 @@ function ruleCatPick(){
 }
 function ruleChips(){
   var box=document.getElementById('rulechips'); if(!box||!S.ruleD) return;
-  var v=String(S.ruleD.shop||'').trim(), list=v?shopMatches(v,6):recentShops(6), c=shopStrict(v);
+  var v=String(S.ruleD.shop||'').trim(), list=v?shopMatches(v,6):recentShops(6), c=shopStrict(shopCanon(v));
   box.innerHTML=list.map(function(x){
     return '<button class="shopchip'+(c&&shopStrict(x)===c?' on':'')+'" onclick="ruleShop('+q(x)+')">'+esc(x)+'</button>';
   }).join('');
@@ -12547,7 +12978,7 @@ window.__S=S;
    As a website, a small service worker keeps these files on the phone, so
    the app opens instantly and with no signal. A new version is fetched in
    the background; when it arrives, a note offers to switch to it. */
-var APP_VERSION='2026.10.02.2';
+var APP_VERSION='2026.10.02.3';
 (function(){
   try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persist(); }catch(e){}
   if(inGas()||!('serviceWorker' in navigator)) return;
@@ -13312,7 +13743,9 @@ function shopAliases(){ var m=pref('shopAlias',{}); return (m&&typeof m==='objec
 /* the name a typed shop is saved under */
 function shopCanon(name){
   var v=String(name==null?'':name).replace(/\s+/g,' ').trim();
-  if(!v||!tidyCfg().auto) return v;
+  if(!v) return v;
+  var b=bookShop(v); if(b) return b;
+  if(!tidyCfg().auto) return v;
   var k=shopStrict(v), m=shopAliases();
   return (k&&m.hasOwnProperty(k)&&m[k])?m[k]:v;
 }
@@ -13374,32 +13807,174 @@ function shopGroups(){
   return keys.map(function(k){
     var items=byKey[k].slice().sort(function(a,b){ return b.n-a.n||a.name.localeCompare(b.name); });
     return {id:groupId(items.map(function(x){ return x.name; })), items:items};
-  }).filter(function(g){ return g.items.length>1&&!ign[g.id]; });
+  }).filter(function(g){
+    if(g.items.length<2||ign[g.id]) return false;
+    /* spellings of one shop in the Shops sheet are one shop already */
+    var b0=bookShop(g.items[0].name);
+    return !(b0&&g.items.every(function(x){ return bookShop(x.name)===b0; }));
+  });
 }
-function openShops(){ S.shopQ=''; S.tidyKeep={}; S.ssel=null; drawShops(); }
+function openShops(){ S.shopQ=''; S.tidyKeep={}; S.ssel=null; S.spArm=0; drawShops(); }
+/* one row per shop: the records of its spellings counted with it, and a
+   shop from the Shops sheet even before it has a record */
+function shopRowsAll(){
+  var by={}, rows=[];
+  shopStats().forEach(function(x){
+    var n=bookShop(x.name)||x.name, r=by[n];
+    if(!r){ r=by[n]={name:n,n:0,raw:[],other:0}; rows.push(r); }
+    r.n+=x.n; r.raw.push(x.name);
+    if(x.name!==n) r.other+=x.n;
+  });
+  shopBook().forEach(function(e){ if(e&&e.name&&!by[e.name]){ by[e.name]={name:e.name,n:0,raw:[],other:0}; rows.push(by[e.name]); } });
+  rows.forEach(function(r){ r.e=bookEntry(r.name); });
+  return rows.sort(function(a,b){ return b.n-a.n||a.name.localeCompare(b.name); });
+}
+function shopRowOf(name){ var l=shopRowsAll(); for(var i=0;i<l.length;i++) if(l[i].name===name) return l[i]; return null; }
+/* the names a shop is written under in the records */
+function shopRawOf(name){ var r=shopRowOf(name); return r&&r.raw.length?r.raw.slice():[name]; }
+function shopFind(rows,qv){
+  qv=String(qv||'').trim(); if(!qv) return rows;
+  var qk=shopStrict(qv), ql=qv.toLowerCase();
+  return rows.filter(function(r){
+    return [r.name].concat(r.e?bookSpellings(r.e):[],r.raw).some(function(x){
+      return (qk&&shopStrict(x).indexOf(qk)>-1)||String(x).toLowerCase().indexOf(ql)>-1;
+    });
+  });
+}
 function drawShops(){
-  var st=shopStats(), g=shopGroups(), qv=String(S.shopQ||'').trim(), qk=shopStrict(qv);
-  var list=qv?st.filter(function(x){ return shopStrict(x.name).indexOf(qk)>-1||x.name.toLowerCase().indexOf(qv.toLowerCase())>-1; }):st;
+  var rows=shopRowsAll(), g=shopGroups(), qv=String(S.shopQ||'').trim();
   var h=sheetTop('Shops','','shopsBack()');
   h+='<div class="glass" style="padding:4px 0">'+
     navRow('Tidy up spellings',g.length?(g.length+' shop'+(g.length===1?' is':'s are')+' written more than one way'):'Every shop has one spelling','drawTidy()')+'</div>';
-  h+='<div class="fieldlabel">Rename a shop <span class="opt">'+st.length+' in your records</span></div>'+
-    '<input class="tinput" id="shopq" type="search" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Find a shop" value="'+esc(qv)+'" oninput="S.shopQ=this.value;drawShopList()">';
-  h+='<div class="glass" id="shoplist" style="margin-top:10px;padding:0">'+shopListHtml(list)+'</div>';
-  h+='<p class="tiny" style="margin:12px 4px 0;line-height:1.45">Renaming rewrites the shop in every record, older ones included, and in your quick actions and shop rules. Hold a shop to pick several and merge them into one.</p>';
+  h+='<div id="spcard">'+spellCard(rows)+'</div>';
+  h+='<div class="fieldlabel">Shops <span class="opt">'+rows.length+'</span></div>'+
+    '<input class="tinput" id="shopq" type="search" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Find a shop, any spelling" value="'+esc(qv)+'" oninput="S.shopQ=this.value;drawShopList()">';
+  h+='<div class="glass" id="shoplist" style="margin-top:10px;padding:0">'+shopListHtml(shopFind(rows,qv))+'</div>';
+  h+='<p class="tiny" style="margin:12px 4px 0;line-height:1.45">Tap a shop to rename it or to say how else it is written. Renaming rewrites the shop in every record, older ones included, and in your quick actions and shop rules. Hold a shop to pick several and merge them into one.</p>';
   h+=sheetEnd();
   document.getElementById('modal').innerHTML=h+shopFab();
 }
+/* what the spellings are up to: shops still without any, records saved
+   under a spelling instead of their shop's name */
+function spellCard(rows){
+  if(!shopsOn()) return '<p class="tiny spnote">'+esc(SHOPS_MSG)+'</p>';
+  var miss=rows.filter(function(r){ return !r.e&&r.n>0; }).length, other=0;
+  rows.forEach(function(r){ if(r.e) other+=r.other; });
+  var h='';
+  if(miss) h+='<div class="sprow"><span class="spt"><b>'+miss+' shop'+(miss===1?' has':'s have')+' no spellings yet</b>'+
+    '<i>An English name, Ukrainian and Russian are made for each, to check after</i></span>'+
+    '<button class="spgo" id="spfill"'+(S.spBusy?' disabled':'')+' onclick="spellFill()">'+(S.spBusy?'Filling…':'Fill in')+'</button></div>';
+  if(other) h+='<div class="sprow"><span class="spt"><b>'+recWord(other)+' '+(other===1?'is':'are')+' saved under another spelling</b>'+
+    '<i>Renamed to their shops\u2019 names, older ones too</i></span>'+
+    '<button class="spgo'+(S.spArm?' armed':'')+'" id="spuse" onclick="spellUse()">'+(S.spArm?'Tap again':'Use names')+'</button></div>';
+  if(!h) h='<div class="sprow done"><span class="spt"><b>Every shop has its spellings</b><i>Typed any of those ways, a shop is saved under its name</i></span></div>';
+  return '<div class="glass spcard">'+h+'</div>';
+}
+function spCardRedraw(){ var el=document.getElementById('spcard'); if(el) el.innerHTML=spellCard(shopRowsAll()); }
 function shopListHtml(list){
   if(!list.length) return '<div class="empty" style="padding:16px">No shop like that.</div>';
   var sel=!!S.ssel;
-  return list.slice(0,200).map(function(x){
-    var on=sel&&S.ssel.indexOf(x.name)>-1;
+  return list.slice(0,300).map(function(x){
+    var on=sel&&S.ssel.indexOf(x.name)>-1, sp=[];
+    if(x.e) bookSpellings(x.e).forEach(function(v){ if(v.toLowerCase()!==x.name.toLowerCase()&&sp.indexOf(v)<0) sp.push(v); });
     return '<button class="shoprow'+(on?' on':'')+(sel?' picking':'')+'" data-hold="shop" data-sn="'+esc(x.name)+'" onclick="shopRowTap('+q(x.name)+')">'+
       (sel?'<span class="ck">'+CHECK_ICON+'</span>':'')+
-      '<span class="sn">'+esc(x.name)+'</span>'+
+      '<span class="sm"><span class="sn">'+esc(x.name)+'</span>'+(sp.length?'<span class="sv">'+esc(sp.join(' · '))+'</span>':'')+'</span>'+
       '<span class="sc">'+x.n+'</span>'+(sel?'':'<span class="chevr">›</span>')+'</button>';
   }).join('');
+}
+/* the Shops sheet, changed on the phone at once and then in the sheet */
+function bookTidy(e){
+  var name=shopTrim(e.name).slice(0,120), uk=shopTrim(e.uk).slice(0,120), ru=shopTrim(e.ru).slice(0,120), seen={}, alt=[];
+  [name,uk,ru].forEach(function(x){ if(x) seen[x.toLowerCase()]=1; });
+  (e.alt||[]).forEach(function(a){ a=shopTrim(a).slice(0,120); var k=a.toLowerCase(); if(a&&a.indexOf(';')<0&&!seen[k]){ seen[k]=1; alt.push(a); } });
+  return {name:name,uk:uk,ru:ru,alt:alt.slice(0,30)};
+}
+function bookPut(set,del){
+  if(!shopsOn()) return false;
+  set=(set||[]).map(bookTidy).filter(function(e){ return e.name; });
+  var was=shopBook(), put={}, gone={}, out=[];
+  set.forEach(function(e){ put[e.name.toLowerCase()]=e; });
+  (del||[]).forEach(function(n){ gone[String(n).toLowerCase()]=1; });
+  was.forEach(function(e){
+    var k=String(e.name).toLowerCase();
+    if(put[k]){ out.push(put[k]); delete put[k]; }
+    else if(!gone[k]) out.push(e);
+  });
+  Object.keys(put).forEach(function(k){ out.push(put[k]); });
+  D.shopBook=out;
+  bg('saveShops',{set:set,del:del||[]},null,function(){ D.shopBook=was; });
+  return true;
+}
+/* Spellings for every shop that has none: the same shop written several
+   ways becomes one, under an English name, with its Ukrainian and Russian
+   spellings. Older records are fetched first, so none is left out. */
+function spellFill(){
+  if(!shopsOn()){ toast(SHOPS_MSG,8000); return; }
+  if(S.spBusy) return;
+  S.spBusy=true; spCardRedraw();
+  loadOlderThen(function(){
+    S.spBusy=false;
+    spellFillNow(false);
+    if(document.getElementById('spcard')) drawShops();
+  },function(){ S.spBusy=false; spCardRedraw(); toast('Could not load the older records. Try again.'); });
+}
+function spellFillNow(auto){
+  var rows=shopRowsAll().filter(function(r){ return !r.e&&r.n>0; });
+  if(!rows.length){ if(!auto) toast('Every shop has its spellings'); return 0; }
+  var groups=[], at={};
+  rows.forEach(function(r){
+    var s=spellOf(r.name), k=s.known?'k:'+s.en.toLowerCase():'l:'+shopLoose(r.name);
+    if(!at.hasOwnProperty(k)){ at[k]=groups.length; groups.push([]); }
+    groups[at[k]].push(r);
+  });
+  var have={}, set=[], idx={};
+  shopBook().forEach(function(e){ have[String(e.name).toLowerCase()]=e; });
+  groups.forEach(function(g){
+    var names=[];
+    g.forEach(function(r){ r.raw.forEach(function(x){ if(names.indexOf(x)<0) names.push(x); }); });
+    var e=spellGroup(names); if(!e||!e.name) return;
+    var k=e.name.toLowerCase(), old=have[k];
+    /* a shop of that name is there already: these are more of its spellings */
+    if(old) e={name:old.name,uk:old.uk||e.uk,ru:old.ru||e.ru,alt:(old.alt||[]).concat([e.uk,e.ru],e.alt||[],names)};
+    e=bookTidy(e); have[k]=e;
+    if(idx.hasOwnProperty(k)) set[idx[k]]=e; else { idx[k]=set.length; set.push(e); }
+  });
+  if(!set.length) return 0;
+  bookPut(set,[]);
+  toast(set.length+' shop'+(set.length===1?' has':'s have')+' spellings now'+(auto?' \u2014 check them in Settings \u2192 Shops':''),auto?7000:3500);
+  return set.length;
+}
+/* Once, the first time the Shops sheet is there and still empty: every
+   shop gets its spellings without being asked. */
+function spellAuto(){
+  if(!shopsOn()||S.spAuto||shopBook().length||pref('spellSeeded',false)===true) return;
+  if(!shopStats().length) return;
+  S.spAuto=true;
+  setPref('spellSeeded',true);
+  setTimeout(function(){
+    loadOlderThen(function(){ if(!shopBook().length) spellFillNow(true); },function(){ S.spAuto=false; });
+  },1200);
+}
+/* records saved under a spelling get their shop's name - asked twice */
+function spellUse(){
+  if(!shopsOn()) return;
+  if(!S.spArm){
+    S.spArm=1; spCardRedraw(); clearTimeout(S._spT);
+    S._spT=setTimeout(function(){ S.spArm=0; spCardRedraw(); },4000);
+    return;
+  }
+  S.spArm=0; clearTimeout(S._spT);
+  loadOlderThen(function(){
+    var pairs=[], n=0;
+    shopRowsAll().forEach(function(r){
+      if(!r.e) return;
+      var from=r.raw.filter(function(x){ return x!==r.name; });
+      if(from.length){ pairs.push({from:from,to:r.name}); n+=r.other; }
+    });
+    if(!pairs.length){ spCardRedraw(); return; }
+    if(renameShopsNow(pairs,recWord(n)+' now use their shops\u2019 names',{noAlias:true})&&document.getElementById('spcard')) drawShops();
+  },function(){ toast('Could not load the older records. Try again.'); });
 }
 /* shops that are one: hold one, tap the others, Merge, say which name stays */
 function shopRowTap(name){
@@ -13439,7 +14014,7 @@ function shopMergeGo(){
   var names=(S.ssel||[]).slice();
   if(names.length<2){ toast('Tap one more to merge with'); return; }
   if(apiV()<5){ toast(NEED_V5,6000); return; }
-  var cnt={}; shopStats().forEach(function(x){ cnt[x.name]=x.n; });
+  var cnt={}; shopRowsAll().forEach(function(x){ cnt[x.name]=x.n; });
   openPicker({title:'Keep which name?',current:S.smrg?S.smrg.into:'',
     groups:[{label:'',items:names.map(function(n){
       return {value:n,label:n,meta:recWord(cnt[n]||0),icon:'bag',hue:330};
@@ -13448,7 +14023,7 @@ function shopMergeGo(){
 }
 function drawShopMerge(){
   var M=S.smrg; if(!M) return;
-  var cnt={}; shopStats().forEach(function(x){ cnt[x.name]=x.n; });
+  var cnt={}; shopRowsAll().forEach(function(x){ cnt[x.name]=x.n; });
   var n=0; M.from.forEach(function(x){ n+=cnt[x]||0; });
   function side(name){
     return '<div class="mrgside">'+icBadge('bag',330)+'<span class="mrgn"><b>'+esc(name)+'</b><i>'+esc(recWord(cnt[name]||0))+'</i></span></div>';
@@ -13469,25 +14044,90 @@ function drawShopMerge(){
 function shopMergeBack(){ S.smrg=null; drawShops(); }
 function shopMergeDo(){
   var M=S.smrg; if(!M) return;
-  if(renameShopsNow([{from:M.from,to:M.into}],'Merged into “'+M.into+'”')){ S.smrg=null; S.ssel=null; drawShops(); }
+  /* every spelling of the shops merged away goes, and their own names, so
+     their rows in the Shops sheet follow */
+  var from=[];
+  M.from.forEach(function(n){ shopRawOf(n).concat([n]).forEach(function(x){ if(x!==M.into&&from.indexOf(x)<0) from.push(x); }); });
+  if(renameShopsNow([{from:from,to:M.into}],'Merged into “'+M.into+'”',{noAlias:shopsOn()})){ S.smrg=null; S.ssel=null; drawShops(); }
 }
 function drawShopList(){
   var el=document.getElementById('shoplist'); if(!el){ drawShops(); return; }
-  var st=shopStats(), qv=String(S.shopQ||'').trim(), qk=shopStrict(qv);
-  el.innerHTML=shopListHtml(qv?st.filter(function(x){ return shopStrict(x.name).indexOf(qk)>-1||x.name.toLowerCase().indexOf(qv.toLowerCase())>-1; }):st);
+  el.innerHTML=shopListHtml(shopFind(shopRowsAll(),S.shopQ));
 }
-function shopCount(name){ var n=0; shopStats().forEach(function(x){ if(x.name===name) n=x.n; }); return n; }
-function openShopEdit(name){ S.shopEd={orig:name,name:name}; drawShopEdit(); }
+function shopCount(name){ var r=shopRowOf(name); return r?r.n:0; }
+/* a shop on its own: its name, and how else it is written */
+function openShopEdit(name){
+  var e=bookEntry(name);
+  S.shopEd={orig:name,name:name,uk:e?e.uk||'':'',ru:e?e.ru||'':'',alt:e?(e.alt||[]).slice():[],had:!!e,add:''};
+  drawShopEdit();
+}
+function shopEdOther(d,to){
+  if(!to||to===d.orig) return null;
+  var tk=shopStrict(to);
+  return shopRowsAll().filter(function(x){ return x.name!==d.orig&&(x.name===to||shopStrict(x.name)===tk); })[0]||null;
+}
+function shopEdSaveLabel(d,n){
+  var to=shopTrim(d.name);
+  if(to&&to!==d.orig&&n) return 'Save · rename in '+recWord(n);
+  return 'Save';
+}
 function drawShopEdit(){
   var d=S.shopEd; if(!d) return;
-  var n=shopCount(d.orig), to=String(d.name||'').replace(/\s+/g,' ').trim();
-  var other=to&&to!==d.orig?shopStats().filter(function(x){ return x.name!==d.orig&&(x.name===to||shopStrict(x.name)===shopStrict(to)); })[0]:null;
-  var h=sheetTop('Rename shop','','drawShops()');
-  h+='<div class="fieldlabel">Name</div><input class="tinput" id="shopname" autocomplete="off" autocorrect="off" value="'+esc(d.name)+'" oninput="S.shopEd.name=this.value;shopEdNote()">';
-  h+='<p class="tiny" id="shopednote" style="margin:8px 4px 0;line-height:1.45">'+shopEdNoteText(d,n,to,other)+'</p>';
-  h+='<button class="paybtn" onclick="saveShopEdit()">'+(n===1?'Rename in 1 record':'Rename in '+n+' records')+'</button>';
+  var n=shopCount(d.orig), to=shopTrim(d.name);
+  var h=sheetTop('Shop','','shopEdBack()');
+  h+='<div class="fieldlabel">Name <span class="opt">records are saved under it</span></div><input class="tinput" id="shopname" autocomplete="off" autocorrect="off" value="'+esc(d.name)+'" oninput="S.shopEd.name=this.value;shopEdNote()">';
+  h+='<p class="tiny" id="shopednote" style="margin:8px 4px 0;line-height:1.45">'+shopEdNoteText(d,n,to,shopEdOther(d,to))+'</p>';
+  if(shopsOn()){
+    h+='<div class="fieldlabel">Ukrainian</div><input class="tinput" id="se_uk" autocomplete="off" autocorrect="off" value="'+esc(d.uk)+'" oninput="S.shopEd.uk=this.value">';
+    h+='<div class="fieldlabel">Russian</div><input class="tinput" id="se_ru" autocomplete="off" autocorrect="off" value="'+esc(d.ru)+'" oninput="S.shopEd.ru=this.value">';
+    h+='<div class="fieldlabel">Other spellings <span class="opt">optional</span></div><div id="se_alt">'+shopEdAltHtml(d)+'</div>';
+    h+='<div class="spadd"><input class="tinput" id="se_add" autocomplete="off" autocorrect="off" placeholder="Add a spelling" value="'+esc(d.add)+'"'+
+      ' oninput="S.shopEd.add=this.value" onkeydown="if(event.key===\'Enter\'){event.preventDefault();shopEdAdd();}">'+
+      '<button class="spaddb" onclick="shopEdAdd()">Add</button></div>';
+    h+='<button class="splink" onclick="shopEdSuggest()">'+svgIc('sparkles',14,2.2)+'Suggest from the name</button>';
+    h+='<p class="tiny" style="margin:8px 4px 0;line-height:1.45">Typed any of these ways, the shop is found and saved under its name.</p>';
+  }else{
+    h+='<p class="tiny spnote">'+esc(SHOPS_MSG)+'</p>';
+  }
+  h+='<button class="paybtn" id="shopedsave" onclick="saveShopEdit()">'+esc(shopEdSaveLabel(d,n))+'</button>';
   h+=sheetEnd();
   document.getElementById('modal').innerHTML=h;
+}
+function shopEdBack(){ S.shopEd=null; drawShops(); }
+function shopEdAltHtml(d){
+  if(!d.alt.length) return '<p class="tiny" style="margin:2px 4px 0">None yet.</p>';
+  return '<div class="spchips">'+d.alt.map(function(a,i){
+    return '<span class="spchip">'+esc(a)+'<button onclick="shopEdDrop('+i+')" aria-label="Remove '+esc(a)+'">\u2715</button></span>';
+  }).join('')+'</div>';
+}
+function shopEdAdd(){
+  var d=S.shopEd; if(!d) return;
+  var v=shopTrim(d.add).slice(0,120); if(!v) return;
+  if(v.indexOf(';')>-1){ toast('One spelling at a time'); return; }
+  var lv=v.toLowerCase(), known=[d.name,d.uk,d.ru].concat(d.alt).some(function(x){ return x&&shopTrim(x).toLowerCase()===lv; });
+  if(!known) d.alt.push(v);
+  d.add='';
+  var el=document.getElementById('se_alt'); if(el) el.innerHTML=shopEdAltHtml(d);
+  var a=document.getElementById('se_add'); if(a){ a.value=''; a.focus(); }
+  var other=bookShop(v);
+  if(other&&other!==d.orig&&other!==shopTrim(d.name)) toast('“'+v+'” is a spelling of '+other+' as well',4500);
+}
+function shopEdDrop(i){
+  var d=S.shopEd; if(!d) return;
+  d.alt.splice(i,1);
+  var el=document.getElementById('se_alt'); if(el) el.innerHTML=shopEdAltHtml(d);
+}
+/* the two languages made from the name - the name stays as typed */
+function shopEdSuggest(){
+  var d=S.shopEd; if(!d) return;
+  var name=shopTrim(d.name)||d.orig, s=spellGroup([name].concat(shopRawOf(d.orig)));
+  if(!s) return;
+  d.uk=s.uk; d.ru=s.ru;
+  (s.alt||[]).forEach(function(a){
+    var la=a.toLowerCase();
+    if(la!==name.toLowerCase()&&!d.alt.some(function(x){ return x.toLowerCase()===la; })) d.alt.push(a);
+  });
+  drawShopEdit();
 }
 function shopEdNoteText(d,n,to,other){
   if(!to) return 'Type the new name.';
@@ -13497,19 +14137,37 @@ function shopEdNoteText(d,n,to,other){
 }
 function shopEdNote(){
   var d=S.shopEd, el=document.getElementById('shopednote'); if(!d||!el) return;
-  var to=String(d.name||'').replace(/\s+/g,' ').trim();
-  var other=to&&to!==d.orig?shopStats().filter(function(x){ return x.name!==d.orig&&(x.name===to||shopStrict(x.name)===shopStrict(to)); })[0]:null;
-  el.innerHTML=shopEdNoteText(d,shopCount(d.orig),to,other);
+  var to=shopTrim(d.name), n=shopCount(d.orig);
+  el.innerHTML=shopEdNoteText(d,n,to,shopEdOther(d,to));
+  var b=document.getElementById('shopedsave'); if(b) b.textContent=shopEdSaveLabel(d,n);
 }
 function saveShopEdit(){
   var d=S.shopEd; if(!d) return;
-  var to=String(d.name||'').replace(/\s+/g,' ').trim().slice(0,120);
-  if(!to){ toast('Type the new name'); return; }
-  if(to===d.orig){ drawShops(); return; }
-  var from=[d.orig];
-  /* the same shop written differently is taken along to the new name */
-  shopStats().forEach(function(x){ if(x.name!==d.orig&&x.name!==to&&shopStrict(x.name)===shopStrict(to)&&shopStrict(to)===shopStrict(d.orig)) from.push(x.name); });
-  if(renameShopsNow([{from:from,to:to}],'Renamed to “'+to+'”')){ S.shopEd=null; drawShops(); }
+  var to=shopTrim(d.name).slice(0,120);
+  if(!to){ toast('Type the name'); return; }
+  var renamed=to!==d.orig, n=shopCount(d.orig), alt=d.alt.map(shopTrim).filter(Boolean);
+  if(renamed&&shopsOn()){
+    /* the name it had stays one of its spellings */
+    var lo=d.orig.toLowerCase();
+    if(![to,d.uk,d.ru].concat(alt).some(function(x){ return shopTrim(x).toLowerCase()===lo; })) alt.push(d.orig);
+  }
+  var into=bookEntry(to), uk=d.uk, ru=d.ru;
+  if(renamed&&into&&into.name.toLowerCase()!==d.orig.toLowerCase()){
+    alt=alt.concat([into.uk,into.ru],into.alt||[]);
+    if(!shopTrim(uk)) uk=into.uk;
+    if(!shopTrim(ru)) ru=into.ru;
+  }
+  if(renamed&&n){
+    var from=shopRawOf(d.orig).concat([d.orig]).filter(function(x,i,a){ return x!==to&&a.indexOf(x)===i; });
+    /* the same shop written differently is taken along to the new name */
+    shopStats().forEach(function(x){ if(x.name!==to&&from.indexOf(x.name)<0&&shopStrict(x.name)===shopStrict(to)&&shopStrict(to)===shopStrict(d.orig)) from.push(x.name); });
+    if(!renameShopsNow([{from:from,to:to}],'Renamed to “'+to+'”',{noAlias:shopsOn()})) return;
+  }
+  if(shopsOn()){
+    bookPut([{name:to,uk:uk,ru:ru,alt:alt}],(renamed&&d.had)?[d.orig]:[]);
+    if(!(renamed&&n)) toast('Saved');
+  }
+  S.shopEd=null; drawShops();
 }
 function drawTidy(){
   var cfg=tidyCfg(), g=shopGroups(), keep=S.tidyKeep||(S.tidyKeep={});
@@ -13596,7 +14254,7 @@ function drawIgnored(){
 function unIgnore(i){ var c=tidyCfg(), l=c.ignore.slice(); l.splice(i,1); setTidyCfg({ignore:l}); drawIgnored(); }
 /* the rename itself: on screen at once, then the sheet - every row, the
    quick actions and the shop rules. Remembered for new entries too. */
-function renameShopsNow(pairs,msg){
+function renameShopsNow(pairs,msg,opts){
   if(apiV()<5){ toast(NEED_V5,6000); return false; }
   pairs=(pairs||[]).filter(function(p){ return p&&p.to&&p.from&&p.from.length; });
   if(!pairs.length) return false;
@@ -13624,7 +14282,7 @@ function renameShopsNow(pairs,msg){
   (D.quick||[]).forEach(function(a){ var v=String(a.shop||'').trim(), nv=v?swap(v):null; if(nv!==null) a.shop=nv; });
   var sent=pairs.slice();
   Object.keys(whole).forEach(function(v){ if(whole[v]!==v) sent.push({from:[v],to:whole[v]}); });
-  if(tidyCfg().auto){
+  if(tidyCfg().auto&&!(opts&&opts.noAlias)){
     var al=shopAliases(), n={};
     for(var k in al) if(al.hasOwnProperty(k)) n[k]=al[k];
     pairs.forEach(function(p){
