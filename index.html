@@ -11441,6 +11441,7 @@ function selMergeWhy(){
   /* a receipt among them: the others go into it */
   if(heads.length>1) return 'Pick one receipt and the expenses to put in it';
   if(heads.length===1) return intoRcpWhy(heads[0],it);
+  if(it.length===1) return oneToReceiptWhy(it[0]);
   if(it.length<2) return 'Pick at least two expenses';
   for(var i=0;i<it.length;i++){
     if(!selPlainExp(it[i])) return 'Only plain expenses can go into a receipt';
@@ -11449,6 +11450,33 @@ function selMergeWhy(){
     if(it[i].account!==it[0].account) return 'They must all be on the same account';
   }
   return '';
+}
+/* One expense on its own becomes a receipt: the same payment - day, account,
+   shop, note, marks - with its whole amount waiting to be split into what it
+   was spent on. The category goes, as it does from the Receipt tab in the
+   sheet: the split lines say what it was, one at a time. */
+function oneToReceiptWhy(t){
+  if(t.k!=='e') return 'Only an expense can become a receipt';
+  if(isXfer(t)||isXferSub(t.sub)) return 'A transfer cannot become a receipt';
+  if(isCorr(t)) return 'A balance correction cannot become a receipt';
+  if(t.receipt) return 'It is already part of a receipt';
+  if(t.pending||!t.row) return 'Wait a moment, it is still saving';
+  if(!(Math.abs(Number(t.amount)||0)>0)) return 'It has no amount to split';
+  return '';
+}
+function oneToReceipt(t){
+  var why=oneToReceiptWhy(t); if(why){ toast(why); return; }
+  var ref=txRef(t), rid=newReceiptId();
+  var was={receipt:t.receipt,rtotal:t.rtotal,main:t.main,sub:t.sub,pending:t.pending};
+  S.sel=null; S.selDel=0;
+  /* on screen at once, the way the sheet will have it: the whole amount
+     still to split, faded until the sheet has it */
+  t.receipt=rid; t.rtotal=Math.abs(Number(t.amount)||0); t.main=''; t.sub=''; t.pending=true;
+  prep(); render(true);
+  toast('Making it a receipt\u2026');
+  bg('convertTx',{id:ref.id,row:ref.row,was:ref.was,to:'receipt',sub:'',receipt:rid},null,function(){
+    for(var k in was) if(was.hasOwnProperty(k)) t[k]=was[k];
+  });
 }
 function selReceipts(){
   var it=selItems();
@@ -11550,6 +11578,7 @@ function selDelete(){
 function selMerge(){
   var it=selItems(), heads=it.filter(isReceipt);
   if(heads.length===1){ openIntoReceipt(heads[0],it); return; }
+  if(it.length===1){ oneToReceipt(it[0]); return; }
   var items=selPayload();
   S.sel=null; S.selDel=0;
   render(true); toast('Making a receipt…');
@@ -12203,7 +12232,7 @@ window.__S=S;
    As a website, a small service worker keeps these files on the phone, so
    the app opens instantly and with no signal. A new version is fetched in
    the background; when it arrives, a note offers to switch to it. */
-var APP_VERSION='2026.10.04.1';
+var APP_VERSION='2026.10.06.1';
 (function(){
   try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persist(); }catch(e){}
   if(inGas()||!('serviceWorker' in navigator)) return;
