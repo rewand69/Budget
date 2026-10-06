@@ -1026,6 +1026,25 @@ body.undoing #act .toast{bottom:calc(150px + env(safe-area-inset-bottom,0px))}
 .pstat.paid{color:#1d7a46;background:rgba(40,160,90,.13)}
 .pstat.late{color:#b0412c;background:rgba(214,88,66,.13)}
 .pstat.due{color:#8a5a00;background:rgba(223,168,58,.16)}
+.pstat.pause{color:#4b5563;background:rgba(75,85,99,.12)}
+.planrow.paused .rcpmain{opacity:.6}
+.planrow.paused .payb{opacity:.35}
+/* the full list: three chips that pick and order it */
+.calbar{display:flex;gap:8px;margin:0 2px 10px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.calbar::-webkit-scrollbar{display:none}
+.calchip{position:relative;flex:none;display:inline-flex;align-items:center;gap:6px;max-width:62vw;padding:8px 12px;border-radius:20px;
+  font:500 13px/1 -apple-system,sans-serif;color:#191713;background:rgba(255,255,255,.72);box-shadow:inset 0 0 0 .5px rgba(25,23,19,.14)}
+.calchip .cl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.calchip .chev{position:static;transform:none;font-size:10px;color:rgba(25,23,19,.45)}
+.calchip.on{color:#fff;background:linear-gradient(160deg,#4F7BF7,#3563E9);box-shadow:none}
+.calchip.on .chev{color:rgba(255,255,255,.8)}
+.calchip select{position:absolute;inset:0;width:100%;height:100%;opacity:0;font-size:16px;-webkit-appearance:none;appearance:none}
+.calnote{margin:-2px 8px 10px;line-height:1.4}
+.calgrp{display:flex;justify-content:space-between;gap:10px;padding:12px 16px 6px;
+  font:600 12px/1.2 -apple-system,sans-serif;letter-spacing:.2px;text-transform:uppercase;color:rgba(25,23,19,.45)}
+.calgrp span:last-child{text-transform:none;letter-spacing:0;font-weight:600;color:rgba(25,23,19,.55)}
+.calgrp:not(:first-child){border-top:.5px solid rgba(25,23,19,.07)}
+.calclr{border:0;background:none;padding:0;font:600 13.5px/1.4 -apple-system,sans-serif;color:rgb(51,123,208)}
 .cal .dot.paid{background:#2FA462!important}
 .cal .dot.late{background:#D0573E!important}
 .cal .dot.past{background:rgba(25,23,19,.22)!important}
@@ -1363,6 +1382,10 @@ button.actcard .chevr{flex:none;color:rgba(25,23,19,.28);font-size:19px}
 .cbacc .badge{width:30px;height:30px}
 /* ---- vouchers & gift cards: a window over the Cashback one ---- */
 .vchbtn{margin-top:18px}
+/* the Cashback window as it opens: each card and what it gives back */
+.cbview .cbacc{padding:14px 16px 4px}
+.cbview .row{padding:11px 16px}
+.cbstale{margin:12px 6px 0;line-height:1.45}
 .actcard .at>span.hot{color:#b4532a;font-weight:560}
 .vchrow .rmain>span{display:block}
 .vchright{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:5px;max-width:40%;text-align:right}
@@ -1580,7 +1603,8 @@ var UI={hideEmpty:true};
 function loadUI(){
   try{ var v=JSON.parse(window.localStorage.getItem('budget.ui')||'{}');
        /* only a choice you actually made overrides the default */
-       UI.hideEmpty=('hideEmpty' in v)?!!v.hideEmpty:true; }catch(e){}
+       UI.hideEmpty=('hideEmpty' in v)?!!v.hideEmpty:true;
+       if(['date','kind','acc','amount'].indexOf(v.calSort)>=0) UI.calSort=v.calSort; }catch(e){}
 }
 function saveUI(){
   try{ window.localStorage.setItem('budget.ui',JSON.stringify(UI)); }catch(e){}
@@ -4497,6 +4521,16 @@ function occList(it,fromIso,toIso){
   /* the sheet works out its own "Next payment" - always honour it */
   if(it.next) push(String(it.next).slice(0,10));
   out.sort();
+  /* while it is paused nothing falls due - but one already logged (paid
+     the same day it was paused) stays where it was */
+  if(it.service&&calPauseMap()[it.service]){
+    var paidK=null;
+    out=out.filter(function(o){
+      if(!calPausedOn(it.service,o)) return true;
+      if(paidK===null) paidK=calPaidDays(it.service);
+      return !!paidK[o];
+    });
+  }
   return out;
 }
 /* ---- which of them have happened ----------------------------------------
@@ -4556,7 +4590,7 @@ function pageCalendar(){
     for(var q1=from;q1<=monthEnd.getDate();q1++){ if(byDay[q1]){ pickd=q1; break; } }
     S.selDay=pickd||S.selDay||from; S.daySet=true;
   }
-  var upcoming=items.slice().filter(function(i){return i.next;}).sort(function(a,b){return a.next<b.next?-1:1;});
+  var upcoming=items.slice().filter(function(i){return i.next&&!calPausedOn(i.service,i.next);}).sort(function(a,b){return a.next<b.next?-1:1;});
   var next=upcoming[0];
   var sameDay=next?upcoming.filter(function(i){return i.next===next.next;}):[];
 
@@ -4566,8 +4600,8 @@ function pageCalendar(){
      (next?'<div class="tiny" style="margin-top:6px">Next '+fmtShort(next.next)+' · '+esc(sameDay.map(function(i){return i.service;}).join(', '))+' · '+money(sum(sameDay,function(i){return i.uah||i.cost;}),0)+'</div>':'')+
      (from?'<div class="tiny" style="margin-top:4px">'+(leftThisMonth>0.005?money(leftThisMonth,0)+' of it not logged yet':'All of it logged')+'</div>':'')+
      '<div class="grid2" style="margin-top:16px">'+
-       '<div class="inner-tile"><span class="tlabel">Subscriptions</span><span style="font:600 16px/1 -apple-system;letter-spacing:-.3px">'+money(sum(items.filter(function(i){return /sub/i.test(i.kind);}),function(i){return i.uah||i.cost;}),0)+'</span></div>'+
-       '<div class="inner-tile"><span class="tlabel">Credit / instalments</span><span style="font:600 16px/1 -apple-system;letter-spacing:-.3px">'+money(sum(items.filter(function(i){return /credit/i.test(i.kind);}),function(i){return i.uah||i.cost;}),0)+'</span></div>'+
+       '<div class="inner-tile"><span class="tlabel">Subscriptions</span><span style="font:600 16px/1 -apple-system;letter-spacing:-.3px">'+money(sum(items.filter(function(i){return /sub/i.test(i.kind)&&!calPauseNow(i.service);}),function(i){return i.uah||i.cost;}),0)+'</span></div>'+
+       '<div class="inner-tile"><span class="tlabel">Credit / instalments</span><span style="font:600 16px/1 -apple-system;letter-spacing:-.3px">'+money(sum(items.filter(function(i){return /credit/i.test(i.kind)&&!calPauseNow(i.service);}),function(i){return i.uah||i.cost;}),0)+'</span></div>'+
      '</div></div>';
   /* something to stop before it renews; a subscription not written down */
   h+=cancelCards()+subCards();
@@ -4605,19 +4639,128 @@ function pageCalendar(){
   h+='<div class="sect"><span>'+MON[mo]+' '+S.selDay+'</span><span class="r">'+(sel.length?money(sum(sel,function(e){return e.it.uah||e.it.cost;}),0):'nothing due')+'</span></div>';
   h+='<div class="glass list">'+(sel.length?sel.map(function(e){ return planRow(e.it,e.o,pm); }).join(''):'<div class="empty">Nothing scheduled for this day.</div>')+'</div>';
 
-  h+='<div class="sect"><span>All scheduled payments</span></div>';
   /* in the order they need doing: the first one not logged yet */
   var when={}, jpk=(S.justPaid&&!S.justPaid.shown)?S.justPaid.key:'';
   items.forEach(function(it){
     /* the one just ticked keeps its place while its tick fills in; it moves
        down to its next date with the next redraw */
     if(jpk&&schedSvc(jpk)===it.service){ when[it.row]=jpk.slice(jpk.lastIndexOf('|')+1); return; }
+    /* on hold with no day to come back: after everything that is due */
+    if(calPauseNow(it.service)){ when[it.row]=payState(it,pm).target||'9999-12-31'; return; }
     when[it.row]=payState(it,pm).target||it.next||'9999';
   });
-  var sorted=items.slice().sort(function(a,b){ return when[a.row]<when[b.row]?-1:(when[a.row]>when[b.row]?1:0); });
-  h+='<div class="glass list">'+(sorted.length?sorted.map(function(it){ return planRow(it,'',pm); }).join(''):'<div class="empty">Nothing in the Calendar sheet.</div>')+'</div>';
+  calFixPick(items);
+  var cf=calFilter(), pick=calPick(items), tot=calTotals(pick);
+  h+='<div class="sect"><span>All scheduled payments</span><span class="r" id="caltot">'+
+     (pick.length?money(tot.month,0)+' a month':'')+'</span></div>';
+  h+=calBar(items);
+  var notes=[];
+  if(pick.length!==items.length) notes.push(pick.length+' of '+items.length+' payments');
+  if(tot.owed>0.005) notes.push(money(tot.owed,0)+' left until '+tot.owedN+(tot.owedN===1?' is':' are')+' paid off');
+  if(tot.paused) notes.push(tot.paused+' paused, not counted');
+  if(notes.length) h+='<p class="tiny calnote">'+esc(notes.join(' \u00b7 '))+'</p>';
+  var sorted=pick.slice().sort(function(a,b){
+    if(cf.sort==='kind'||cf.sort==='acc'){ var ga=calGroupOf(a,cf.sort), gb=calGroupOf(b,cf.sort); if(ga!==gb) return (calGroupLast(a,cf.sort)-calGroupLast(b,cf.sort))||ga.localeCompare(gb); }
+    if(cf.sort==='amount'){ var ma=calMonthly(a), mb=calMonthly(b); if(Math.abs(ma-mb)>0.004) return mb-ma; }
+    return when[a.row]<when[b.row]?-1:(when[a.row]>when[b.row]?1:0);
+  });
+  var rows='', lastG=null;
+  sorted.forEach(function(it){
+    if(cf.sort==='kind'||cf.sort==='acc'){
+      var g=calGroupOf(it,cf.sort);
+      if(g!==lastG){
+        lastG=g;
+        var gt=calTotals(sorted.filter(function(x){ return calGroupOf(x,cf.sort)===g; }));
+        rows+='<div class="calgrp"><span>'+esc(g)+'</span><span>'+money(gt.month,0)+' a month</span></div>';
+      }
+    }
+    rows+=planRow(it,'',pm);
+  });
+  h+='<div class="glass list">'+(sorted.length?rows:
+    (items.length?'<div class="empty">Nothing matches. <button class="calclr" onclick="calSet(\'all\')">Show all</button></div>':'<div class="empty">Nothing in the Calendar sheet.</div>'))+'</div>';
   if(!from&&items.length) h+='<p class="tiny" style="margin:12px 6px 0">To see which payments are already logged, run Budget → Upgrade data once in the spreadsheet.</p>';
   return h;
+}
+/* ---- the full list: which ones, in what order, and what they come to ----
+   Picked by their Category in the Calendar sheet and by the card they are
+   paid from; ordered by date (the default), category, card or amount. The
+   total is what the ones picked cost a month - a yearly one counts a
+   twelfth - leaving out the paused ones and the ones paid to the end. */
+function calFilter(){ S.calF=S.calF||{kind:'*',acc:'*',sort:UI.calSort||'date'}; return S.calF; }
+function calSet(k,v){
+  var f=calFilter();
+  if(k==='all'){ f.kind='*'; f.acc='*'; }
+  else f[k]=v;
+  /* the order stays as it was left on this phone; the picks are for now */
+  if(k==='sort'){ UI.calSort=v; saveUI(); }
+  render(true);
+}
+/* a pick that no payment has any more (the last one deleted or moved) */
+function calFixPick(items){
+  var f=calFilter();
+  if(f.kind!=='*'&&!items.some(function(it){ return String(it.kind||'')===f.kind; })) f.kind='*';
+  if(f.acc!=='*'&&!items.some(function(it){ return String(it.account||'')===f.acc; })) f.acc='*';
+}
+function calPick(items){
+  var f=calFilter();
+  return items.filter(function(it){
+    return (f.kind==='*'||String(it.kind||'')===f.kind)&&(f.acc==='*'||String(it.account||'')===f.acc);
+  });
+}
+function calKindName(k){ return k?strip(k):'No category'; }
+function calAccName(a){ return a?strip(a):'No card'; }
+function calGroupOf(it,by){ return by==='kind'?calKindName(it.kind):calAccName(it.account); }
+/* "No category" and "No card" come after the named ones */
+function calGroupLast(it,by){ return String((by==='kind'?it.kind:it.account)||'').trim()?0:1; }
+function calNameCmp(a,b,name){ return ((a?0:1)-(b?0:1))||name(a).localeCompare(name(b)); }
+function calMonthly(it){
+  var v=Math.abs(Number(it.uah||it.cost)||0), every=Math.max(1,Number(it.every)||1), u=String(it.unit||'Months').toLowerCase();
+  if(u.indexOf('day')===0) return v*30.4375/every;
+  if(u.indexOf('week')===0) return v*30.4375/7/every;
+  if(u.indexOf('year')===0) return v/12/every;
+  return v/every;
+}
+/* how many payments are left on one with an end ('' when it has none) */
+function calLeftN(it){
+  var t=String(it.left===undefined||it.left===null?'':it.left).trim();
+  if(!t||/∞|inf/i.test(t)) return null;
+  var n=Number(t.replace(/[^\d.]/g,''));
+  return isFinite(n)&&t.replace(/[^\d.]/g,'')!==''?n:null;
+}
+function calTotals(list){
+  var out={month:0,owed:0,owedN:0,paused:0};
+  list.forEach(function(it){
+    var n=calLeftN(it), pz=calPauseNow(it.service);
+    if(n!==null&&n>0){ out.owed+=n*Math.abs(Number(it.uah||it.cost)||0); out.owedN++; }
+    if(pz){ out.paused++; return; }
+    if(n!==null&&n<=0) return;
+    out.month+=calMonthly(it);
+  });
+  return out;
+}
+/* three chips over the list: each a native picker under a label */
+function calBar(items){
+  var f=calFilter(), kinds={}, accs={};
+  items.forEach(function(it){
+    var k=String(it.kind||''), a=String(it.account||'');
+    kinds[k]=(kinds[k]||0)+1; accs[a]=(accs[a]||0)+1;
+  });
+  function chip(key,label,on,options){
+    return '<label class="calchip'+(on?' on':'')+'"><span class="cl">'+esc(label)+'</span><span class="chev">\u25BE</span>'+
+      '<select aria-label="'+esc(label)+'" onchange="calSet(\''+key+'\',this.value)">'+options+'</select></label>';
+  }
+  var ko=opt('*','All categories',f.kind==='*')+Object.keys(kinds).sort(function(a,b){ return calNameCmp(a,b,calKindName); })
+    .map(function(k){ return opt(k,calKindName(k)+' ('+kinds[k]+')',k===f.kind); }).join('');
+  var ao=opt('*','All cards',f.acc==='*')+Object.keys(accs).sort(function(a,b){ return calNameCmp(a,b,calAccName); })
+    .map(function(a){ return opt(a,calAccName(a)+' ('+accs[a]+')',a===f.acc); }).join('');
+  var SORTS=[['date','By date'],['kind','By category'],['acc','By card'],['amount','By amount']];
+  var so=SORTS.map(function(x){ return opt(x[0],x[1],x[0]===f.sort); }).join('');
+  var sl=(SORTS.filter(function(x){ return x[0]===f.sort; })[0]||SORTS[0])[1];
+  return '<div class="calbar">'+
+    chip('kind',f.kind==='*'?'All categories':calKindName(f.kind),f.kind!=='*',ko)+
+    chip('acc',f.acc==='*'?'All cards':calAccName(f.acc),f.acc!=='*',ao)+
+    chip('sort',sl,f.sort!=='date',so)+
+  '</div>';
 }
 var TICK_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.9" stroke-linecap="round"'+
   ' stroke-linejoin="round"><path pathLength="1" d="M6.4 12.7l3.6 3.6 7.6-8.3"/></svg>';
@@ -4709,11 +4852,27 @@ function planRow(it,occ,pm){
   /* a trial or subscription you mean to stop */
   var cb=cancelOf(it.service);
   if(cb&&cb>=addDaysIso(D.today,-7)) pill='<span class="pstat due">Cancel by '+esc(fmtShort(cb))+'</span>'+pill;
-  return '<div class="row planrow">'+
+  /* on hold: that is the one thing worth reading on it */
+  var pz=occ?null:calPauseNow(it.service);
+  if(pz){
+    /* a payment from before the pause that was never logged is still owed:
+       that one can still be ticked */
+    var owe=!!(from&&st&&st.late);
+    cls=owe?'late':'paused';
+    pill='<span class="pstat pause">'+(pz.until?'Paused till '+esc(fmtShort(pz.until)):'Paused')+'</span>'+
+      (owe?'<span class="pstat late">'+(st.late>1?st.late+' late':'Late')+'</span>':'');
+    if(!owe) when='';
+  }
+  /* when, from which card, how many left - whichever of them there is */
+  var meta=[];
+  if(!(pz&&!when)) meta.push(when?fmtShort(when):'all paid');
+  if(it.account) meta.push(strip(it.account));
+  if(it.left) meta.push(String(it.left)+' left');
+  return '<div class="row planrow'+(pz?' paused':'')+'">'+
     '<button class="rcpmain" onclick="openCalEdit('+(it.row||0)+')">'+
       icBadge(credit?'card':'repeat',hue)+
       '<div class="rmain"><div class="rtitle">'+esc(it.service)+'</div>'+
-      '<div class="rmeta">'+pill+esc(when?fmtShort(when):'all paid')+' · '+esc(strip(it.account))+(it.left?' · '+esc(String(it.left))+' left':'')+'</div></div>'+
+      '<div class="rmeta">'+pill+esc(meta.join(' · '))+'</div></div>'+
       '<div><div class="ramt">'+money(it.uah||it.cost,0)+'</div>'+
       (it.currency&&it.currency!=='UAH'?'<div class="rsub">'+(PRIV.all?DOTS:esc(it.cost+' '+it.currency))+'</div>':'')+'</div>'+
     '</button>'+
@@ -4736,6 +4895,9 @@ function calPay(row,occ){
   commitUndo();
   var it=calItem(row);
   if(!it){ toast('That payment is no longer in the list'); return; }
+  var pz=occ?null:calPauseNow(it.service);
+  /* paused: nothing to tick, unless one from before the pause is still owed */
+  if(pz&&!(trackFrom()&&payState(it,paidMap()).late)){ toast(pz.until?'Paused till '+fmtLong(pz.until):'Paused. Switch it back on in its settings',3500); return; }
   /* no Schedule column yet: log it the way it always was */
   if(!trackFrom()){ logOcc(it,(it.next&&it.next<=D.today)?it.next:D.today,''); return; }
   var pm=paidMap(), st=payState(it,pm);
@@ -8970,7 +9132,9 @@ function openCalEdit(row){
   S.calD=it?{row:it.row,service:it.service,cost:it.cost,currency:it.currency||'UAH',
              kind:it.kind||'',every:it.every||1,unit:it.unit||'Months',first:it.first||'',
              repeats:it.repeats||'',account:it.account||'',notes:it.notes||'',
-             orig:it.service,cancelBy:cancelOf(it.service),next:it.next||'',shop:calShopOf(it.service)}
+             orig:it.service,cancelBy:cancelOf(it.service),next:it.next||'',shop:calShopOf(it.service),
+             pause:calPauseNow(it.service)?{on:true,until:calPauseNow(it.service).until||''}:{on:false,until:''},
+             pauseWas:calPauseNow(it.service)?{on:true,until:calPauseNow(it.service).until||''}:{on:false,until:''}}
            :{row:0,service:'',cost:'',currency:'UAH',kind:'',every:1,unit:'Months',
              first:D.today,repeats:'Forever',account:defaultAccount(),notes:'',shop:''};
   drawCalEdit();
@@ -9012,13 +9176,30 @@ function drawCalEdit(){
     (d.cancelBy?'<div class="cbq"><button class="unlinkb" onclick="S.calD.cancelBy=\'\';drawCalEdit()">No reminder</button></div>':
       (d.next?'<div class="cbq"><button class="unlinkb" onclick="S.calD.cancelBy=S.calD.next;drawCalEdit()">Use the next payment, '+esc(fmtShort(d.next))+'</button></div>':''))+
     '</div><p class="tiny" style="margin:8px 4px 0;line-height:1.45">For a trial or a subscription you mean to stop: a reminder three days before and the day before, so it does not renew.</p>';
+  /* switched off for a while, and on again by itself if a day is given */
+  if(d.row&&d.pause){
+    h+='<div class="glass" style="padding:2px 0;margin-top:12px">'+
+      swRow('Paused',d.pause.on?(d.pause.until?'Comes back '+fmtLong(d.pause.until):'Until you switch it back on'):'Switch it off for a while',d.pause.on,'calPauseTog()')+
+      (d.pause.on?'<div class="frow" style="border-bottom:0"><span class="flab">Comes back</span>'+
+        '<input class="tinput fin" type="date" id="cal_until" min="'+esc(addDaysIso(D.today,1))+'" value="'+esc(d.pause.until||'')+'"'+
+        ' onchange="S.calD.pause.until=this.value;drawCalEdit()"></div>'+
+        (d.pause.until?'<div class="cbq"><button class="unlinkb" onclick="S.calD.pause.until=\'\';drawCalEdit()">No end date</button></div>':''):'')+
+      '</div><p class="tiny" style="margin:8px 4px 0;line-height:1.45">While it is paused nothing on it falls due: it leaves this month\u2019s total, Free to spend a day and the reminders. Payments before today stay as they are.</p>';
+  }
   if(d.row) h+='<button class="delbtn" onclick="calRemove()">Delete payment</button>';
   h+=sheetEnd();
   document.getElementById('modal').innerHTML=h;
 }
+function calPauseTog(){
+  var d=S.calD; if(!d||!d.pause) return;
+  d.pause.on=!d.pause.on;
+  if(!d.pause.on) d.pause.until='';
+  drawCalEdit();
+}
 function calApply(){
   var d=S.calD;
   if(!String(d.service).trim()){ toast('Give it a name'); return; }
+  if(d.pause&&d.pause.on&&d.pause.until&&d.pause.until<=D.today){ toast('Pick a day after today, or leave it empty'); return; }
   /* the reminder is the app's, kept by the service's name */
   var svc=String(d.service).trim(), was=d.orig||'';
   if((d.cancelBy||'')!==cancelOf(was)||(was&&was!==svc&&cancelOf(was))) setCancel(svc,d.cancelBy||'',was);
@@ -9026,12 +9207,28 @@ function calApply(){
      follows a new name */
   var shop=shopNorm(d.shop||'');
   if(shop!==calShopOf(was)||(was&&was!==svc&&calShopOf(was))) setCalShop(svc,shop,was);
+  /* the pause, by name like the reminder */
+  var pn=d.pause||{on:false,until:''}, pw=d.pauseWas||{on:false,until:''};
+  if(pn.on!==pw.on||(pn.until||'')!==(pw.until||'')||(was&&was!==svc&&calPauseList(was).length)) setCalPause(svc,pn.on,pn.until||'',was);
   if(was&&was!==svc){
     var cc=pref('calCat',{})||{};
     if(cc[was]&&!cc[svc]){ var nc={}; for(var c in cc) if(cc.hasOwnProperty(c)&&c!==was) nc[c]=cc[c]; nc[svc]=cc[was]; setPref('calCat',nc); }
   }
-  var out={}; for(var k in d) if(d.hasOwnProperty(k)&&k!=='orig'&&k!=='cancelBy'&&k!=='next'&&k!=='shop') out[k]=d[k];
+  var out={}; for(var k in d) if(d.hasOwnProperty(k)&&k!=='orig'&&k!=='cancelBy'&&k!=='next'&&k!=='shop'&&k!=='pause'&&k!=='pauseWas') out[k]=d[k];
+  /* only the pause, the reminder or the shop changed: those are kept in the
+     app's settings, and the sheet has nothing new to hear */
+  var it0=d.row?calItem(d.row):null, same=!!it0;
+  if(it0) for(var f in out){
+    if(!out.hasOwnProperty(f)||f==='row') continue;
+    if(String(out[f]==null?'':out[f]).trim()!==String(it0[f]==null?'':it0[f]).trim()) same=false;
+  }
   closeModal();
+  if(same){
+    var pch=pn.on!==pw.on||(pn.until||'')!==(pw.until||'');
+    render(true);
+    toast(pch?(pn.on?(pn.until?'Paused till '+fmtLong(pn.until):'Paused'):'Switched back on'):'Saved');
+    return;
+  }
   toast('Saving\u2026');
   bg('saveCalendar',d.row?{edits:[out]}:{adds:[out]});
 }
@@ -9039,6 +9236,7 @@ function calRemove(){
   var d=S.calD;
   if(cancelOf(d.orig||d.service)) setCancel('','',d.orig||d.service);
   if(calShopOf(d.orig||d.service)) setCalShop('','',d.orig||d.service);
+  if(calPauseList(d.orig||d.service).length) setCalPause('',false,'',d.orig||d.service);
   closeModal();
   toast('Deleting\u2026');
   bg('saveCalendar',{deletes:[{row:d.row}]});
@@ -9671,8 +9869,36 @@ function upcPay(row,occ){
   calPay(row,occ);
   setTimeout(function(){ if(document.getElementById('upcsheet')) drawUpcoming(); },60);
 }
-function openCbEdit(){
-  S.cbEd={accs:cbAccounts().map(function(a){
+/* The Cashback window from Accounts: what each card gives back, to read.
+   Edit opens the categories to change; the vouchers sit under them, a
+   window of their own. */
+function openCashback(){
+  S.cbEd=null;
+  drawCbView();
+  vchLoad();
+}
+function drawCbView(){
+  var list=cbAccounts();
+  var h=sheetTop('Cashback','openCbEdit(true)','','Edit')+'<i id="cbviewsheet" hidden></i>';
+  if(list.length&&pref('cbMonth','')!==D.thisMonth)
+    h+='<p class="tiny cbstale">Not updated for '+MON[Number(D.thisMonth.slice(5,7))-1]+' yet. Pick the new ones in your bank apps, then tap Edit.</p>';
+  if(list.length) list.forEach(function(a){
+    h+='<div class="glass list cbview" style="margin-top:12px"><div class="cbacc">'+accLogo(a,'badge')+esc(strip(a.name))+'</div>'+
+      cashbackList(a).map(function(c){
+        return '<div class="row">'+catBadge(c.label)+'<div class="rmain"><div class="rtitle">'+esc(c.label)+'</div></div>'+
+          '<div class="cbrate">'+esc(c.rate||'')+'</div></div>';
+      }).join('')+'</div>';
+  });
+  else h+='<div class="glass" style="margin-top:12px"><div class="empty">No cashback categories yet. <button class="calclr" onclick="openCbEdit(true)">Add them</button></div></div>';
+  /* not a category: a window of its own, over this one */
+  h+=vchBtn();
+  h+=sheetEnd();
+  document.getElementById('modal').innerHTML=h;
+}
+/* back from Edit without saving */
+function cbBack(){ S.cbEd=null; drawCbView(); }
+function openCbEdit(fromView){
+  S.cbEd={from:fromView?1:0,accs:cbAccounts().map(function(a){
     return {row:a.row||0,name:a.name,orig:String(a.cashback||''),
             lines:cashbackList(a).map(function(c){ return {label:c.label,rate:String(c.rate||'').replace('%','')}; })};
   })};
@@ -9685,7 +9911,8 @@ function openCbEdit(){
 }
 function drawCbEdit(){
   var E=S.cbEd; if(!E) return;
-  var h=sheetTop('Cashback','saveCbEdit()');
+  /* from the Cashback window: back to it; from the month's card: just this */
+  var h=E.from?sheetTop('Edit cashback','saveCbEdit()','cbBack()','Save'):sheetTop('Cashback','saveCbEdit()');
   E.accs.forEach(function(x,ai){
     var a=D.accMap[x.name]||{name:x.name,type:''};
     h+='<div class="glass cbed" style="margin-top:12px"><div class="cbacc">'+accLogo(a,'badge')+esc(strip(x.name))+'</div>';
@@ -9704,8 +9931,6 @@ function drawCbEdit(){
     fRow('Another card','<select class="tinput fin" onchange="cbAddAcc(this.value)">'+opt('','Choose…',true)+
       others.map(function(a){ return opt(a.name,strip(a.name),false); }).join('')+'</select>')+'</div>';
   h+='<p class="tiny" style="margin:12px 4px 0;line-height:1.45">Saved to the Cashback column of the Dashboard sheet. A category is matched by what it means: “Supermarkets” covers Groceries, “Restaurants” a café, “Everything” every purchase.</p>';
-  /* not a category: a window of its own, over this one */
-  h+=vchBtn();
   h+=sheetEnd();
   document.getElementById('modal').innerHTML=h;
 }
@@ -9728,15 +9953,21 @@ function saveCbEdit(){
     if(x.row&&txt!==x.orig.replace(/\r/g,'').trim()) edits.push({row:x.row,cashback:txt});
   });
   setPref('cbMonth',D.thisMonth);
-  S.cbEd=null; closeModal();
-  if(!edits.length){ render(true); toast('Nothing changed'); return; }
+  /* opened from the Cashback window: back to it, showing what was saved */
+  var back=!!E.from;
+  S.cbEd=null;
+  function done(){ if(back) drawCbView(); else closeModal(); }
+  if(!edits.length){ done(); render(true); toast('Nothing changed'); return; }
   var was=[];
   edits.forEach(function(e){
     var a=(D.accounts||[]).filter(function(x){ return x.row===e.row; })[0];
     if(a){ was.push({a:a,c:a.cashback}); a.cashback=e.cashback; }
   });
-  render(true); toast('Cashback updated');
-  bg('saveAccounts',{edits:edits},null,function(){ was.forEach(function(w){ w.a.cashback=w.c; }); });
+  done(); render(true); toast('Cashback updated');
+  bg('saveAccounts',{edits:edits},null,function(){
+    was.forEach(function(w){ w.a.cashback=w.c; });
+    if(document.getElementById('cbviewsheet')&&!S.cbEd) drawCbView();
+  });
 }
 
 /* ══════ vouchers & gift cards ══════════════════════════════════════════════
@@ -9878,7 +10109,7 @@ function cbAccCard(){
   var cards=cbAccounts().length, s=vchSummary(), m=vchMeta(), bits=[];
   bits.push(cards?(cards+' card'+(cards===1?'':'s')+' with categories'):'No categories yet');
   if(s.on.length) bits.push(s.on.length+' voucher'+(s.on.length===1?'':'s'));
-  return '<button class="glass actcard" id="cbacccard" onclick="openCbEdit()" style="'+icStyle(155)+'">'+
+  return '<button class="glass actcard" id="cbacccard" onclick="openCashback()" style="'+icStyle(155)+'">'+
     '<span class="ai">'+svgIc('percent',18,2)+'</span>'+
     '<span class="at"><b>Cashback &amp; vouchers</b><span'+(m.hot?' class="hot"':'')+'>'+esc(m.hot?m.text:bits.join(' · '))+'</span></span>'+
     '<span class="chevr">›</span></button>';
@@ -10268,6 +10499,51 @@ function setCalShop(svc,shop,oldSvc){
   setPref('calShop',n);
 }
 function cancelOf(svc){ var v=cancelMap()[svc]; return /^\d{4}-\d{2}-\d{2}/.test(String(v||''))?String(v).slice(0,10):''; }
+/* ══════ a payment on hold ══════════════════════════════════════════════
+   A subscription switched off for a while. From the day it is paused until
+   the day it comes back (or until it is switched on again) its payments are
+   not due: they leave the month's total, the grid, Free to spend a day and
+   the reminders. What was paid before stays exactly as it was. Kept in the
+   app's settings by the service's name, like the cancel reminder, as the
+   spans it was off - so a payment that fell inside an earlier pause is
+   never called late afterwards. */
+function calPauseMap(){ var m=pref('calPause',{}); return (m&&typeof m==='object'&&!(m instanceof Array))?m:{}; }
+function calPauseList(svc){
+  var l=calPauseMap()[svc||''];
+  return (l instanceof Array)?l.filter(function(w){ return w&&/^\d{4}-\d{2}-\d{2}$/.test(String(w.from||'')); }):[];
+}
+function calPausedOn(svc,day){
+  var l=calPauseList(svc);
+  for(var i=0;i<l.length;i++){ var w=l[i]; if(w.from<=day&&(!w.until||day<w.until)) return w; }
+  return null;
+}
+function calPauseNow(svc){ return D?calPausedOn(svc,D.today):null; }
+/* the days of one payment that are logged as paid */
+function calPaidDays(svc){
+  var m={}, pre=String(svc||'')+'|';
+  txAll().forEach(function(t){ if(t.k==='e'&&t.sched&&String(t.sched).indexOf(pre)===0) m[String(t.sched).slice(pre.length)]=1; });
+  return m;
+}
+function setCalPause(svc,on,until,oldSvc){
+  var m=calPauseMap(), n={}, k, today=D.today;
+  for(k in m) if(m.hasOwnProperty(k)&&k!==svc&&k!==oldSvc) n[k]=m[k];
+  var src=(oldSvc&&m[oldSvc]&&!m[svc])?oldSvc:svc;
+  var l=calPauseList(src).map(function(w){ return {from:w.from,until:w.until||''}; }), cur=null;
+  l.forEach(function(w){ if(w.from<=today&&(!w.until||today<w.until)) cur=w; });
+  if(on){
+    if(cur) cur.until=until||'';
+    else l.push({from:today,until:until||''});
+  } else if(cur){
+    /* switched back on: the span ends today - or never was, if it began today */
+    if(cur.from>=today) l=l.filter(function(w){ return w!==cur; });
+    else cur.until=today;
+  }
+  /* a span long over has nothing left to say */
+  var old=addDaysIso(today,-400);
+  l=l.filter(function(w){ return !w.until||w.until>=old; });
+  if(svc&&l.length) n[svc]=l;
+  setPref('calPause',n);
+}
 function setCancel(svc,date,oldSvc){
   var m=cancelMap(), n={}, k;
   for(k in m) if(m.hasOwnProperty(k)&&k!==svc&&k!==oldSvc) n[k]=m[k];
@@ -12232,7 +12508,7 @@ window.__S=S;
    As a website, a small service worker keeps these files on the phone, so
    the app opens instantly and with no signal. A new version is fetched in
    the background; when it arrives, a note offers to switch to it. */
-var APP_VERSION='2026.10.06.1';
+var APP_VERSION='2026.10.06.2';
 (function(){
   try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persist(); }catch(e){}
   if(inGas()||!('serviceWorker' in navigator)) return;
